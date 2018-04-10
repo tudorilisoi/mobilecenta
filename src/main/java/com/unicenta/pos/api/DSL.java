@@ -10,6 +10,7 @@ import com.openbravo.pos.util.ThumbNailBuilder;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.imageio.ImageIO;
+import java.io.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -88,6 +89,23 @@ public class DSL extends DataLogicSystem {
         return null;
     }
 
+    public Object getImageDimensions(byte[] imageData) {
+        ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
+        try {
+            BufferedImage bimage = ImageIO.read(bais);
+            int h = bimage.getHeight();
+            int w = bimage.getWidth();
+            HashMap dimensions = new HashMap();
+            dimensions.put("height", h);
+            dimensions.put("width", w);
+            return dimensions;
+
+        } catch (IOException e) {
+            return null;
+//            throw new RuntimeException(e);
+        }
+    }
+
     public final Object getDBImageBytes(String tableName, String pk) {
         String query = String.format(
                 "SELECT IMAGE FROM `%s` WHERE ID = ? LIMIT 1",
@@ -153,9 +171,11 @@ public class DSL extends DataLogicSystem {
                             break;
 
                         case "IMAGE":
-                            if (dr.getBytes(i + 1) != null) {
+                            byte[] bytes = dr.getBytes(i + 1);
+                            if (bytes != null) {
 
-                                ret.put(columnName, true);
+//                                ret.put(columnName, true);
+                                ret.put(columnName, getImageDimensions(bytes));
 
                                 /*
 
