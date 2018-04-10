@@ -25,6 +25,8 @@ import com.openbravo.pos.sales.DataLogicReceipts;
 
 import javax.servlet.http.HttpServletResponse;
 
+
+
 /**
  * @author tudor
  */

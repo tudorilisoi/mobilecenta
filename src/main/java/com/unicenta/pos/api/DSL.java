@@ -147,7 +147,7 @@ public class DSL extends DataLogicSystem {
 
                     switch (columnName) {
 
-                        case "PARENTID": //CATEGORIES
+                        case "PARENTID": //categories
                             String val = dr.getString(i + 1);
                             ret.put(columnName, val == null ? null : val);
                             break;
@@ -225,7 +225,7 @@ public class DSL extends DataLogicSystem {
         String[] columnNames = "PRODUCT CATORDER".split(" ");
         String sql = "SELECT "
                 + String.join(", ", columnNames)
-                + " FROM PRODUCTS_CAT";
+                + " FROM products_cat";
 
         SentenceList sl = new StaticSentence(
                 s, sql, null, getReader(columnNames)
@@ -238,7 +238,7 @@ public class DSL extends DataLogicSystem {
                 .split(" ");
         String sql = "SELECT "
                 + String.join(", ", columnNames)
-                + " FROM TAXES";
+                + " FROM taxes";
 
         SentenceList sl = new StaticSentence(
                 s, sql, null, getReader(columnNames)
@@ -251,7 +251,7 @@ public class DSL extends DataLogicSystem {
         String[] columnNames = "ID NAME PARENTID IMAGE".split(" ");
         String sql = "SELECT "
                 + String.join(", ", columnNames)
-                + " FROM CATEGORIES";
+                + " FROM categories";
 
         SentenceList sl = new StaticSentence(
                 s, sql, null, getReader(columnNames)
@@ -263,7 +263,7 @@ public class DSL extends DataLogicSystem {
         String[] columnNames = "P.ID, NAME, P.CATEGORY, TAXCAT, ISKITCHEN, PRICESELL, IMAGE".split(", ");
         String sql = "SELECT "
                 + String.join(", ", columnNames)
-                + " FROM PRODUCTS P, PRODUCTS_CAT O WHERE P.ID = O.PRODUCT";
+                + " FROM products P, products_cat O WHERE P.ID = O.PRODUCT";
 
         SentenceList sl = new StaticSentence(
                 s, sql, null, getReader(columnNames)
@@ -276,7 +276,7 @@ public class DSL extends DataLogicSystem {
         String[] columnNames = "ID NAME CARD ROLE IMAGE".split(" ");
         String sql = "SELECT "
                 + String.join(", ", columnNames)
-                + " FROM PEOPLE WHERE VISIBLE = " + s.DB.TRUE();
+                + " FROM people WHERE VISIBLE = " + s.DB.TRUE();
 
         SentenceList sl = new StaticSentence(
                 s, sql, null, getReader(columnNames)
@@ -289,7 +289,7 @@ public class DSL extends DataLogicSystem {
         String[] columnNames = "ID NAME PERMISSIONS".split(" ");
         String sql = "SELECT "
                 + String.join(", ", columnNames)
-                + " FROM ROLES";
+                + " FROM roles";
 
         SentenceList sl = new StaticSentence(
                 s, sql, null, getReader(columnNames)
