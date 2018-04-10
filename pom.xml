@@ -422,6 +422,25 @@
           <debug>false</debug>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.2.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>java</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <mainClass>com.openbravo.pos.forms.StartPOS</mainClass>
+          <arguments>
+            <!--<argument>foo</argument>-->
+            <!--<argument>bar</argument>-->
+          </arguments>
+        </configuration>
+      </plugin>
     </plugins>  
     <finalName>unicentaopos</finalName> 
   </build>  
