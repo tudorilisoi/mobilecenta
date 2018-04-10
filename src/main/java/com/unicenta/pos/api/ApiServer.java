@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.openbravo.pos.api;
+package com.unicenta.pos.api;
 
 import com.openbravo.basic.BasicException;
 import com.openbravo.pos.forms.JRootApp;
@@ -39,7 +39,7 @@ public class ApiServer {
     public ApiServer(JRootApp _app) {
         this.running = false;
         app = _app;
-        dsl = (DSL) app.getBean("com.openbravo.pos.api.DSL");
+        dsl = (DSL) app.getBean("com.unicenta.pos.api.DSL");
         dsl.setReceiptsLogic(
                 (DataLogicReceipts) app.getBean("com.openbravo.pos.sales.DataLogicReceipts")
         );

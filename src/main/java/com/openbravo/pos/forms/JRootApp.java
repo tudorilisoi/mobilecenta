@@ -18,7 +18,7 @@
 //    along with uniCenta oPOS.  If not, see <http://www.gnu.org/licenses/>
 
 package com.openbravo.pos.forms;
-
+import com.unicenta.pos.api.ApiServer;
 import com.openbravo.basic.BasicException;
 import com.openbravo.beans.JFlowPanel;
 import com.openbravo.beans.JPasswordDialog;
@@ -79,6 +79,7 @@ import com.openbravo.pos.util.uOWWatch;
 public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListener  {
 
     private AppProperties m_props;
+    private ApiServer server;
     private Session session;     
     private DataLogicSystem m_dlSystem;
     
@@ -493,7 +494,12 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
         if(ibutton.equals("true")) {
             initIButtonMonitor();
             uOWWatch.iButtonOn();
-        }    
+        }
+
+
+        server  = new ApiServer(this);
+        server.start();
+
         return true;
     }
    

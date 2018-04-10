@@ -1,4 +1,4 @@
-package com.openbravo.pos.api;
+package com.unicenta.pos.api;
 
 import com.openbravo.basic.BasicException;
 import com.openbravo.data.loader.*;
@@ -199,7 +199,7 @@ public class DSL extends DataLogicSystem {
                 .split(" ");
         String sql = "SELECT "
                 + String.join(", ", columnNames)
-                + " FROM FLOORS";
+                + " FROM floors";
 
         SentenceList sl = new StaticSentence(
                 s, sql, null, getReader(columnNames)
@@ -212,7 +212,7 @@ public class DSL extends DataLogicSystem {
                 .split(" ");
         String sql = "SELECT "
                 + String.join(", ", columnNames)
-                + " FROM PLACES";
+                + " FROM places";
 
         SentenceList sl = new StaticSentence(
                 s, sql, null, getReader(columnNames)

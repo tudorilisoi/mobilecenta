@@ -1,4 +1,4 @@
-package com.openbravo.pos.api;
+package com.unicenta.pos.api;
 
 
 import com.google.common.eventbus.EventBus;
