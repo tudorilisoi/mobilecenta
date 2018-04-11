@@ -1,5 +1,6 @@
 package com.unicenta.pos.api;
 
+import com.google.common.io.Resources;
 import com.openbravo.basic.BasicException;
 import com.openbravo.data.loader.*;
 import com.openbravo.pos.forms.DataLogicSystem;
@@ -8,6 +9,7 @@ import com.openbravo.pos.sales.SharedTicketInfo;
 import com.openbravo.pos.ticket.TicketInfo;
 import com.openbravo.pos.util.ThumbNailBuilder;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 
 import javax.imageio.ImageIO;
 import java.io.*;
@@ -23,16 +25,20 @@ import java.util.logging.Logger;
 public class DSL extends DataLogicSystem {
 
     private static final Logger logger = Logger.getLogger("DSL");
-    final ThumbNailBuilder api_thumb = new ThumbNailBuilder(100, 100, "com/openbravo/images/package.png");
+    final ThumbNailBuilder api_thumb = new ThumbNailBuilder(100, 100);
 
     private Session s;
     private DataLogicReceipts receiptsLogic;
+
+    private byte[] defaultCategoryBytes = null;
+    private byte[] defaultProductBytes = null;
 
     public DSL() {
     }
 
     public void init(Session s) {
         this.s = s;
+        initDefaultImages();
         super.init(s);
 
     }
@@ -45,6 +51,17 @@ public class DSL extends DataLogicSystem {
         this.receiptsLogic = receiptsLogic;
     }
 
+    private void initDefaultImages() {
+        try {
+//            defaultCategoryBytes = IOUtils.toByteArray(
+//                    getClass().getResourceAsStream("/com/openbravo/images/mobilecenta/folder-bw-512.png"));
+            defaultCategoryBytes = Resources.toByteArray(getClass().getResource("/com/openbravo/images/mobilecenta/folder-bw-512-slim.png"));
+            defaultProductBytes = Resources.toByteArray(getClass().getResource("/com/openbravo/images/mobilecenta/cube-512.png"));
+        } catch (IOException e) {
+//            e.printStackTrace();
+            logger.warning("DSL: CANNOT INIT DEFAULT IMAGES");
+        }
+    }
 
     private TicketInfo getTicketInfo(String id) {
         try {
@@ -135,6 +152,19 @@ public class DSL extends DataLogicSystem {
             throws BasicException {
 
         Object bytes = getDBImageBytes(tableName, pk);
+
+        if (bytes == null) {
+            if (tableName.equals("categories")) {
+                bytes = defaultCategoryBytes;
+                return bytes;
+            }
+            if (tableName.equals("products")) {
+                bytes = defaultProductBytes;
+                return bytes;
+            }
+        }
+
+
         return getImageThumb((byte[]) bytes);
 
     }
