@@ -151,7 +151,13 @@ public class DSL extends DataLogicSystem {
     public final Object getDBImageThumbnail(String tableName, String pk)
             throws BasicException {
 
-        Object bytes = getDBImageBytes(tableName, pk);
+        Object bytes;
+
+        if (pk.equals("-1")) {
+            bytes = null; //when pk is -1 return the default image
+        } else {
+            bytes = getDBImageBytes(tableName, pk);
+        }
 
         if (bytes == null) {
             if (tableName.equals("categories")) {
