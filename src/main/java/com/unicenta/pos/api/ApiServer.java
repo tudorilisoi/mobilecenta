@@ -42,6 +42,7 @@ public class ApiServer {
     private Cache cacheProducts = null;
     private Cache cacheFloors = null;
     private Cache cacheTickets = null;
+    private Cache cacheImages = null;
 
     public ApiServer(JRootApp _app) {
         this.running = false;
@@ -54,16 +55,17 @@ public class ApiServer {
         cacheProducts = makeCache("productsRoute");
         cacheFloors = makeCache("floorsRoute");
         cacheTickets = makeCache("sharedticketsRoute");
+        cacheImages = makeCache("dbimageRoute");
     }
 
     private Cache makeCache(String routeMethod) {
         return CacheBuilder.newBuilder()
-                .maximumSize(1)
+                .maximumSize(100)
 //                .expireAfterWrite(10, TimeUnit.MINUTES)
                 .build(
-                        new CacheLoader<HashMap, String>() {
+                        new CacheLoader<HashMap, Object>() {
                             @Override
-                            public String load(HashMap params) throws Exception {
+                            public Object load(HashMap params) throws Exception {
                                 JSONPayload ret = new JSONPayload();
                                 ret.setStatus("OK");
                                 JsonElement data = null;
@@ -77,6 +79,8 @@ public class ApiServer {
                                     case "sharedticketsRoute":
                                         data = sharedticketsRoute(params);
                                         break;
+                                    case "dbimageRoute":
+                                        return dbimageRoute(params);
 
                                 }
                                 ret.setData(data);
@@ -216,7 +220,8 @@ public class ApiServer {
             params.put("size", request.params(":size"));
             logger.info(params.toString());
 //            logger.info(request.headers().toString());
-            Object bytesA = dbimageRoute(params);
+//            Object bytesA = dbimageRoute(params);
+            Object bytesA = cacheImages.get(params);
             Object status = "";
             if (bytesA != null) {
                 response.type("image/png");
@@ -260,7 +265,7 @@ public class ApiServer {
             // EventHub.post(EventHub.API_ORIGINATED_CHANGE);
             response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
-            return cacheTickets.get(params);
+            return (String)  cacheTickets.get(params);
         });
 
         get("/users", (request, response) -> {
@@ -275,14 +280,14 @@ public class ApiServer {
         get("/floors", (request, response) -> {
             response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
-            return cacheFloors.get(params);
+            return (String)  cacheFloors.get(params);
         });
 
 
         get("/products", (request, response) -> {
             response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
-            return cacheProducts.get(params);
+            return (String) cacheProducts.get(params);
         });
 
         return 0;
