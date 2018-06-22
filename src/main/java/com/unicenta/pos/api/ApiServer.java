@@ -5,11 +5,16 @@
  */
 package com.unicenta.pos.api;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
 import com.openbravo.basic.BasicException;
 import com.openbravo.pos.forms.JRootApp;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
 import static spark.Spark.*;
@@ -19,12 +24,9 @@ import com.google.gson.*;
 import java.security.MessageDigest;
 import java.math.*;
 
-import org.apache.commons.codec.binary.Base64;
-
 import com.openbravo.pos.sales.DataLogicReceipts;
 
 import javax.servlet.http.HttpServletResponse;
-
 
 
 /**
@@ -37,6 +39,8 @@ public class ApiServer {
     private JRootApp app;
     private boolean running;
     private DSL dsl;
+    private Cache cacheProducts = null;
+    private Cache cacheFloors = null;
 
     public ApiServer(JRootApp _app) {
         this.running = false;
@@ -45,8 +49,36 @@ public class ApiServer {
         dsl.setReceiptsLogic(
                 (DataLogicReceipts) app.getBean("com.openbravo.pos.sales.DataLogicReceipts")
         );
+
+        cacheProducts = makeCache("productsRoute");
+        cacheFloors = makeCache("floorsRoute");
     }
 
+    private Cache makeCache(String routeMethod) {
+        return CacheBuilder.newBuilder()
+                .maximumSize(1)
+//                .expireAfterWrite(10, TimeUnit.MINUTES)
+                .build(
+                        new CacheLoader<HashMap, String>() {
+                            @Override
+                            public String load(HashMap params) throws Exception {
+                                JSONPayload ret = new JSONPayload();
+                                ret.setStatus("OK");
+                                JsonElement data = null;
+                                switch (routeMethod) {
+                                    case "floorsRoute":
+                                        data = floorsRoute(params);
+                                        break;
+                                    case "productsRoute":
+                                        data = productsRoute(params);
+                                        break;
+                                }
+                                ret.setData(data);
+                                return ret.getString();
+                            }
+                        }
+                );
+    }
 
     private JsonObject createGSON() {
         Gson gson = new Gson();
@@ -236,22 +268,16 @@ public class ApiServer {
         });
 
         get("/floors", (request, response) -> {
-            JSONPayload ret = new JSONPayload();
-            ret.setStatus("OK");
-            HashMap params = new HashMap(); //params, not used here
-            ret.setData(floorsRoute(params));
             response.header("Content-Encoding", "gzip");
-            return ret.getString();
+            HashMap params = new HashMap(); //params, not used here
+            return cacheFloors.get(params);
         });
 
 
         get("/products", (request, response) -> {
-            JSONPayload ret = new JSONPayload();
-            ret.setStatus("OK");
-            HashMap params = new HashMap(); //params, not used here
-            ret.setData(productsRoute(params));
             response.header("Content-Encoding", "gzip");
-            return ret.getString();
+            HashMap params = new HashMap(); //params, not used here
+            return cacheProducts.get(params);
         });
 
         return 0;
