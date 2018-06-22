@@ -146,7 +146,10 @@ public class ApiServer {
         return b.toJsonTree(d);
     }
 
-    Object dbimageRoute(Map params) throws BasicException {
+    HashMap dbimageRoute(Map params) throws BasicException {
+        HashMap ret = new HashMap();
+        Object record = null;
+        String hash = null;
         try {
 
             //currently "small" or "full"
@@ -154,19 +157,29 @@ public class ApiServer {
 
             if (size.equals("small")) {
 
-                Object record = dsl.getDBImageThumbnail(
+                record = dsl.getDBImageThumbnail(
                         (String) params.get("tableName"),
                         (String) params.get("pk")
                 );
-                return record;
             } else {
-                Object record = dsl.getDBImageBytes(
+                record = dsl.getDBImageBytes(
                         (String) params.get("tableName"),
                         (String) params.get("pk")
                 );
-                return record;
 
             }
+            if (record != null) {
+                MessageDigest md = MessageDigest.getInstance("MD5");
+                byte[] bytes = (byte[]) record;
+                byte[] md5Arr = md.digest(bytes);
+                String md5Str = new BigInteger(1, md5Arr).toString(16);
+                hash = md5Str;
+            }
+
+            ret.put("hash", hash);
+            ret.put("bytesA", record);
+            return ret;
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace(System.out);
@@ -221,7 +234,9 @@ public class ApiServer {
             logger.info(params.toString());
 //            logger.info(request.headers().toString());
 //            Object bytesA = dbimageRoute(params);
-            Object bytesA = cacheImages.get(params);
+            HashMap data = (HashMap) cacheImages.get(params);
+            Object bytesA = data.get("bytesA");
+            String hash = (String) data.get("hash");
             Object status = "";
             if (bytesA != null) {
                 response.type("image/png");
@@ -229,18 +244,20 @@ public class ApiServer {
 //            response.header("Content-Disposition", "attachment; filename=image.jpg");
 //            response.type("application/force-download");
                 try {
+                    /*
                     MessageDigest md = MessageDigest.getInstance("MD5");
-                    byte[] bytes = (byte[]) bytesA;
                     byte[] md5Arr = md.digest(bytes);
                     String md5Str = new BigInteger(1, md5Arr).toString(16);
+                    */
+                    byte[] bytes = (byte[]) bytesA;
                     logger.info("User-agent ETag: " + request.headers("If-None-Match"));
                     String clientETag = request.headers("If-None-Match");
-                    if (md5Str.equals(clientETag)) {
+                    if (hash.equals(clientETag)) {
                         response.status(304);
                         logger.info("NOT MODIFIED");
                         return "NOT MODIFIED";
                     }
-                    response.header("ETag", md5Str);
+                    response.header("ETag", hash);
                     raw.getOutputStream().write(bytes);
                     raw.getOutputStream().flush();
                     raw.getOutputStream().close();
@@ -265,7 +282,7 @@ public class ApiServer {
             // EventHub.post(EventHub.API_ORIGINATED_CHANGE);
             response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
-            return (String)  cacheTickets.get(params);
+            return (String) cacheTickets.get(params);
         });
 
         get("/users", (request, response) -> {
@@ -280,7 +297,7 @@ public class ApiServer {
         get("/floors", (request, response) -> {
             response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
-            return (String)  cacheFloors.get(params);
+            return (String) cacheFloors.get(params);
         });
 
 
