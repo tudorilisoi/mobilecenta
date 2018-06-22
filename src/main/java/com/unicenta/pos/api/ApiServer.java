@@ -249,6 +249,8 @@ public class ApiServer {
         });
 
         get("/tickets", (request, response) -> {
+
+            // TODO move this to a POST handler for tickets
             EventHub.post(EventHub.API_ORIGINATED_CHANGE);
             JSONPayload ret = new JSONPayload();
             ret.setStatus("OK");
