@@ -41,6 +41,7 @@ public class ApiServer {
     private DSL dsl;
     private Cache cacheProducts = null;
     private Cache cacheFloors = null;
+    private Cache cacheTickets = null;
 
     public ApiServer(JRootApp _app) {
         this.running = false;
@@ -52,6 +53,7 @@ public class ApiServer {
 
         cacheProducts = makeCache("productsRoute");
         cacheFloors = makeCache("floorsRoute");
+        cacheTickets = makeCache("sharedticketsRoute");
     }
 
     private Cache makeCache(String routeMethod) {
@@ -72,6 +74,10 @@ public class ApiServer {
                                     case "productsRoute":
                                         data = productsRoute(params);
                                         break;
+                                    case "sharedticketsRoute":
+                                        data = sharedticketsRoute(params);
+                                        break;
+
                                 }
                                 ret.setData(data);
                                 return ret.getString();
@@ -251,13 +257,10 @@ public class ApiServer {
         get("/tickets", (request, response) -> {
 
             // TODO move this to a POST handler for tickets
-            EventHub.post(EventHub.API_ORIGINATED_CHANGE);
-            JSONPayload ret = new JSONPayload();
-            ret.setStatus("OK");
-            HashMap params = new HashMap(); //params, not used here
-            ret.setData(sharedticketsRoute(params));
+            // EventHub.post(EventHub.API_ORIGINATED_CHANGE);
             response.header("Content-Encoding", "gzip");
-            return ret.getString();
+            HashMap params = new HashMap(); //params, not used here
+            return cacheTickets.get(params);
         });
 
         get("/users", (request, response) -> {
