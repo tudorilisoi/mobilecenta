@@ -60,7 +60,7 @@ public class ApiServer {
 
     private Cache makeCache(String routeMethod) {
         return CacheBuilder.newBuilder()
-                .maximumSize(100)
+                .maximumSize(500)
 //                .expireAfterWrite(10, TimeUnit.MINUTES)
                 .build(
                         new CacheLoader<HashMap, Object>() {
