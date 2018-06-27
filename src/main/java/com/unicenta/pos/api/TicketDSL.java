@@ -20,16 +20,19 @@ public class TicketDSL extends BaseDSL {
     public TicketDSL() {
     }
 
-    public TicketInfo getTicketByPlaceID(String ID) {
+    public TicketInfo getTicketByPlaceID(String placeID) {
+
+        String ticketID = restDB.getTicketIdInTable(placeID);
         TicketInfo ticket = null;
         try {
-            ticket = receiptsLogic.getSharedTicket(ID);
+            ticket = receiptsLogic.getSharedTicket(placeID);
             if (ticket == null) {
 
                 ticket = new TicketInfo();
-                ticket.setActiveCash(app.getActiveCashIndex());
+//                ticket.setActiveCash(app.getActiveCashIndex());
                 ticket.setDate(new Date());
-                receiptsLogic.insertRSharedTicket(ID, ticket, 0);
+                receiptsLogic.insertRSharedTicket(placeID, ticket, 0);
+                restDB.setTicketIdInTableId(ticket.getId(), placeID);
             }
         } catch (BasicException e) {
             //TODO handle this

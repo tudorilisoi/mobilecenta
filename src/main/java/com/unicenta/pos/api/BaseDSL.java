@@ -10,11 +10,11 @@ public class BaseDSL extends DataLogicSystem {
     protected DataLogicReceipts receiptsLogic;
     protected Session s;
     protected JRootApp app;
-    protected RestaurantDBUtils restDB;
+    protected RestaurantDBUtilsExt restDB;
 
     public void setApp(JRootApp app) {
         this.app = app;
-        restDB = new RestaurantDBUtils(this.app);
+        restDB = new RestaurantDBUtilsExt(this.app);
     }
 
     public void setReceiptsLogic(DataLogicReceipts receiptsLogic) {
