@@ -23,6 +23,7 @@ import java.security.MessageDigest;
 import java.math.*;
 
 import com.openbravo.pos.sales.DataLogicReceipts;
+import com.openbravo.pos.ticket.TicketInfo;
 import spark.Spark;
 
 import javax.servlet.http.HttpServletResponse;
@@ -317,7 +318,7 @@ public class ApiServer {
 
         post("/ticket/:placeID", (request, response) -> {
             String placeID = request.params(":placeID");
-            TicketDSL t = TicketDSL.getInstance();
+//            TicketDSL t = TicketDSL.getInstance();
             response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
 
@@ -325,7 +326,8 @@ public class ApiServer {
             ret.setStatus("OK");
 
             HashMap d = new HashMap();
-            d.put("ticket", t.getTicketByPlaceID(placeID));
+            TicketInfo ti = ticketDSL.getTicketByPlaceID(placeID);
+            d.put("ticket", ti);
 
             Gson b = new GsonBuilder().serializeNulls().create();
             ret.setData(b.toJsonTree(d));
