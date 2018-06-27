@@ -52,15 +52,15 @@ public class ApiServer {
                 (DataLogicReceipts) app.getBean("com.openbravo.pos.sales.DataLogicReceipts")
         );
 
-        cacheProducts = makeCache("productsRoute");
-        cacheFloors = makeCache("floorsRoute");
-        cacheTickets = makeCache("sharedticketsRoute");
-        cacheImages = makeCache("dbimageRoute");
+        cacheProducts = makeCache("productsRoute", 500);
+        cacheFloors = makeCache("floorsRoute", 500);
+        cacheTickets = makeCache("sharedticketsRoute", 0);
+        cacheImages = makeCache("dbimageRoute", 500);
     }
 
-    private Cache makeCache(String routeMethod) {
+    private Cache makeCache(String routeMethod, Integer size) {
         return CacheBuilder.newBuilder()
-                .maximumSize(500)
+                .maximumSize(size)
 //                .expireAfterWrite(10, TimeUnit.MINUTES)
                 .build(
                         new CacheLoader<HashMap, Object>() {
