@@ -101,7 +101,7 @@ public class ApiServer {
         try {
             HashMap d = new HashMap();
             d.put("sharedtickets", dsl.listSharedTickets());
-            d.put("_comment", "PLACEID=>sharedticket map");
+            d.put("_comment", "PLACEID:sharedticket map");
             Gson b = new GsonBuilder().serializeNulls().create();
             return b.toJsonTree(d);
         } catch (Exception e) {
