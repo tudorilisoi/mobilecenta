@@ -325,12 +325,12 @@ public class ApiServer {
             JSONPayload ret = new JSONPayload();
             ret.setStatus("OK");
 
-            HashMap d = new HashMap();
             TicketInfo ti = ticketDSL.getTicketByPlaceID(placeID);
-            d.put("ticket", ti);
+//            HashMap d = new HashMap();
+//            d.put("ticket", ti);
 
             Gson b = new GsonBuilder().serializeNulls().create();
-            ret.setData(b.toJsonTree(d));
+            ret.setData(b.toJsonTree(ti));
 
             return ret.getString();
         });
