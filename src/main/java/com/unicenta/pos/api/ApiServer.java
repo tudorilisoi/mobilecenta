@@ -53,8 +53,10 @@ public class ApiServer {
         DSL = (DSL) app.getBean("com.unicenta.pos.api.DSL");
         DSL.setReceiptsLogic(receiptsLogic);
 
+
         ticketDSL = (TicketDSL) app.getBean("com.unicenta.pos.api.TicketDSL");
         ticketDSL.setReceiptsLogic(receiptsLogic);
+        ticketDSL.setApp(app);
 
         cacheProducts = makeCache("productsRoute", 500);
         cacheFloors = makeCache("floorsRoute", 500);
