@@ -23,6 +23,7 @@ import java.security.MessageDigest;
 import java.math.*;
 
 import com.openbravo.pos.sales.DataLogicReceipts;
+import spark.Spark;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -46,16 +47,23 @@ public class ApiServer {
     public ApiServer(JRootApp _app) {
         this.running = false;
         app = _app;
+        DataLogicReceipts receiptsLogic = (DataLogicReceipts) app.getBean("com.openbravo.pos.sales.DataLogicReceipts");
+
         DSL = (DSL) app.getBean("com.unicenta.pos.api.DSL");
+        DSL.setReceiptsLogic(receiptsLogic);
+
         ticketDSL = (TicketDSL) app.getBean("com.unicenta.pos.api.TicketDSL");
-        DataLogicReceipts DLReceipts = (DataLogicReceipts) app.getBean("com.openbravo.pos.sales.DataLogicReceipts");
-        DSL.setReceiptsLogic(DLReceipts);
-        ticketDSL.setReceiptsLogic(DLReceipts);
+        ticketDSL.setReceiptsLogic(receiptsLogic);
 
         cacheProducts = makeCache("productsRoute", 500);
         cacheFloors = makeCache("floorsRoute", 500);
         cacheTickets = makeCache("sharedticketsRoute", 0);
         cacheImages = makeCache("dbimageRoute", 500);
+
+        //Spark: log HTTP 500 expceptions
+        Spark.exception(Exception.class, (exception, request, response) -> {
+            exception.printStackTrace();
+        });
     }
 
     private Cache makeCache(String routeMethod, Integer size) {
@@ -308,6 +316,7 @@ public class ApiServer {
         });
 
         post("/ticket/:placeID", (request, response) -> {
+            String placeID = request.params(":placeID");
             TicketDSL t = TicketDSL.getInstance();
             response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
@@ -316,7 +325,7 @@ public class ApiServer {
             ret.setStatus("OK");
 
             HashMap d = new HashMap();
-            d.put("ticket", t.getTicketByPlaceID());
+            d.put("ticket", t.getTicketByPlaceID(placeID));
 
             Gson b = new GsonBuilder().serializeNulls().create();
             ret.setData(b.toJsonTree(d));

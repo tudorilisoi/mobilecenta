@@ -5,8 +5,8 @@ import com.openbravo.pos.forms.DataLogicSystem;
 import com.openbravo.pos.sales.DataLogicReceipts;
 
 public class BaseDSL extends DataLogicSystem {
-    private DataLogicReceipts receiptsLogic;
-    private Session s;
+    protected DataLogicReceipts receiptsLogic;
+    protected Session s;
 
     public void setReceiptsLogic(DataLogicReceipts receiptsLogic) {
         this.receiptsLogic = receiptsLogic;
