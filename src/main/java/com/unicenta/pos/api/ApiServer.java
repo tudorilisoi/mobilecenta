@@ -11,10 +11,8 @@ import com.google.common.cache.CacheLoader;
 import com.openbravo.basic.BasicException;
 import com.openbravo.pos.forms.JRootApp;
 
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
 import static spark.Spark.*;
@@ -38,7 +36,8 @@ public class ApiServer {
 
     private JRootApp app;
     private boolean running;
-    private DSL dsl;
+    private DSL DSL;
+    private TicketDSL ticketDSL;
     private Cache cacheProducts = null;
     private Cache cacheFloors = null;
     private Cache cacheTickets = null;
@@ -47,10 +46,11 @@ public class ApiServer {
     public ApiServer(JRootApp _app) {
         this.running = false;
         app = _app;
-        dsl = (DSL) app.getBean("com.unicenta.pos.api.DSL");
-        dsl.setReceiptsLogic(
-                (DataLogicReceipts) app.getBean("com.openbravo.pos.sales.DataLogicReceipts")
-        );
+        DSL = (DSL) app.getBean("com.unicenta.pos.api.DSL");
+        ticketDSL = (TicketDSL) app.getBean("com.unicenta.pos.api.TicketDSL");
+        DataLogicReceipts DLReceipts = (DataLogicReceipts) app.getBean("com.openbravo.pos.sales.DataLogicReceipts");
+        DSL.setReceiptsLogic(DLReceipts);
+        ticketDSL.setReceiptsLogic(DLReceipts);
 
         cacheProducts = makeCache("productsRoute", 500);
         cacheFloors = makeCache("floorsRoute", 500);
@@ -100,7 +100,7 @@ public class ApiServer {
 
         try {
             HashMap d = new HashMap();
-            d.put("sharedtickets", dsl.listSharedTickets());
+            d.put("sharedtickets", DSL.listSharedTickets());
             d.put("_comment", "PLACEID:sharedticket map");
             Gson b = new GsonBuilder().serializeNulls().create();
             return b.toJsonTree(d);
@@ -116,8 +116,8 @@ public class ApiServer {
 
         HashMap d = new HashMap();
 
-        d.put("users", dsl.listUsers());
-        d.put("roles", dsl.listRoles());
+        d.put("users", DSL.listUsers());
+        d.put("roles", DSL.listRoles());
 
         Gson b = new GsonBuilder().serializeNulls().create();
         return b.toJsonTree(d);
@@ -127,8 +127,8 @@ public class ApiServer {
 
         HashMap d = new HashMap();
 
-        d.put("floors", dsl.listFloors());
-        d.put("places", dsl.listPlaces());
+        d.put("floors", DSL.listFloors());
+        d.put("places", DSL.listPlaces());
 
         Gson b = new GsonBuilder().serializeNulls().create();
         return b.toJsonTree(d);
@@ -138,9 +138,9 @@ public class ApiServer {
 
         HashMap d = new HashMap();
 
-        d.put("taxes", dsl.listTaxes());
-        d.put("categories", dsl.listProductCategories());
-        d.put("products", dsl.listProducts());
+        d.put("taxes", DSL.listTaxes());
+        d.put("categories", DSL.listProductCategories());
+        d.put("products", DSL.listProducts());
 
         Gson b = new GsonBuilder().serializeNulls().create();
         return b.toJsonTree(d);
@@ -157,12 +157,12 @@ public class ApiServer {
 
             if (size.equals("small")) {
 
-                record = dsl.getDBImageThumbnail(
+                record = DSL.getDBImageThumbnail(
                         (String) params.get("tableName"),
                         (String) params.get("pk")
                 );
             } else {
-                record = dsl.getDBImageBytes(
+                record = DSL.getDBImageBytes(
                         (String) params.get("tableName"),
                         (String) params.get("pk")
                 );
@@ -305,6 +305,23 @@ public class ApiServer {
             response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
             return (String) cacheProducts.get(params);
+        });
+
+        post("/ticket/:placeID", (request, response) -> {
+            TicketDSL t = TicketDSL.getInstance();
+            response.header("Content-Encoding", "gzip");
+            HashMap params = new HashMap(); //params, not used here
+
+            JSONPayload ret = new JSONPayload();
+            ret.setStatus("OK");
+
+            HashMap d = new HashMap();
+            d.put("ticket", t.getTicketByPlaceID());
+
+            Gson b = new GsonBuilder().serializeNulls().create();
+            ret.setData(b.toJsonTree(d));
+
+            return ret.getString();
         });
 
         return 0;
