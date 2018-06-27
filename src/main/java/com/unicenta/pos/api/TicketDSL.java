@@ -1,19 +1,21 @@
 package com.unicenta.pos.api;
 
 import com.openbravo.basic.BasicException;
+import com.openbravo.pos.sales.restaurant.RestaurantDBUtils;
 import com.openbravo.pos.ticket.TicketInfo;
 
 import java.util.Date;
 
 public class TicketDSL extends BaseDSL {
-    private static TicketDSL instance = null;
 
+
+    /*private static TicketDSL instance = null;
     public static TicketDSL getInstance() {
         if (instance == null) {
             instance = new TicketDSL();
         }
         return instance;
-    }
+    }*/
 
     public TicketDSL() {
     }

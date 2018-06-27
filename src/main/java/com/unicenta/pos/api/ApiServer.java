@@ -45,9 +45,9 @@ public class ApiServer {
     private Cache cacheTickets = null;
     private Cache cacheImages = null;
 
-    public ApiServer(JRootApp _app) {
+    public ApiServer(JRootApp app) {
         this.running = false;
-        app = _app;
+        this.app = app;
         DataLogicReceipts receiptsLogic = (DataLogicReceipts) app.getBean("com.openbravo.pos.sales.DataLogicReceipts");
 
         DSL = (DSL) app.getBean("com.unicenta.pos.api.DSL");
