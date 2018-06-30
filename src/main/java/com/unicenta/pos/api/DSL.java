@@ -199,11 +199,17 @@ public class DSL extends DataLogicSystem {
 //                    logger.warning(columnNames[i]);
 //                    logger.warning(columnName);
 
+
                     switch (columnName) {
 
                         case "PARENTID": //categories
                             String val = dr.getString(i + 1);
-                            ret.put(columnName, val == null ? null : val);
+                            ret.put(columnName, val);
+                            break;
+                        case "PRICESELL": //products
+                        case "RATE": //taxes
+                            Double dval = dr.getDouble(i + 1);
+                            ret.put(columnName, dval);
                             break;
 
                         case "IMAGE":
