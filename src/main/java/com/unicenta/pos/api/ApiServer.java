@@ -11,6 +11,7 @@ import com.google.common.cache.CacheLoader;
 import com.openbravo.basic.BasicException;
 import com.openbravo.pos.forms.JRootApp;
 
+import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -318,7 +319,7 @@ public class ApiServer {
             return (String) cacheProducts.get(params);
         });
 
-        post("/ticket/:placeID", (request, response) -> {
+        get("/ticket/:placeID", (request, response) -> {
             String placeID = request.params(":placeID");
 //            TicketDSL t = TicketDSL.getInstance();
             response.header("Content-Encoding", "gzip");
@@ -336,6 +337,29 @@ public class ApiServer {
 
             return ret.getString();
         });
+
+        post("/ticket/:placeID", (request, response) -> {
+
+            String placeID = request.params(":placeID");
+//            TicketDSL t = TicketDSL.getInstance();
+            response.header("Content-Encoding", "gzip");
+            HashMap params = new HashMap(); //params, not used here
+
+            JSONPayload ret = new JSONPayload();
+            ret.setStatus("OK");
+
+            TicketInfo ti = ticketDSL.getTicketByPlaceID(placeID);
+//            HashMap d = new HashMap();
+//            d.put("ticket", ti);
+
+            JsonObject ticketLines = new Gson().fromJson(request.body(), JsonObject.class);
+
+            Gson b = new GsonBuilder().serializeNulls().create();
+            ret.setData(b.toJsonTree(ti));
+
+            return ret.getString();
+        });
+
 
         return 0;
     }
