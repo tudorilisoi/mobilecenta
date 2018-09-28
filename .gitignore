@@ -4,3 +4,6 @@
 /nb-configuration.xml
 /unicentaopos.iml
 *.jar
+derby.log
+build
+
