@@ -37,9 +37,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import com.openbravo.beans.JCalendarDialog;
-import com.openbravo.pos.customers.CustomersView;
+import com.openbravo.data.loader.Session;
+import com.openbravo.pos.catalog.JCatalog;
 import com.openbravo.pos.forms.AppProperties;
-import com.openbravo.pos.forms.BeanFactoryException;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -53,11 +53,18 @@ import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
-
 import com.openbravo.pos.forms.DataLogicSystem;
-import com.openbravo.pos.util.ThumbNailBuilder;
-import java.awt.Dimension;
-import java.util.Properties;
+import java.awt.Color;
+import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import javax.imageio.ImageIO;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
@@ -105,6 +112,16 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
     private AppView appView;   
 
     private final SentenceFind loadimage; // JG 3 feb 16 speedup    
+    
+    private Session s;
+    private Connection con;  
+    private Statement stmt;
+    private PreparedStatement pstmt;
+    private String SQL;
+    private ResultSet rs;
+    private AppView m_App;
+
+    protected DataLogicSystem dlSystem;    
     
     
     /** Creates new form JEditProduct
@@ -189,9 +206,8 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
         m_jGrossProfit.getDocument().addDocumentListener(new MarginManager());
 
         m_jdate.getDocument().addDocumentListener(dirty);        
-       
+        
             init();
-
     }
     
     private void init() {
@@ -281,7 +297,7 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
 // Tab Button
         m_jDisplay.setText(null);
         m_jTextTip.setText(null); 
-        colourChooser.setText("0,0,0");
+//        colourChooser.setText("#000000");
         
 // Tab Properties
         txtAttributes.setText(null);
@@ -816,44 +832,61 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
                 m_jDisplay.insert("<br>", m_jDisplay.getCaretPosition());
                 break;
             case 2: 
-                m_jDisplay.insert("<font color=" + colourChooser.getText() + ">"
+                String hexcolor = color2HexString(colourChooser.getColor());                
+                m_jDisplay.insert("<font color=" + hexcolor + ">"                
                     , m_jDisplay.getCaretPosition());
                 break;
             case 3:
-                m_jDisplay.insert("<font size=+2>LARGE TEXT"
+                m_jDisplay.insert("<font size=+2>"
                     , m_jDisplay.getCaretPosition());
                 break;
             case 4:
-                m_jDisplay.insert("<font size=-2>small text"
+                m_jDisplay.insert("<font size=-2>"
                     , m_jDisplay.getCaretPosition());
                 break;
             case 5:
-                m_jDisplay.insert("<b>Bold Text</b>"
+                m_jDisplay.insert("<b> </b>"
                     , m_jDisplay.getCaretPosition());
                 break;
             case 6:
-                m_jDisplay.insert("<i>Italic Text</i>"
+                m_jDisplay.insert("<i> </i>"
                     , m_jDisplay.getCaretPosition());
                 break;
             case 7:
-                m_jDisplay.insert("<img src=Image URL>"
+// defaults to file:/ for local disk
+// http:// also usable for remote image                
+                JFileChooser fc = new JFileChooser();
+                FileFilter imageFilter = new FileNameExtensionFilter(
+                    "Image files", ImageIO.getReaderFileSuffixes());
+                fc.setFileFilter(imageFilter);                
+                int returnValue = fc.showOpenDialog(null);
+                File selectedFile = fc.getSelectedFile();
+                if (selectedFile != null) {
+                    m_jDisplay.insert("<img src=file:" +  selectedFile.getAbsolutePath() + ">"
                     , m_jDisplay.getCaretPosition());
+                }
                 break;                
+                
             case 8: htmlString = ohtmlString;
-                m_jDisplay.setText(htmlString);                
+                m_jDisplay.setText(htmlString);
+                break;
+            case 9: 
+                m_jDisplay.insert("<div style=background-color:black;color:white;padding:10px;>"
+                    , m_jDisplay.getCaretPosition());
+                break;
             default: htmlString +="";
                 m_jDisplay.setText(htmlString);                            
         }
     }
 
     private void setButtonHTML() {
-//        String sName = "img-width";
-//Properties atest = m_dlSystem.getResourceAsProperties(m_props.getProperty(sName));
 
-//        jButtonHTML.setPreferredSize(new Dimension());
-   
         jButtonHTML.setText(m_jDisplay.getText());
-    }  
+    }
+    
+    public String color2HexString(Color color) {
+        return "#" + Integer.toHexString(color.getRGB() & 0x00ffffff);
+    }   
 
 // 3 feb 16 speed test
     private BufferedImage findImage(Object id) {
@@ -1128,7 +1161,7 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
         m_jUom = new javax.swing.JComboBox();
         jLabel17 = new javax.swing.JLabel();
         m_jSupplier = new javax.swing.JComboBox();
-        webBtnSupplier = new com.alee.laf.button.WebButton();
+        jBtnSupplier = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
         m_jstockcost = new javax.swing.JTextField();
@@ -1162,22 +1195,6 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
         jLblDate = new javax.swing.JLabel();
         m_jbtndate = new javax.swing.JButton();
         m_jdate = new javax.swing.JTextField();
-        jPanel4 = new javax.swing.JPanel();
-        jLabel28 = new javax.swing.JLabel();
-        jButtonHTML = new javax.swing.JButton();
-        colourChooser = new com.alee.extended.colorchooser.WebColorChooserField();
-        webBtnBreak = new com.alee.laf.button.WebButton();
-        webBtnColour = new com.alee.laf.button.WebButton();
-        webBtnLarge = new com.alee.laf.button.WebButton();
-        webBtnSmall = new com.alee.laf.button.WebButton();
-        webBtnBold = new com.alee.laf.button.WebButton();
-        webBtnItalic = new com.alee.laf.button.WebButton();
-        webBtnURL = new com.alee.laf.button.WebButton();
-        webBtnReset = new com.alee.laf.button.WebButton();
-        jLabel21 = new javax.swing.JLabel();
-        m_jTextTip = new javax.swing.JTextField();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        m_jDisplay = new com.alee.laf.text.WebTextArea();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtAttributes = new javax.swing.JTextArea();
@@ -1185,6 +1202,23 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
         jPanel6 = new javax.swing.JPanel();
         jLabel34 = new javax.swing.JLabel();
         m_jImage = new com.openbravo.data.gui.JImageEditor();
+        jPanel4 = new javax.swing.JPanel();
+        jLabel28 = new javax.swing.JLabel();
+        jButtonHTML = new javax.swing.JButton();
+        jLabel21 = new javax.swing.JLabel();
+        m_jTextTip = new javax.swing.JTextField();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        m_jDisplay = new com.alee.laf.text.WebTextArea();
+        jBtnBreak = new javax.swing.JButton();
+        jBtnColour = new javax.swing.JButton();
+        jBtnLarge = new javax.swing.JButton();
+        jBtnSmall = new javax.swing.JButton();
+        jBtnBold = new javax.swing.JButton();
+        jBtnItalic = new javax.swing.JButton();
+        jBtnImage = new javax.swing.JButton();
+        jBtnReset = new javax.swing.JButton();
+        jBtnStyle = new javax.swing.JButton();
+        colourChooser = new com.alee.extended.colorchooser.WebColorPicker();
 
         setLayout(null);
 
@@ -1200,9 +1234,12 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
         add(m_jTitle);
         m_jTitle.setBounds(365, 5, 260, 25);
 
+        jTabbedPane1.setToolTipText("");
         jTabbedPane1.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jTabbedPane1.setPreferredSize(new java.awt.Dimension(680, 420));
 
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("pos_messages"); // NOI18N
+        jPanel1.setToolTipText(bundle.getString("tooltip.product.general.tab")); // NOI18N
         jPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
 
         jLabel1.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
@@ -1230,6 +1267,11 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
 
         m_jCode.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         m_jCode.setPreferredSize(new java.awt.Dimension(125, 30));
+        m_jCode.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                m_jCodeFocusLost(evt);
+            }
+        });
 
         m_jCodetype.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         m_jCodetype.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "EAN-13", "EAN-8", "CODE128", "Upc-A", "Upc-E" }));
@@ -1288,7 +1330,6 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
 
         jLabel19.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel19.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("pos_messages"); // NOI18N
         jLabel19.setText(bundle.getString("label.margin")); // NOI18N
         jLabel19.setPreferredSize(new java.awt.Dimension(110, 30));
 
@@ -1343,12 +1384,12 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
         m_jSupplier.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         m_jSupplier.setPreferredSize(new java.awt.Dimension(200, 30));
 
-        webBtnSupplier.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/customer_add_sml.png"))); // NOI18N
-        webBtnSupplier.setText(AppLocal.getIntString("label.supplier")); // NOI18N
-        webBtnSupplier.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        webBtnSupplier.addActionListener(new java.awt.event.ActionListener() {
+        jBtnSupplier.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jBtnSupplier.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/customer_add_sml.png"))); // NOI18N
+        jBtnSupplier.setText(bundle.getString("label.supplier")); // NOI18N
+        jBtnSupplier.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                webBtnSupplierActionPerformed(evt);
+                jBtnSupplierActionPerformed(evt);
             }
         });
 
@@ -1429,7 +1470,7 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(m_jSupplier, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(webBtnSupplier, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jBtnSupplier)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -1486,16 +1527,16 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
                             .addComponent(m_jGrossProfit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(m_jmargin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(webBtnSupplier, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(m_jSupplier, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel17, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(m_jSupplier, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jBtnSupplier))
+                .addGap(14, 14, 14))
         );
 
         jTabbedPane1.addTab(AppLocal.getIntString("label.prodgeneral"), jPanel1); // NOI18N
 
+        jPanel2.setToolTipText(bundle.getString("tooltip.product.stock.tab")); // NOI18N
         jPanel2.setPreferredSize(new java.awt.Dimension(0, 0));
 
         jLabel9.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
@@ -1689,7 +1730,7 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(m_jstockvolume, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(m_jstockcost, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addContainerGap(11, Short.MAX_VALUE))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jLabel23, javax.swing.GroupLayout.PREFERRED_SIZE, 360, javax.swing.GroupLayout.PREFERRED_SIZE))))
@@ -1803,207 +1844,8 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
 
         jTabbedPane1.addTab(AppLocal.getIntString("label.prodstock"), jPanel2); // NOI18N
 
-        jPanel4.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
-        jPanel4.setPreferredSize(new java.awt.Dimension(0, 0));
-
-        jLabel28.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel28.setText(bundle.getString("label.prodbuttonhtml")); // NOI18N
-        jLabel28.setPreferredSize(new java.awt.Dimension(250, 30));
-
-        jButtonHTML.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
-        jButtonHTML.setText(bundle.getString("button.htmltest")); // NOI18N
-        jButtonHTML.setMargin(new java.awt.Insets(1, 1, 1, 1));
-        jButtonHTML.setMaximumSize(new java.awt.Dimension(96, 72));
-        jButtonHTML.setMinimumSize(new java.awt.Dimension(96, 72));
-        jButtonHTML.setPreferredSize(new java.awt.Dimension(96, 72));
-        jButtonHTML.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButtonHTMLActionPerformed(evt);
-            }
-        });
-
-        colourChooser.setForeground(new java.awt.Color(0, 153, 255));
-        colourChooser.setToolTipText(bundle.getString("tooltip.prodhtmldisplayColourChooser")); // NOI18N
-        colourChooser.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        colourChooser.setPreferredSize(new java.awt.Dimension(120, 30));
-        colourChooser.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                colourChooserActionPerformed(evt);
-            }
-        });
-
-        webBtnBreak.setText(bundle.getString("button.prodhtmldisplayBreak")); // NOI18N
-        webBtnBreak.setToolTipText(bundle.getString("tooltip.prodhtmldisplayBreak")); // NOI18N
-        webBtnBreak.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
-        webBtnBreak.setPreferredSize(new java.awt.Dimension(80, 35));
-        webBtnBreak.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                webBtnBreakActionPerformed(evt);
-            }
-        });
-
-        webBtnColour.setForeground(new java.awt.Color(102, 153, 255));
-        webBtnColour.setText(bundle.getString("button.prodhtmldisplayColour")); // NOI18N
-        webBtnColour.setToolTipText(bundle.getString("tooltip.prodhtmldisplayColour")); // NOI18N
-        webBtnColour.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        webBtnColour.setPreferredSize(new java.awt.Dimension(80, 35));
-        webBtnColour.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                webBtnColourActionPerformed(evt);
-            }
-        });
-
-        webBtnLarge.setText(bundle.getString("button.prodhtmldisplayLarge")); // NOI18N
-        webBtnLarge.setToolTipText(bundle.getString("tooltip.prodhtmldisplayLarge")); // NOI18N
-        webBtnLarge.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        webBtnLarge.setPreferredSize(new java.awt.Dimension(80, 35));
-        webBtnLarge.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                webBtnLargeActionPerformed(evt);
-            }
-        });
-
-        webBtnSmall.setText(bundle.getString("button.prodhtmldisplaySmall")); // NOI18N
-        webBtnSmall.setToolTipText(bundle.getString("tooltip.prodhtmldisplaySmall")); // NOI18N
-        webBtnSmall.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        webBtnSmall.setPreferredSize(new java.awt.Dimension(80, 35));
-        webBtnSmall.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                webBtnSmallActionPerformed(evt);
-            }
-        });
-
-        webBtnBold.setText(bundle.getString("button.prodhtmldisplayBold")); // NOI18N
-        webBtnBold.setToolTipText(bundle.getString("tooltip.prodhtmldisplayBold")); // NOI18N
-        webBtnBold.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        webBtnBold.setPreferredSize(new java.awt.Dimension(80, 35));
-        webBtnBold.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                webBtnBoldActionPerformed(evt);
-            }
-        });
-
-        webBtnItalic.setText(bundle.getString("button.prodhtmldisplayItalic")); // NOI18N
-        webBtnItalic.setToolTipText(bundle.getString("tooltip.prodhtmldisplayItalic")); // NOI18N
-        webBtnItalic.setFont(new java.awt.Font("Arial", 2, 12)); // NOI18N
-        webBtnItalic.setPreferredSize(new java.awt.Dimension(80, 35));
-        webBtnItalic.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                webBtnItalicActionPerformed(evt);
-            }
-        });
-
-        webBtnURL.setText(bundle.getString("button.prodhtmldisplayImage")); // NOI18N
-        webBtnURL.setToolTipText(bundle.getString("tooltip.prodhtmldisplayImage")); // NOI18N
-        webBtnURL.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
-        webBtnURL.setPreferredSize(new java.awt.Dimension(80, 35));
-        webBtnURL.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                webBtnURLActionPerformed(evt);
-            }
-        });
-
-        webBtnReset.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/reload.png"))); // NOI18N
-        webBtnReset.setText(bundle.getString("button.prodhtmldisplayReset")); // NOI18N
-        webBtnReset.setToolTipText(bundle.getString("tooltip.prodhtmldisplayReset")); // NOI18N
-        webBtnReset.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
-        webBtnReset.setPreferredSize(new java.awt.Dimension(80, 35));
-        webBtnReset.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                webBtnResetActionPerformed(evt);
-            }
-        });
-
-        jLabel21.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel21.setText(bundle.getString("label.texttip")); // NOI18N
-        jLabel21.setPreferredSize(new java.awt.Dimension(110, 30));
-
-        m_jTextTip.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        m_jTextTip.setPreferredSize(new java.awt.Dimension(400, 30));
-
-        m_jDisplay.setColumns(20);
-        m_jDisplay.setLineWrap(true);
-        m_jDisplay.setRows(4);
-        m_jDisplay.setWrapStyleWord(true);
-        m_jDisplay.setPreferredSize(new java.awt.Dimension(160, 100));
-        jScrollPane3.setViewportView(m_jDisplay);
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(m_jTextTip, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel4Layout.createSequentialGroup()
-                                    .addComponent(jLabel28, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(webBtnReset, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel4Layout.createSequentialGroup()
-                                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addComponent(jButtonHTML, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGroup(jPanel4Layout.createSequentialGroup()
-                                            .addComponent(webBtnBreak, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                            .addComponent(webBtnColour, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                            .addComponent(webBtnLarge, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                            .addComponent(webBtnSmall, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(webBtnBold, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(webBtnItalic, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(webBtnURL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGap(74, 74, 74)
-                        .addComponent(colourChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel28, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(webBtnReset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(webBtnBreak, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(webBtnColour, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(webBtnLarge, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(webBtnSmall, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(webBtnBold, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(webBtnItalic, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(webBtnURL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(colourChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(8, 8, 8)
-                .addComponent(jButtonHTML, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(30, 30, 30)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(m_jTextTip, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-        );
-
-        colourChooser.getAccessibleContext().setAccessibleName("colourChooser");
-
-        jTabbedPane1.addTab(AppLocal.getIntString("label.button"), jPanel4); // NOI18N
-
         jPanel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        jPanel3.setToolTipText(bundle.getString("tooltip.product.properties.tab")); // NOI18N
         jPanel3.setPreferredSize(new java.awt.Dimension(0, 0));
         jPanel3.setLayout(new java.awt.BorderLayout());
 
@@ -2029,6 +1871,7 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
 
         jTabbedPane1.addTab(AppLocal.getIntString("label.properties"), jPanel3); // NOI18N
 
+        jPanel6.setToolTipText(bundle.getString("tooltip.product.image.tab")); // NOI18N
         jPanel6.setPreferredSize(new java.awt.Dimension(0, 0));
 
         jLabel34.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
@@ -2044,7 +1887,7 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addComponent(jLabel34, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(165, Short.MAX_VALUE))
+                        .addContainerGap(115, Short.MAX_VALUE))
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addComponent(m_jImage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(243, 243, 243))))
@@ -2061,8 +1904,216 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
 
         jTabbedPane1.addTab(bundle.getString("label.image"), jPanel6); // NOI18N
 
+        jPanel4.setToolTipText(bundle.getString("tooltip.product.button.tab")); // NOI18N
+        jPanel4.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jPanel4.setPreferredSize(new java.awt.Dimension(0, 0));
+
+        jLabel28.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel28.setText(bundle.getString("label.prodbuttonhtml")); // NOI18N
+        jLabel28.setPreferredSize(new java.awt.Dimension(250, 30));
+
+        jButtonHTML.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jButtonHTML.setText(bundle.getString("button.htmltest")); // NOI18N
+        jButtonHTML.setMargin(new java.awt.Insets(1, 1, 1, 1));
+        jButtonHTML.setMaximumSize(new java.awt.Dimension(96, 72));
+        jButtonHTML.setMinimumSize(new java.awt.Dimension(96, 72));
+        jButtonHTML.setPreferredSize(new java.awt.Dimension(96, 72));
+        jButtonHTML.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonHTMLActionPerformed(evt);
+            }
+        });
+
+        jLabel21.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel21.setText(bundle.getString("label.texttip")); // NOI18N
+        jLabel21.setPreferredSize(new java.awt.Dimension(110, 30));
+
+        m_jTextTip.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        m_jTextTip.setPreferredSize(new java.awt.Dimension(400, 30));
+
+        m_jDisplay.setColumns(20);
+        m_jDisplay.setLineWrap(true);
+        m_jDisplay.setRows(4);
+        m_jDisplay.setWrapStyleWord(true);
+        m_jDisplay.setPreferredSize(new java.awt.Dimension(160, 100));
+        jScrollPane3.setViewportView(m_jDisplay);
+
+        jBtnBreak.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jBtnBreak.setText(bundle.getString("button.prodhtmldisplayBreak")); // NOI18N
+        jBtnBreak.setToolTipText("<html><center><h4>Inserts a Line Break<br> (a new line) for the button text");
+        jBtnBreak.setPreferredSize(new java.awt.Dimension(70, 35));
+        jBtnBreak.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnBreakActionPerformed(evt);
+            }
+        });
+
+        jBtnColour.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jBtnColour.setForeground(new java.awt.Color(0, 204, 255));
+        jBtnColour.setText(bundle.getString("button.prodhtmldisplayColour")); // NOI18N
+        jBtnColour.setToolTipText("<html><center><h4>Set the colour <br>for the button text");
+        jBtnColour.setPreferredSize(new java.awt.Dimension(70, 35));
+        jBtnColour.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnColourActionPerformed(evt);
+            }
+        });
+
+        jBtnLarge.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jBtnLarge.setText(bundle.getString("button.prodhtmldisplayLarge")); // NOI18N
+        jBtnLarge.setToolTipText("<html><center><h4>Set the button<br> text to Large");
+        jBtnLarge.setPreferredSize(new java.awt.Dimension(70, 35));
+        jBtnLarge.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnLargeActionPerformed(evt);
+            }
+        });
+
+        jBtnSmall.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jBtnSmall.setText(bundle.getString("button.prodhtmldisplaySmall")); // NOI18N
+        jBtnSmall.setToolTipText("<html><center><h4>Set the button<br>text to Small");
+        jBtnSmall.setPreferredSize(new java.awt.Dimension(70, 35));
+        jBtnSmall.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnSmallActionPerformed(evt);
+            }
+        });
+
+        jBtnBold.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jBtnBold.setText(bundle.getString("button.prodhtmldisplayBold")); // NOI18N
+        jBtnBold.setToolTipText("<html><center><h4>Set the button<br> text to Italic");
+        jBtnBold.setPreferredSize(new java.awt.Dimension(70, 35));
+        jBtnBold.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnBoldActionPerformed(evt);
+            }
+        });
+
+        jBtnItalic.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jBtnItalic.setText(bundle.getString("button.prodhtmldisplayItalic")); // NOI18N
+        jBtnItalic.setToolTipText("<html><center><h4>Set the button<br> text to Italic");
+        jBtnItalic.setPreferredSize(new java.awt.Dimension(70, 35));
+        jBtnItalic.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnItalicActionPerformed(evt);
+            }
+        });
+
+        jBtnImage.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jBtnImage.setText(bundle.getString("button.prodhtmldisplayImage")); // NOI18N
+        jBtnImage.setToolTipText("<html><center><h4>Insert image from<br>local disk or internet URL");
+        jBtnImage.setPreferredSize(new java.awt.Dimension(70, 35));
+        jBtnImage.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnImageActionPerformed(evt);
+            }
+        });
+
+        jBtnReset.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jBtnReset.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/reload.png"))); // NOI18N
+        jBtnReset.setText(bundle.getString("button.prodhtmldisplayReset")); // NOI18N
+        jBtnReset.setPreferredSize(new java.awt.Dimension(100, 35));
+        jBtnReset.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnResetActionPerformed(evt);
+            }
+        });
+
+        jBtnStyle.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jBtnStyle.setText(bundle.getString("button.prodhtmldisplayStyle")); // NOI18N
+        jBtnStyle.setToolTipText("<html><center><h4>Insert <style> tag to change<br>button background colour");
+        jBtnStyle.setPreferredSize(new java.awt.Dimension(70, 35));
+        jBtnStyle.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnStyleActionPerformed(evt);
+            }
+        });
+
+        colourChooser.setToolTipText(bundle.getString("tooltip.prodhtmldisplayColourChooser")); // NOI18N
+        colourChooser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                colourChooserActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(jLabel28, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(272, 272, 272)
+                        .addComponent(jBtnReset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(m_jTextTip, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addComponent(jBtnStyle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jBtnBreak, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel4Layout.createSequentialGroup()
+                                        .addComponent(jBtnColour, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jBtnLarge, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jBtnSmall, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(jPanel4Layout.createSequentialGroup()
+                                        .addGap(13, 13, 13)
+                                        .addComponent(colourChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(49, 49, 49)
+                                        .addComponent(jButtonHTML, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jBtnBold, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jBtnItalic, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jBtnImage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel28, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jBtnReset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jBtnSmall, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jBtnColour, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jBtnLarge, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jBtnBold, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jBtnItalic, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jBtnImage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jBtnStyle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jBtnBreak, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButtonHTML, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(colourChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(m_jTextTip, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(58, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab(AppLocal.getIntString("label.button"), jPanel4); // NOI18N
+
         add(jTabbedPane1);
-        jTabbedPane1.setBounds(10, 10, 680, 420);
+        jTabbedPane1.setBounds(10, 10, 630, 420);
     }// </editor-fold>//GEN-END:initComponents
 
     private void m_jInCatalogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jInCatalogActionPerformed
@@ -2092,46 +2143,6 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
         setCode();
     }//GEN-LAST:event_m_jRefFocusLost
 
-    private void webBtnBreakActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webBtnBreakActionPerformed
-        btn=1;
-        setDisplay(btn);
-    }//GEN-LAST:event_webBtnBreakActionPerformed
-
-    private void webBtnColourActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webBtnColourActionPerformed
-        btn=2;
-        setDisplay(btn);
-    }//GEN-LAST:event_webBtnColourActionPerformed
-
-    private void webBtnLargeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webBtnLargeActionPerformed
-        btn=3;
-        setDisplay(btn);
-    }//GEN-LAST:event_webBtnLargeActionPerformed
-
-    private void webBtnSmallActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webBtnSmallActionPerformed
-        btn=4;
-        setDisplay(btn);
-    }//GEN-LAST:event_webBtnSmallActionPerformed
-
-    private void webBtnBoldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webBtnBoldActionPerformed
-        btn=5;
-        setDisplay(btn);
-    }//GEN-LAST:event_webBtnBoldActionPerformed
-
-    private void webBtnItalicActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webBtnItalicActionPerformed
-        btn=6;
-        setDisplay(btn);
-    }//GEN-LAST:event_webBtnItalicActionPerformed
-
-    private void webBtnResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webBtnResetActionPerformed
-        btn=8;
-        setDisplay(btn);
-    }//GEN-LAST:event_webBtnResetActionPerformed
-
-    private void webBtnURLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webBtnURLActionPerformed
-        btn=7;
-        setDisplay(btn);
-    }//GEN-LAST:event_webBtnURLActionPerformed
-
     private void jBtnShowTransActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnShowTransActionPerformed
         String pId = m_oId.toString();
         if (pId != null) {
@@ -2147,26 +2158,6 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
             resetTranxTable();
         }
     }//GEN-LAST:event_jBtnShowTransActionPerformed
-
-    private void colourChooserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colourChooserActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_colourChooserActionPerformed
-
-    private void webBtnSupplierActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webBtnSupplierActionPerformed
-          
-        JDialogNewSupplier dialog = JDialogNewSupplier.getDialog(this, appView);
-        dialog.setVisible(true);
-  
-        if (dialog.getSelectedSupplier()!=null){
-            try {
-                m_SuppliersModel = new ComboBoxValModel(m_sentsuppliers.list());
-                m_jSupplier.setModel(m_SuppliersModel);
-            } catch (BasicException ex) {
-                Logger.getLogger(ProductsEditor.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        
-    }//GEN-LAST:event_webBtnSupplierActionPerformed
 
     private void m_jbtndateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jbtndateActionPerformed
 
@@ -2204,9 +2195,88 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
             "</properties>");
     }//GEN-LAST:event_jBtnXmlActionPerformed
 
+    private void jBtnSmallActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnSmallActionPerformed
+        btn=4;
+        setDisplay(btn);
+    }//GEN-LAST:event_jBtnSmallActionPerformed
+
+    private void jBtnBreakActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnBreakActionPerformed
+        btn=1;
+        setDisplay(btn);
+    }//GEN-LAST:event_jBtnBreakActionPerformed
+
+    private void jBtnColourActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnColourActionPerformed
+        btn=2;
+        setDisplay(btn);
+    }//GEN-LAST:event_jBtnColourActionPerformed
+
+    private void jBtnLargeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnLargeActionPerformed
+        btn=3;
+        setDisplay(btn);
+    }//GEN-LAST:event_jBtnLargeActionPerformed
+
+    private void jBtnBoldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnBoldActionPerformed
+        btn=5;
+        setDisplay(btn);
+    }//GEN-LAST:event_jBtnBoldActionPerformed
+
+    private void jBtnItalicActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnItalicActionPerformed
+        btn=6;
+        setDisplay(btn);
+    }//GEN-LAST:event_jBtnItalicActionPerformed
+
+    private void jBtnImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnImageActionPerformed
+        btn=7;
+        setDisplay(btn);
+    }//GEN-LAST:event_jBtnImageActionPerformed
+
+    private void jBtnResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnResetActionPerformed
+        btn=8;
+        setDisplay(btn);
+    }//GEN-LAST:event_jBtnResetActionPerformed
+
+    private void jBtnStyleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnStyleActionPerformed
+        btn=9;
+        setDisplay(btn);
+    }//GEN-LAST:event_jBtnStyleActionPerformed
+
+    private void jBtnSupplierActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnSupplierActionPerformed
+        JDialogNewSupplier dialog = JDialogNewSupplier.getDialog(this, appView);
+        dialog.setVisible(true);
+  
+        if (dialog.getSelectedSupplier()!=null){
+            try {
+                m_SuppliersModel = new ComboBoxValModel(m_sentsuppliers.list());
+                m_jSupplier.setModel(m_SuppliersModel);
+            } catch (BasicException ex) {
+                Logger.getLogger(ProductsEditor.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_jBtnSupplierActionPerformed
+
+    private void colourChooserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colourChooserActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_colourChooserActionPerformed
+
+    private void m_jCodeFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_m_jCodeFocusLost
+        if (m_jCode.getText().length()< 8) {
+            m_jCodetype.setSelectedIndex(2);
+        }
+    }//GEN-LAST:event_m_jCodeFocusLost
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private com.alee.extended.colorchooser.WebColorChooserField colourChooser;
+    private com.alee.extended.colorchooser.WebColorPicker colourChooser;
+    private javax.swing.JButton jBtnBold;
+    private javax.swing.JButton jBtnBreak;
+    private javax.swing.JButton jBtnColour;
+    private javax.swing.JButton jBtnImage;
+    private javax.swing.JButton jBtnItalic;
+    private javax.swing.JButton jBtnLarge;
+    private javax.swing.JButton jBtnReset;
     private javax.swing.JButton jBtnShowTrans;
+    private javax.swing.JButton jBtnSmall;
+    private javax.swing.JButton jBtnStyle;
+    private javax.swing.JButton jBtnSupplier;
     private javax.swing.JButton jBtnXml;
     private javax.swing.JButton jButtonHTML;
     private javax.swing.JLabel jLabel1;
@@ -2283,15 +2353,6 @@ public final class ProductsEditor extends javax.swing.JPanel implements EditorRe
     private javax.swing.JTextField m_jstockcost;
     private javax.swing.JTextField m_jstockvolume;
     private javax.swing.JTextArea txtAttributes;
-    private com.alee.laf.button.WebButton webBtnBold;
-    private com.alee.laf.button.WebButton webBtnBreak;
-    private com.alee.laf.button.WebButton webBtnColour;
-    private com.alee.laf.button.WebButton webBtnItalic;
-    private com.alee.laf.button.WebButton webBtnLarge;
-    private com.alee.laf.button.WebButton webBtnReset;
-    private com.alee.laf.button.WebButton webBtnSmall;
-    private com.alee.laf.button.WebButton webBtnSupplier;
-    private com.alee.laf.button.WebButton webBtnURL;
     private com.alee.laf.label.WebLabel webLabel1;
     // End of variables declaration//GEN-END:variables
     

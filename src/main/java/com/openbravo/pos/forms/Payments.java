@@ -52,21 +52,42 @@ public class Payments {
      * @param pTendered
      * @param rtnMsg
      */
-//    public void addPayment (String pName, Double pAmountPaid, Double pTendered, String rtnMsg, String pVoucher){
+
     public void addPayment (String pName, Double pAmountPaid, Double pTendered, String rtnMsg){    
         if (paymentPaid.containsKey(pName)){
             paymentPaid.put(pName,Double.parseDouble(paymentPaid.get(pName).toString()) + pAmountPaid);
             paymentTendered.put(pName,Double.parseDouble(paymentTendered.get(pName).toString()) + pTendered); 
+            rtnMessage.put(pName, rtnMsg);           
+        }else {    
+            paymentPaid.put(pName, pAmountPaid);
+            paymentTendered.put(pName,pTendered);
+            rtnMessage.put(pName, rtnMsg); 
+        }        
+    }
+    
+    /**
+     *
+     * @param pName
+     * @param pAmountPaid
+     * @param pTendered
+     * @param rtnMsg
+     * @param pVoucher
+     */
+    public void addPayment (String pName, Double pAmountPaid, Double pTendered, String rtnMsg, String pVoucher){
+        if (paymentPaid.containsKey(pName)){
+            paymentPaid.put(pName,Double.parseDouble(paymentPaid.get(pName).toString()) + pAmountPaid);
+            paymentTendered.put(pName,Double.parseDouble(paymentTendered.get(pName).toString()) + pTendered); 
             rtnMessage.put(pName, rtnMsg);
-//            paymentVoucher.put(pName, pVoucher);
+            paymentVoucher.put(pName, pVoucher);
             
         }else {    
             paymentPaid.put(pName, pAmountPaid);
             paymentTendered.put(pName,pTendered);
             rtnMessage.put(pName, rtnMsg);
-//            paymentVoucher.put(pName, pVoucher);            
+            paymentVoucher.put(pName, pVoucher);            
         }        
     }
+    
 
     /**
      *
@@ -103,9 +124,9 @@ public class Payments {
         return (rtnMessage.get(pName).toString());
     }
     
-//    public String getVoucher(String pName){
-//        return (paymentVoucher.get(pName).toString());    
-//    }
+    public String getVoucher(String pName){
+        return (paymentVoucher.get(pName).toString());    
+    }
 
     public String getFirstElement(){
         String rtnKey= paymentPaid.keySet().iterator().next().toString();

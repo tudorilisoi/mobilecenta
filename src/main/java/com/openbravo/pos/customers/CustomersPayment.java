@@ -161,7 +161,7 @@ public class CustomersPayment extends javax.swing.JPanel implements JPanelView, 
         txtNotes.reset();
         txtNotes.setText(customer.getNotes());
         txtMaxdebt.setText(Formats.CURRENCY.formatValue(customer.getMaxdebt()));
-        txtCurdebt.setText(Formats.CURRENCY.formatValue(customer.getCurdebt()));
+        txtCurdebt.setText(Formats.CURRENCY.formatValue(customer.getAccdebt()));
         txtCurdate.setText(Formats.DATE.formatValue(customer.getCurdate()));
         txtPrePay.setText(null);
         
@@ -302,7 +302,8 @@ public class CustomersPayment extends javax.swing.JPanel implements JPanelView, 
         jPanel2.setLayout(new java.awt.BorderLayout());
 
         btnCustomer.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/customer_sml.png"))); // NOI18N
-        btnCustomer.setToolTipText("Customer Account");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("pos_messages"); // NOI18N
+        btnCustomer.setToolTipText(bundle.getString("tooltip.customerpay.customer")); // NOI18N
         btnCustomer.setFocusPainted(false);
         btnCustomer.setFocusable(false);
         btnCustomer.setMargin(new java.awt.Insets(8, 14, 8, 14));
@@ -316,7 +317,7 @@ public class CustomersPayment extends javax.swing.JPanel implements JPanelView, 
         jPanel6.add(btnCustomer);
 
         btnSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/filesave.png"))); // NOI18N
-        btnSave.setToolTipText("Save");
+        btnSave.setToolTipText(bundle.getString("tootltip.save")); // NOI18N
         btnSave.setFocusPainted(false);
         btnSave.setFocusable(false);
         btnSave.setMargin(new java.awt.Insets(8, 14, 8, 14));
@@ -333,7 +334,7 @@ public class CustomersPayment extends javax.swing.JPanel implements JPanelView, 
         btnPay.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         btnPay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/pay.png"))); // NOI18N
         btnPay.setText(AppLocal.getIntString("button.pay")); // NOI18N
-        btnPay.setToolTipText("Pay Account");
+        btnPay.setToolTipText(bundle.getString("tooltip.customerpay.pay")); // NOI18N
         btnPay.setFocusPainted(false);
         btnPay.setFocusable(false);
         btnPay.setMargin(new java.awt.Insets(8, 14, 8, 14));
@@ -351,7 +352,6 @@ public class CustomersPayment extends javax.swing.JPanel implements JPanelView, 
         btnPrePay.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         btnPrePay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/customer_add_sml.png"))); // NOI18N
         btnPrePay.setText(AppLocal.getIntString("button.prepay")); // NOI18N
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("pos_messages"); // NOI18N
         btnPrePay.setToolTipText(bundle.getString("tooltip.prepay")); // NOI18N
         btnPrePay.setFocusPainted(false);
         btnPrePay.setFocusable(false);
@@ -476,6 +476,7 @@ public class CustomersPayment extends javax.swing.JPanel implements JPanelView, 
         txtMaxdebt.setRequestFocusEnabled(false);
 
         txtPrePay.setForeground(new java.awt.Color(0, 204, 255));
+        txtPrePay.setToolTipText(bundle.getString("tooltip.customerpay.prepay")); // NOI18N
         txtPrePay.setEnabled(false);
         txtPrePay.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         txtPrePay.setPreferredSize(new java.awt.Dimension(200, 30));
@@ -494,6 +495,7 @@ public class CustomersPayment extends javax.swing.JPanel implements JPanelView, 
         jLabel4.setText(AppLocal.getIntString("label.prepay")); // NOI18N
         jLabel4.setPreferredSize(new java.awt.Dimension(120, 30));
 
+        txtNotes.setToolTipText(bundle.getString("tooltip.customerpay.notes")); // NOI18N
         txtNotes.setEnabled(false);
         txtNotes.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         txtNotes.setPreferredSize(new java.awt.Dimension(250, 100));
@@ -623,7 +625,7 @@ public class CustomersPayment extends javax.swing.JPanel implements JPanelView, 
 
         paymentdialog.setPrintSelected(true);
         
-        if (paymentdialog.showDialog(customerext.getCurdebt(), null)) {
+        if (paymentdialog.showDialog(customerext.getAccdebt(), null)) {
 
             // Save the ticket
             TicketInfo ticket = new TicketInfo();

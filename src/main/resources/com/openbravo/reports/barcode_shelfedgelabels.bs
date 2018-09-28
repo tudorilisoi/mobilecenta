@@ -27,12 +27,12 @@ report.setSentence("SELECT " +
                         "products.ID, products.REFERENCE, " +
                         "products.CODE, products.CODETYPE, products.NAME, " +
                         "products.PRICEBUY, products.PRICESELL, " +
-                        "TC.ID AS TAXCAT, TC.NAME AS TAXCATNAME, " +
+                        "T.ID AS TAX, T.RATE + 1 AS TAXRATE, " +
                         "categories.ID AS CATEGORY, categories.NAME AS CATEGORYNAME, " +
                         "products.SUPPLIER " +
                  "FROM products LEFT OUTER JOIN categories " +
                         "ON products.CATEGORY = categories.ID " +
-                        "LEFT OUTER JOIN taxcategories TC ON products.TAXCAT = TC.ID " +
+                        "LEFT OUTER JOIN taxes T ON products.TAXCAT = T.ID " +
                  "WHERE ?(QBF_FILTER) " +
                  "ORDER BY products.NAME");
 
@@ -48,8 +48,8 @@ report.addField("CODETYPE", com.openbravo.data.loader.Datas.STRING);
 report.addField("NAME", com.openbravo.data.loader.Datas.STRING);
 report.addField("PRICEBUY", com.openbravo.data.loader.Datas.DOUBLE);
 report.addField("PRICESELL", com.openbravo.data.loader.Datas.DOUBLE);
-report.addField("TAXCAT", com.openbravo.data.loader.Datas.STRING);
-report.addField("TAXCATNAME", com.openbravo.data.loader.Datas.STRING);
+report.addField("TAX", com.openbravo.data.loader.Datas.STRING);
+report.addField("TAXRATE", com.openbravo.data.loader.Datas.DOUBLE);
 report.addField("CATEGORY", com.openbravo.data.loader.Datas.STRING);
 report.addField("CATEGORYNAME", com.openbravo.data.loader.Datas.STRING);
 report.addField("SUPPLIER", com.openbravo.data.loader.Datas.STRING);

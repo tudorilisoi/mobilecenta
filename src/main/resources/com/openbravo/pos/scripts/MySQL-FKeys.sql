@@ -19,8 +19,8 @@
 
 /*
  * Script created by Jack, uniCenta 07/08/2016 08:00:00
- *
- * Called by Transfer for v4.2 after data complete
+ * Modified 10 Sept 2017
+ * Called by Transfer for v4.4 after data complete
 */
 
 -- ----------------------------

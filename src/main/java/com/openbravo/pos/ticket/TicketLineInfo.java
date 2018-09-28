@@ -204,9 +204,13 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
         price = dPrice;
         this.tax = tax;  
         this.attributes = attributes;
+//        tax = tax;  
+//        attributes = attributes;
     
         m_sTicket = null;
         m_iLine = -1;
+        
+        
 
     }
 

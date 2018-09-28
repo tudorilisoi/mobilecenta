@@ -444,7 +444,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
     `ordertime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `displayid` int(11) DEFAULT '1',
     `auxiliary` int(11) DEFAULT NULL,
-    `completetime` timestamp DEFAULT 0,
+    `completetime` timestamp,
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT = Compact;
  

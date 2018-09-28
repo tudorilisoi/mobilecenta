@@ -45,10 +45,13 @@ ORDER BY CATEGORIES.NAME, PRODUCTS.NAME]]>
 	<field name="IMAGE" class="java.lang.Object">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
-	<field name="TAXCAT" class="java.lang.String">
+	<field name="TAX" class="java.lang.String">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<field name="CATEGORYNAME" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="TAXRATE" class="java.lang.Double">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<group name="Category" isStartNewPage="true" isReprintHeaderOnEachPage="true">
@@ -165,7 +168,7 @@ ORDER BY CATEGORIES.NAME, PRODUCTS.NAME]]>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
 					<font fontName="SansSerif" size="14" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue(new Double($F{PRICESELL}.doubleValue() * (1.0 + $P{TAXESLOGIC}.getTaxRate($F{TAXCAT}))))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($F{PRICESELL} * $F{TAXRATE})]]></textFieldExpression>
 			</textField>
 			<line direction="BottomUp">
 				<reportElement key="line-1" mode="Opaque" x="172" y="27" width="1" height="113" forecolor="#000000" backcolor="#FFFFFF" uuid="0dff974e-7df8-4b7f-b269-4c575d8f5b62"/>

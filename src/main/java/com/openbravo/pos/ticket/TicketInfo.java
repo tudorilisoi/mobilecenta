@@ -189,15 +189,15 @@ public final class TicketInfo implements SerializableRead, Externalizable {
         t.m_Customer = m_Customer;
 
         t.m_aLines = new ArrayList<>(); // JG June 2102 diamond inference
-        for (TicketLineInfo l : m_aLines) {
+        m_aLines.forEach((l) -> {
             t.m_aLines.add(l.copyTicketLine());
-        }
+        });
         t.refreshLines();
 
         t.payments = new LinkedList<>(); // JG June 2102 diamond inference
-        for (PaymentInfo p : payments) {
+        payments.forEach((p) -> {
             t.payments.add(p.copyPayment());
-        }
+        });
         t.oldTicket=oldTicket;
         // taxes are not copied, must be calculated again.
 
@@ -404,9 +404,8 @@ public final class TicketInfo implements SerializableRead, Externalizable {
 
     public double getSubTotal() {
         double sum = 0.0;
-        for (TicketLineInfo line : m_aLines) {
-            sum += line.getSubValue();
-        }
+        sum = m_aLines.stream().map((line) -> 
+                line.getSubValue()).reduce(sum, (accumulator, _item) -> accumulator + _item);
         return sum;
     }
 
@@ -419,10 +418,8 @@ public final class TicketInfo implements SerializableRead, Externalizable {
                 nsum = sum;
             }
         } else {
-            for (TicketLineInfo line : m_aLines) {
-                sum += line.getTax();
+            sum = m_aLines.stream().map((line) -> line.getTax()).reduce(sum, (accumulator, _item) -> accumulator + _item);
             }
-        }
         return sum;
     }
 
@@ -438,11 +435,7 @@ public final class TicketInfo implements SerializableRead, Externalizable {
     
     public double getTotalPaid() {
         double sum = 0.0;
-        for (PaymentInfo p : payments) {
-            if (!"debtpaid".equals(p.getName())) {
-                sum += p.getTotal();
-            }
-        }
+        sum = payments.stream().filter((p) -> (!"debtpaid".equals(p.getName()))).map((p) -> p.getTotal()).reduce(sum, (accumulator, _item) -> accumulator + _item);
         return sum;
           }
 

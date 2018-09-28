@@ -24,28 +24,29 @@ report.setReport("/com/openbravo/reports/inventorylistdetail");
 report.setResourceBundle("com/openbravo/reports/inventory_messages");
 
 report.setSentence("SELECT " +
-                    "stockcurrent.LOCATION AS LOCATIONID, " +
-                    "locations.NAME AS LOCATIONNAME, " +
-                    "products.REFERENCE, " +
-                    "products.NAME AS NAME, " +
-                    "stockcurrent.ATTRIBUTESETINSTANCE_ID, " +
-                    "attributesetinstance.DESCRIPTION, " +
-                    "products.CATEGORY, " +
-                    "categories.NAME AS CATEGORYNAME, " +
-                    "products.SUPPLIER, " +
-                    "stockcurrent.UNITS, " +
-                    "COALESCE(stocklevel.STOCKSECURITY, 0) AS STOCKSECURITY, " +
-                    "COALESCE(stocklevel.STOCKMAXIMUM, 0) AS STOCKMAXIMUM, " +
-                    "suppliers.NAME " +
-                "FROM stockcurrent " +
-                    "JOIN locations ON stockcurrent.LOCATION = locations.ID " +
-                    "JOIN products ON stockcurrent.PRODUCT = products.ID " +
-                    "JOIN categories ON products.CATEGORY = categories.ID  " +
+                "stockcurrent.LOCATION AS LOCATIONID, " +
+                "locations.NAME AS LOCATIONNAME, " +
+                "products.REFERENCE, " +
+                "products.NAME AS NAME, " +
+                "stockcurrent.ATTRIBUTESETINSTANCE_ID, " +
+                "attributesetinstance.DESCRIPTION, " +
+                "products.CATEGORY, " +
+                "categories.NAME AS CATEGORYNAME, " +
+                "products.SUPPLIER, " +
+                "stockcurrent.UNITS, " +
+                "COALESCE(stocklevel.STOCKSECURITY, 0) AS STOCKSECURITY, " +
+                "COALESCE(stocklevel.STOCKMAXIMUM, 0) AS STOCKMAXIMUM, " +
+                "suppliers.NAME " +
+            "FROM stockcurrent " +
+                "JOIN locations ON stockcurrent.LOCATION = locations.ID " +
+                "JOIN products ON stockcurrent.PRODUCT = products.ID " +
+                "JOIN categories ON products.CATEGORY = categories.ID  " +
                     "LEFT OUTER JOIN stocklevel ON stockcurrent.LOCATION = stocklevel.LOCATION AND stockcurrent.PRODUCT = stocklevel.PRODUCT " +
-		    "LEFT OUTER JOIN attributesetinstance ON stockcurrent.ATTRIBUTESETINSTANCE_ID = attributesetinstance.ID " +
+            	    "LEFT OUTER JOIN attributesetinstance ON stockcurrent.ATTRIBUTESETINSTANCE_ID = attributesetinstance.ID " +
                     "LEFT OUTER JOIN suppliers suppliers ON (suppliers.ID = products.SUPPLIER) " +
-                "WHERE ?(QBF_FILTER) " +
-                "ORDER BY categories.NAME, products.NAME, stockcurrent.LOCATION");
+            "WHERE ?(QBF_FILTER) " +
+            "GROUP BY locations.ID, products.CATEGORY, products.REFERENCE, DESCRIPTION " +
+            "ORDER BY categories.NAME, products.NAME, stockcurrent.LOCATION");
 
 report.addParameter("products.NAME");
 report.addParameter("products.CATEGORY");

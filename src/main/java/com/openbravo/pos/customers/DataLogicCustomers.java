@@ -203,9 +203,9 @@ public class DataLogicCustomers extends BeanFactoryDataSingle {
                 c.setTaxid(dr.getString(2));
                 c.setSearchkey(dr.getString(3));
                 c.setName(dr.getString(4));
-                c.setPostal(dr.getString(5));
-                c.setPhone(dr.getString(6));
-                c.setEmail(dr.getString(7));
+                c.setPcode(dr.getString(5));
+                c.setPhone1(dr.getString(6));
+                c.setCemail(dr.getString(7));
                 c.setImage(ImageUtils.readImage(dr.getBytes(8)));
 //                c.setCurDebt(dr.getDouble(9));
 
@@ -224,7 +224,7 @@ return c;
                     c.setTaxid(dr.getString(2));
                     c.setSearchkey(dr.getString(3));
                     c.setName(dr.getString(4));
-                    c.setPostal(dr.getString(5));
+                    c.setPcode(dr.getString(5));
 //                            c.setisVip(dr.getBoolean(6));
 //                            c.setDiscount(dr.getDouble(7));
 return c;
@@ -256,7 +256,7 @@ return c;
     public final SentenceList getReservationsList() {
         return new PreparedSentence(s
             , "SELECT R.ID, R.CREATED, R.DATENEW, C.CUSTOMER, customers.TAXID, customers.SEARCHKEY, COALESCE(customers.NAME, R.TITLE),  R.CHAIRS, R.ISDONE, R.DESCRIPTION " +
-              "FROM reservations R LEFT OUTER JOIN RESERVATION_customers C ON R.ID = C.ID LEFT OUTER JOIN customers ON C.CUSTOMER = customers.ID " +
+              "FROM reservations R LEFT OUTER JOIN reservation_customers C ON R.ID = C.ID LEFT OUTER JOIN customers ON C.CUSTOMER = customers.ID " +
               "WHERE R.DATENEW >= ? AND R.DATENEW < ?"
             , new SerializerWriteBasic(new Datas[] {Datas.TIMESTAMP, Datas.TIMESTAMP})
             , new SerializerReadBasic(customerdatas));             
@@ -272,11 +272,11 @@ return c;
             public int execInTransaction(Object params) throws BasicException {  
     
                 new PreparedSentence(s
-                    , "DELETE FROM RESERVATION_customers WHERE ID = ?"
+                    , "DELETE FROM reservation_customers WHERE ID = ?"
                     , new SerializerWriteBasicExt(customerdatas, new int[]{0})).exec(params);
                 if (((Object[]) params)[3] != null) {
                     new PreparedSentence(s
-                        , "INSERT INTO RESERVATION_customers (ID, CUSTOMER) VALUES (?, ?)"
+                        , "INSERT INTO reservation_customers (ID, CUSTOMER) VALUES (?, ?)"
                         , new SerializerWriteBasicExt(customerdatas, new int[]{0, 3})).exec(params);                
                 }
                 return new PreparedSentence(s
@@ -296,7 +296,7 @@ return c;
             public int execInTransaction(Object params) throws BasicException {  
     
                 new PreparedSentence(s
-                    , "DELETE FROM RESERVATION_customers WHERE ID = ?"
+                    , "DELETE FROM reservation_customers WHERE ID = ?"
                     , new SerializerWriteBasicExt(customerdatas, new int[]{0})).exec(params);
                 return new PreparedSentence(s
                     , "DELETE FROM reservations WHERE ID = ?"
@@ -320,7 +320,7 @@ return c;
 
                 if (((Object[]) params)[3] != null) {
                     new PreparedSentence(s
-                        , "INSERT INTO RESERVATION_customers (ID, CUSTOMER) VALUES (?, ?)"
+                        , "INSERT INTO reservation_customers (ID, CUSTOMER) VALUES (?, ?)"
                         , new SerializerWriteBasicExt(customerdatas, new int[]{0, 3})).exec(params);                
                 }
                 return i;

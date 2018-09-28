@@ -501,7 +501,7 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
         jPanel1.add(m_jCash, new org.netbeans.lib.awtextra.AbsoluteConstraints(515, 306, -1, -1));
 
         jLabel4.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel4.setText(AppLocal.getIntString("label.Money")); // NOI18N
+        jLabel4.setText(AppLocal.getIntString("label.cash")); // NOI18N
         jLabel4.setPreferredSize(new java.awt.Dimension(150, 30));
         jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(355, 305, -1, -1));
 
@@ -663,6 +663,17 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
         
         if (res == JOptionPane.YES_OPTION) {
 
+            try {
+                //Fire cash.closed event
+                ScriptEngine scriptEngine = ScriptFactory.getScriptEngine(ScriptFactory.BEANSHELL);
+                DataLogicSystem dlSystem = (DataLogicSystem) m_App.getBean("com.openbravo.pos.forms.DataLogicSystem");
+                String script = dlSystem.getResourceAsXML("cash.close");
+                scriptEngine.eval(script);
+            }
+            catch (Exception e) {
+                System.out.println(e);
+            }
+
             Date dNow = new Date();
 
             try {
@@ -679,7 +690,7 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
                         m_App.getProperties().getHost(), 
                         m_App.getActiveCashIndex()});
                 }
-            } catch (BasicException e) {
+            } catch (Exception e) {
                 MessageInf msg = new MessageInf(MessageInf.SGN_NOTICE, 
                         AppLocal.getIntString("message.cannotclosecash"), e);
                 msg.show(this);
@@ -725,6 +736,7 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
                         AppLocal.getIntString("label.noticketstoclose"), e);
                 msg.show(this);
             }
+
         }
     }//GEN-LAST:event_m_jCloseCashActionPerformed
 

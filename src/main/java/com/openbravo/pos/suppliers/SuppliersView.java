@@ -919,7 +919,7 @@ String rsn = AppLocal.getIntString("label.suptblHeaderCol5");
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab(AppLocal.getIntString("label.location"), jPanel2); // NOI18N
+        jTabbedPane1.addTab(AppLocal.getIntString("label.locationaddress"), jPanel2); // NOI18N
 
         jPanel4.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         jPanel4.setPreferredSize(new java.awt.Dimension(535, 0));

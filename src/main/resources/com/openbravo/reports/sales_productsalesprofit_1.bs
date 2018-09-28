@@ -52,14 +52,17 @@ report.setSentence("SELECT " +
 
 report.addParameter("receipts.DATENEW");
 report.addParameter("receipts.DATENEW");
-
 paramdates = new com.openbravo.pos.reports.JParamsDatesInterval();
-
 paramdates.setStartDate(com.openbravo.beans.DateUtils.getToday());
 // JG - 8 Jan 14 paramdates.setEndDate(com.openbravo.beans.DateUtils.getToday());
 paramdates.setEndDate(com.openbravo.beans.DateUtils.getTodayMinutes());
-
 report.addQBFFilter(paramdates);
+
+report.addParameter("products.NAME");
+report.addParameter("products.CATEGORY");
+report.addParameter("products.CODE");
+report.addParameter("stockcurrent.UNITS");
+report.addQBFFilter(new com.openbravo.pos.ticket.ProductFilter1());
 
 report.addField("CODE", com.openbravo.data.loader.Datas.STRING);
 report.addField("TICKETID", com.openbravo.data.loader.Datas.INT);

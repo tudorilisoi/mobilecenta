@@ -39,7 +39,7 @@ delete from breaks;
 delete from shift_breaks;
 delete from closedcash;
 delete from csvimport;
-delete from customers;
+-- delete from customers;
 delete FROM draweropened;
 delete FROM leaves;
 delete FROM lineremoved;
@@ -52,6 +52,6 @@ delete FROM roles;
 delete FROM stockcurrent;
 delete FROM stockdiary;
 delete FROM stocklevel;
-delete FROM suppliers;
+-- delete FROM suppliers;
 
 set foreign_key_checks = 0;

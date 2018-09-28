@@ -267,12 +267,6 @@ public class AppConfig implements AppProperties {
         dirname = dirname == null ? "./" : dirname;
              
         m_propsconfig.setProperty("db.multi", "false");
-        
-/*        m_propsconfig.setProperty("db.driverlib", new File(new File(dirname)
-            , "mysql-connector-java-6.0.6.jar").getAbsolutePath());
-        m_propsconfig.setProperty("db.engine", "MySQL");
-        m_propsconfig.setProperty("db.driver", "com.mysql.cj.jdbc.Driver");
-*/
         m_propsconfig.setProperty("db.driverlib", new File(new File(dirname)
             , "mysql-connector-java-5.1.39.jar").getAbsolutePath());
         m_propsconfig.setProperty("db.engine", "MySQL");
@@ -298,7 +292,7 @@ public class AppConfig implements AppProperties {
         m_propsconfig.setProperty("user.variant", l.getVariant());
         
 //        m_propsconfig.setProperty("swing.defaultlaf", "com.alee.laf.WebLookAndFeel");
-        m_propsconfig.setProperty("swing.defaultlaf", System.getProperty("swing.defaultlaf", "javax.swing.plaf.metal.MetalLookAndFeel"));        
+        m_propsconfig.setProperty("swing.defaultlaf", System.getProperty("swing.defaultlaf", "javax.swing.plaf.metal.MetalLookAndFeel"));                
         
         m_propsconfig.setProperty("machine.printer", "screen");
         m_propsconfig.setProperty("machine.printer.2", "Not defined");

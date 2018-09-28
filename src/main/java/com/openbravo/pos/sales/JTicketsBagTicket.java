@@ -459,7 +459,7 @@ public class JTicketsBagTicket extends JTicketsBag {
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/ok.png"))); // NOI18N
-        jButton1.setToolTipText("Enter Receipt and touch to Find by Number");
+        jButton1.setToolTipText(bundle.getString("tooltip.edit.findticket")); // NOI18N
         jButton1.setFocusPainted(false);
         jButton1.setFocusable(false);
         jButton1.setMargin(new java.awt.Insets(8, 14, 8, 14));
@@ -493,7 +493,7 @@ public class JTicketsBagTicket extends JTicketsBag {
         buttonGroup1.add(jrbSales);
         jrbSales.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jrbSales.setText(AppLocal.getIntString("label.sales")); // NOI18N
-        jrbSales.setToolTipText("Show Sales Only");
+        jrbSales.setToolTipText(bundle.getString("tooltip.edit.salesopt")); // NOI18N
         jrbSales.setFocusPainted(false);
         jrbSales.setFocusable(false);
         jrbSales.setRequestFocusEnabled(false);
@@ -503,7 +503,7 @@ public class JTicketsBagTicket extends JTicketsBag {
         jrbRefunds.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jrbRefunds.setForeground(new java.awt.Color(255, 0, 0));
         jrbRefunds.setText(AppLocal.getIntString("label.refunds")); // NOI18N
-        jrbRefunds.setToolTipText("Show Refunds Only");
+        jrbRefunds.setToolTipText(bundle.getString("tooltip.edit.refundopt")); // NOI18N
         jrbRefunds.setFocusPainted(false);
         jrbRefunds.setFocusable(false);
         jrbRefunds.setRequestFocusEnabled(false);

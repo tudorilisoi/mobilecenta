@@ -122,7 +122,6 @@
         <line><text length="18" bold="true">Sequence:</text><text>${payments.printSequence()}</text></line>
         <line><text length="18" bold="true">Start Date:</text><text>${payments.printDateStart()}</text></line>
         <line><text length="18" bold="true">End Date:</text><text>${payments.printDateEnd()}</text></line>
-        
-<!--	<line><text align="left">Cash Earnings: $scriptletutil.printCashEarnings($payments)</text></line> -->      
+         
     </ticket>
 </output>

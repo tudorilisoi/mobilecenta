@@ -29,6 +29,7 @@ report.setResourceBundle("com/openbravo/reports/sales_productsalesprofit_message
 // Amend: JG uniCenta May 2014
 // Amend: JG uniCenta July 2014
 // Amend: JG uniCenta April 2017
+// Amend: JG uniCenta September 2017
 
 report.setSentence("SELECT products.REFERENCE, " +
        "products.NAME, " +
@@ -54,14 +55,17 @@ report.setSentence("SELECT products.REFERENCE, " +
 
 report.addParameter("RECEIPTS.DATENEW");
 report.addParameter("RECEIPTS.DATENEW");
-
 paramdates = new com.openbravo.pos.reports.JParamsDatesInterval();
-
 paramdates.setStartDate(com.openbravo.beans.DateUtils.getToday());
 // JG - 8 Jan 14 paramdates.setEndDate(com.openbravo.beans.DateUtils.getToday());
 paramdates.setEndDate(com.openbravo.beans.DateUtils.getTodayMinutes());
-
 report.addQBFFilter(paramdates);
+
+report.addParameter("products.NAME");
+report.addParameter("products.CATEGORY");
+report.addParameter("products.CODE");
+report.addParameter("stockcurrent.UNITS");
+report.addQBFFilter(new com.openbravo.pos.ticket.ProductFilter1());
 
 report.addField("REFERENCE", com.openbravo.data.loader.Datas.STRING);
 report.addField("NAME", com.openbravo.data.loader.Datas.STRING);
@@ -73,6 +77,5 @@ report.addField("EXPECTED_SALES_VALUE", com.openbravo.data.loader.Datas.DOUBLE);
 report.addField("ACTUAL_SALES_VALUE", com.openbravo.data.loader.Datas.DOUBLE);
 report.addField("EXPECTED_PROFIT", com.openbravo.data.loader.Datas.DOUBLE);
 report.addField("ACTUAL_PROFIT", com.openbravo.data.loader.Datas.DOUBLE);
-
 
 report;

@@ -171,23 +171,21 @@ public class TaxesLogic {
         
         double taxtotal = 0.0;
         
-        for (TicketTaxInfo tickettax : linetaxes) {
-            taxtotal += tickettax.getTax();
-            
-        }
+        taxtotal = linetaxes.stream().map((tickettax) -> 
+                tickettax.getTax()).reduce(taxtotal, (accumulator, _item) -> accumulator + _item);
         return  taxtotal;
     }
     
     private List<TicketTaxInfo> sumLineTaxes(List<TicketTaxInfo> list1, List<TicketTaxInfo> list2) {
      
-        for (TicketTaxInfo tickettax : list2) {
+        list2.forEach((tickettax) -> {
             TicketTaxInfo i = searchTicketTax(list1, tickettax.getTaxInfo().getId());
             if (i == null) {
                 list1.add(tickettax);
             } else {
                 i.add(tickettax.getSubTotal());
             }
-        }
+        });
         return list1;
     }
     
@@ -290,7 +288,6 @@ public class TaxesLogic {
      */
     public TaxInfo getTaxInfo(String tcid, CustomerInfoExt customer) {        
         
-        
         TaxInfo defaulttax = null;
         
         for (TaxInfo tax : taxlist) {
@@ -304,7 +301,7 @@ public class TaxesLogic {
                         && customer.getTaxCustCategoryID().equals(tax.getTaxCustCategoryID())) {
                     return tax;
                 }
-                
+
                 if (tax.getTaxCustCategoryID() == null) {
                     defaulttax = tax;
                 }

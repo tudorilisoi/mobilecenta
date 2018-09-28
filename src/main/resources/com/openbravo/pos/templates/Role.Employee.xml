@@ -48,6 +48,8 @@
     <class name="payment.debt"/>
     <class name="sales.PrintKitchen"/>
 
+<!-- EPM -->
+    <class name="com.openbravo.pos.epm.JPanelEmployeePresence" />
 
 <!-- Standard button scripts -->
     <class name="button.totaldiscount"/>

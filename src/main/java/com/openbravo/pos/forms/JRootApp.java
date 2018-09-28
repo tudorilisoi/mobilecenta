@@ -80,7 +80,7 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
 
     private AppProperties m_props;
     private ApiServer server;
-    private Session session;     
+    private Session session;
     private DataLogicSystem m_dlSystem;
     
     private Properties m_propsdb = null;
@@ -195,6 +195,7 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
         initComponents ();            
         jScrollPane1.getVerticalScrollBar().setPreferredSize(new Dimension(30, 30));
         serverMonitor.setVisible(false);
+        webMemoryBar1.setShowMaximumMemory ( true );
     }
     private DSPortAdapter m_oneWireAdapter;
     private DeviceMonitor m_oneWireMonitor;
@@ -385,7 +386,7 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
 
         m_propsdb = m_dlSystem.getResourceAsProperties(m_props.getHost() + "/properties");
 
-        System.out.println(m_propsdb);
+//        System.out.println(m_propsdb);
 
         try {
             String sActiveCashIndex = m_propsdb.getProperty("activecash");
@@ -986,7 +987,6 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
 
         jPanel5.setPreferredSize(new java.awt.Dimension(300, 400));
 
-        m_jLogonName.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         m_jLogonName.setLayout(new java.awt.BorderLayout());
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 5, 0, 5));
@@ -1086,8 +1086,12 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
         m_jHost.setText("*Hostname");
         panelTask.add(m_jHost);
 
+        webMemoryBar1.setBackground(new java.awt.Color(153, 153, 153));
+        webMemoryBar1.setText("");
         webMemoryBar1.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
         webMemoryBar1.setPreferredSize(new java.awt.Dimension(150, 30));
+        webMemoryBar1.setUsedBorderColor(new java.awt.Color(0, 204, 204));
+        webMemoryBar1.setUsedFillColor(new java.awt.Color(0, 204, 255));
         panelTask.add(webMemoryBar1);
 
         serverMonitor.setToolTipText("");

@@ -30,7 +30,7 @@ public class AppLocal {
 
     public static final String APP_NAME = "uniCenta oPOS";
     public static final String APP_ID = "unicentaopos";
-    public static final String APP_VERSION = "4.3.2";
+    public static final String APP_VERSION = "4.4.2";
 
     private static final LocaleResources m_resources;
     

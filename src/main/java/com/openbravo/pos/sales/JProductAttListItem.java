@@ -76,7 +76,11 @@ public class JProductAttListItem extends javax.swing.JPanel implements JProductA
      */
     @Override
     public String getValue() {
-        return (String) jValues.getSelectedItem();
+        if (jValues.getSelectedItem() == null) {
+            return (String) jValues.getEditor().getItem();
+        } else {
+            return (String) jValues.getSelectedItem();        
+        }
     }
 
     /**

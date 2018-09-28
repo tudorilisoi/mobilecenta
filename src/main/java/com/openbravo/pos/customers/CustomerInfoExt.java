@@ -37,20 +37,20 @@ public class CustomerInfoExt extends CustomerInfo {
     protected Double maxdebt;
     protected String address;
     protected String address2;
-//    protected String postal;
+    protected String pcode;
     protected String city;
     protected String region;
     protected String country;    
     protected String firstname;
     protected String lastname;
-//    protected String email;
-//    protected String phone;
+    protected String cemail;
+    protected String phone1;
     protected String phone2;
     protected String fax;
     protected String notes;
     protected boolean visible;
     protected Date curdate;
-//    protected Double curdebt;
+    protected Double accdebt;
     protected BufferedImage m_Image;
     protected boolean isvip;
     protected Double discount;
@@ -166,14 +166,14 @@ public class CustomerInfoExt extends CustomerInfo {
      *
      * @return customer's current value of account
      */
-    public Double getCurdebt() {
-        return curdebt;
+    public Double getAccdebt() {
+        return accdebt;
     }
-    public void setCurdebt(Double curdebt) {
-        this.curdebt = curdebt;
+    public void setAccdebt(Double accdebt) {
+        this.accdebt = accdebt;
     }
     public String printCurDebt() {       
-        return Formats.CURRENCY.formatValue(RoundUtils.getValue(getCurdebt()));
+        return Formats.CURRENCY.formatValue(RoundUtils.getValue(getAccdebt()));
     }
     
     /**
@@ -195,16 +195,16 @@ public class CustomerInfoExt extends CustomerInfo {
      */
     public void updateCurDebt(Double amount, Date d) {
         
-        curdebt = curdebt == null ? amount : curdebt + amount;
+        accdebt = accdebt == null ? amount : accdebt + amount;
         curdate =  (new Date());
 
-        if (RoundUtils.compare(curdebt, 0.0) > 0) {
+        if (RoundUtils.compare(accdebt, 0.0) > 0) {
             if (curdate == null) {                
                 // new date
                 curdate = d;
             }
-        } else if (RoundUtils.compare(curdebt, 0.0) == 0) {       
-            curdebt = null;
+        } else if (RoundUtils.compare(accdebt, 0.0) == 0) {       
+            accdebt = null;
             curdate = null;
         } else { // < 0
 //            curdate = null;
@@ -245,20 +245,20 @@ public class CustomerInfoExt extends CustomerInfo {
 
     /**
      *
-     * @return customer's email string
+     * @return customer's cemail string
      */
     @Override
-    public String getEmail() {
-        return email;
+    public String getCemail() {
+        return cemail;
     }
 
     /**
      *
-     * @param email
+     * @param cemail
      */
     @Override
-    public void setEmail(String email) {
-        this.email = email;
+    public void setCemail(String cemail) {
+        this.cemail = cemail;
     }
 
     /**
@@ -266,15 +266,15 @@ public class CustomerInfoExt extends CustomerInfo {
      * @return customer's Primary telephone string
      */
     @Override
-    public String getPhone() {
-        return phone;
+    public String getPhone1() {
+        return phone1;
     }
     @Override
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setPhone1(String phone1) {
+        this.phone1 = phone1;
     }
     public String printPhone() {       
-        return Formats.STRING.formatValue(phone);
+        return Formats.STRING.formatValue(phone1);
     } 
 
     /**
@@ -339,18 +339,18 @@ public class CustomerInfoExt extends CustomerInfo {
 
     /**
      *
-     * @return customer's postal/zip code string
+     * @return customer's pcode/zip code string
      */
     @Override
-    public String getPostal() {
-        return postal;
+    public String getPcode() {
+        return pcode;
     }
     @Override
-    public void setPostal(String postal) {
-        this.postal = postal;
+    public void setPcode(String pcode) {
+        this.pcode = pcode;
     }
     public String printPostal() {       
-        return Formats.STRING.formatValue(postal);
+        return Formats.STRING.formatValue(pcode);
     }     
 
     /**

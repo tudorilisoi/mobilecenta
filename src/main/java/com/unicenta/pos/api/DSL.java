@@ -322,7 +322,7 @@ public class DSL extends DataLogicSystem {
     }
 
     public final List listProducts() throws BasicException {
-        String[] columnNames = "P.ID, NAME, P.CATEGORY, TAXCAT, ISKITCHEN, PRICESELL, IMAGE".split(", ");
+        String[] columnNames = "P.ID, NAME, P.CATEGORY, TAXCAT, PRICESELL, IMAGE".split(", ");
         String sql = "SELECT "
                 + String.join(", ", columnNames)
                 + " FROM products P, products_cat O WHERE P.ID = O.PRODUCT";

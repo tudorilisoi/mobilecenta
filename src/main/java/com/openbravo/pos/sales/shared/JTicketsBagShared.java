@@ -27,7 +27,6 @@ import com.openbravo.pos.forms.JRootApp;
 import com.openbravo.pos.forms.DataLogicSales;
 import com.openbravo.pos.forms.DataLogicSystem;
 import com.openbravo.pos.sales.DataLogicReceipts;
-import com.openbravo.pos.sales.JPanelTicket;
 import com.openbravo.pos.sales.JTicketsBag;
 import com.openbravo.pos.sales.ReprintTicketInfo;
 import com.openbravo.pos.sales.SharedTicketInfo;
@@ -66,7 +65,7 @@ public class JTicketsBagShared extends JTicketsBag {
 
         initComponents();
 
-        m_jReprintTickets.setVisible(false);        
+        m_jReprintTickets.setVisible(false);
         
     }
     

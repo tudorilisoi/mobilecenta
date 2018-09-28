@@ -8,25 +8,8 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="TAXESLOGIC" class="com.openbravo.pos.sales.TaxesLogic" isForPrompting="false"/>
 	<queryString>
-		<![CDATA[SELECT 
-    PRODUCTS.ID, 
-    PRODUCTS.REFERENCE, 
-    PRODUCTS.CODE, 
-    PRODUCTS.NAME, 
-    PRODUCTS.PRICEBUY, 
-    PRODUCTS.PRICESELL, 
-    TC.ID AS TAXCAT, 
-    TC.NAME AS TAXCATNAME, 
-    CATEGORIES.ID AS CATEGORY, 
-    CATEGORIES.NAME AS CATEGORYNAME
-FROM PRODUCTS LEFT OUTER JOIN CATEGORIES 
-        ON PRODUCTS.CATEGORY = CATEGORIES.ID 
-    LEFT OUTER JOIN TAXCATEGORIES TC 
-        ON PRODUCTS.TAXCAT = TC.ID
-WHERE ?(QBF_FILTER)
-ORDER BY CATEGORIES.NAME, PRODUCTS.NAME]]>
+		<![CDATA[]]>
 	</queryString>
 	<field name="CATEGORY" class="java.lang.String"/>
 	<field name="CATEGORYNAME" class="java.lang.String"/>
@@ -35,8 +18,8 @@ ORDER BY CATEGORIES.NAME, PRODUCTS.NAME]]>
 	<field name="UNITS" class="java.lang.Double"/>
 	<field name="PRICEBUY" class="java.lang.Double"/>
 	<field name="PRICESELL" class="java.lang.Double"/>
-	<field name="TAXCAT" class="java.lang.String"/>
-	<field name="TAXCATNAME" class="java.lang.String"/>
+	<field name="TAX" class="java.lang.String"/>
+	<field name="TAXRATE" class="java.lang.Double"/>
 	<group name="Categories">
 		<groupExpression><![CDATA[$F{CATEGORY}]]></groupExpression>
 		<groupHeader>
@@ -245,7 +228,7 @@ ORDER BY CATEGORIES.NAME, PRODUCTS.NAME]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
 				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
-					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[com.openbravo.format.Formats.DOUBLE.formatValue($F{UNITS})]]></textFieldExpression>
@@ -290,8 +273,7 @@ ORDER BY CATEGORIES.NAME, PRODUCTS.NAME]]>
 					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue(
-new Double($F{PRICESELL}.doubleValue() * (1.0 + $P{TAXESLOGIC}.getTaxRate($F{TAXCAT}))))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($F{PRICESELL} * $F{TAXRATE})]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

@@ -401,7 +401,7 @@ public final class CustomersView extends javax.swing.JPanel implements EditorRec
         txtFax.setText(Formats.STRING.formatValue(customer[18]));
         m_jNotes.setText((String) customer[19]);
         m_jVisible.setSelected(((Boolean) customer[20]));
-        txtCurdate.setText(Formats.DATE.formatValue(customer[21]));        
+        txtCurdate.setText(Formats.DATE.formatValue(customer[21])); 
         txtCurdebt.setText(Formats.CURRENCY.formatValue(customer[22]));    
         m_jImage.setImage((BufferedImage) customer[23]);
         m_jVip.setSelected(((Boolean) customer[24]));        
@@ -938,6 +938,8 @@ public void resetTranxTable() {
 
         jTabbedPane1.addTab(AppLocal.getIntString("label.contact"), jPanel1); // NOI18N
 
+        jPanel2.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+
         jLabel13.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel13.setText(AppLocal.getIntString("label.address")); // NOI18N
         jLabel13.setPreferredSize(new java.awt.Dimension(150, 30));
@@ -1033,7 +1035,7 @@ public void resetTranxTable() {
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab(AppLocal.getIntString("label.location"), jPanel2); // NOI18N
+        jTabbedPane1.addTab(AppLocal.getIntString("label.locationaddress"), jPanel2); // NOI18N
 
         jPanel4.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         jPanel4.setPreferredSize(new java.awt.Dimension(535, 0));
@@ -1130,6 +1132,8 @@ public void resetTranxTable() {
         );
 
         jTabbedPane1.addTab(bundle.getString("label.photo"), jPanel5); // NOI18N
+
+        jPanel3.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
 
         m_jNotes.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         m_jNotes.setPreferredSize(new java.awt.Dimension(0, 0));

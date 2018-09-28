@@ -1,7 +1,7 @@
 package com.openbravo.pos.payment
 
-import uk.co.pos_apps.PosApps
-import uk.co.pos_apps.payment.dejavoo.DejavooProcessor
+import uk.co.pos_apps.PosApps;
+import uk.co.pos_apps.payment.dejavoo.DejavooProcessor;
 
 class PaymentGatewayDejavoo :PaymentGateway {
 
@@ -33,6 +33,6 @@ class PaymentGatewayDejavoo :PaymentGateway {
         else if (DejavooProcessor.INSTANCE.response.success == "1"){
             payinfo?.paymentError("Transaction Error ... Please try again", DejavooProcessor.INSTANCE.response.message)
         }
-    }
 
+    }
 }

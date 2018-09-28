@@ -4,11 +4,10 @@
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="11"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="TAXESLOGIC" class="com.openbravo.pos.sales.TaxesLogic" isForPrompting="false"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -19,8 +18,8 @@
 	<field name="NAME" class="java.lang.String"/>
 	<field name="PRICEBUY" class="java.lang.Double"/>
 	<field name="PRICESELL" class="java.lang.Double"/>
-	<field name="TAXCAT" class="java.lang.String"/>
-	<field name="TAXCATNAME" class="java.lang.String"/>
+	<field name="TAX" class="java.lang.String"/>
+	<field name="TAXRATE" class="java.lang.Double"/>
 	<field name="CATEGORY" class="java.lang.String"/>
 	<field name="CATEGORYNAME" class="java.lang.String"/>
 	<background>
@@ -122,7 +121,7 @@
 				<textElement>
 					<font fontName="SansSerif"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{TAXCATNAME}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{label.tax}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-5" x="14" y="121" width="150" height="46" uuid="532590d5-70b1-467b-af08-d8484185ca6c"/>
@@ -135,8 +134,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="SansSerif" size="32" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue(
-new Double($F{PRICESELL}.doubleValue() * (1.0 + $P{TAXESLOGIC}.getTaxRate($F{TAXCAT}))))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($F{PRICESELL} * $F{TAXRATE})]]></textFieldExpression>
 			</textField>
 			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle">
 				<reportElement key="barcode-1" x="13" y="167" width="150" height="46" uuid="d9809aed-66b1-4e81-a15f-22233dd9f695"/>
@@ -185,8 +183,7 @@ new Double($F{PRICESELL}.doubleValue() * (1.0 + $P{TAXESLOGIC}.getTaxRate($F{TAX
 				<textElement textAlignment="Right">
 					<font fontName="SansSerif"/>
 				</textElement>
-				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue(
-new Double($F{PRICESELL}.doubleValue() * $P{TAXESLOGIC}.getTaxRate($F{TAXCAT})))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue(($F{PRICESELL} * $F{TAXRATE}) - $F{PRICESELL})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="14" y="85" width="77" height="18" uuid="942bf3ae-6b02-4b16-ad31-b5bc0afbc28d"/>

@@ -26,11 +26,11 @@ report.setResourceBundle("com/openbravo/reports/sales_categorysales_messages");
 // JG - 8 Jan 14 Convert lowercasednname to UPPERCASE for compatability
 
 report.setSentence("SELECT categories.ID, categories.NAME, " +
-"SUM(ticketlines.UNITS) AS QTY, " +
-"SUM(ticketlines.PRICE * ticketlines.UNITS) AS CATPRICE, " +
-"SUM((products.PRICESELL * ticketlines.UNITS)-((products.ISVPRICE ) * (ticketlines.PRICE * ticketlines.UNITS))) AS DISC, " +
-"SUM((ticketlines.PRICE * taxes.RATE)* ticketlines.UNITS) AS CATTAX, " +
-"SUM((ticketlines.PRICE * ticketlines.UNITS) + ((ticketlines.PRICE * taxes.RATE)* ticketlines.UNITS)) AS CATTOTAL " +
+    "SUM(ticketlines.UNITS) AS QTY, " +
+    "SUM(ticketlines.PRICE * ticketlines.UNITS) AS CATPRICE, " +
+    "SUM((products.PRICESELL * ticketlines.UNITS)-((products.ISVPRICE ) * (ticketlines.PRICE * ticketlines.UNITS))) AS DISC, " +
+    "SUM((ticketlines.PRICE * taxes.RATE)* ticketlines.UNITS) AS CATTAX, " +
+    "SUM((ticketlines.PRICE * ticketlines.UNITS) + ((ticketlines.PRICE * taxes.RATE)* ticketlines.UNITS)) AS CATTOTAL " +
 "FROM (tickets INNER JOIN receipts ON tickets.ID = receipts.ID) INNER JOIN ((categories INNER JOIN products ON categories.ID = products.CATEGORY) INNER JOIN (taxes INNER JOIN ticketlines ON taxes.ID = ticketlines.TAXID) ON products.ID = ticketlines.PRODUCT) ON tickets.ID = ticketlines.TICKET " +
 "WHERE ?(QBF_FILTER) " +
 "GROUP BY categories.ID, categories.NAME " +

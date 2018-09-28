@@ -19,8 +19,6 @@
 
 package com.openbravo.pos.customers;
 
-import com.openbravo.format.Formats;
-import com.openbravo.pos.util.RoundUtils;
 import com.openbravo.pos.util.StringUtils;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
@@ -103,10 +101,10 @@ public class CustomerInfo implements Serializable {
      *
      * @return postal/zip code string
      */
-    public String getPostal() {
+    public String getPcode() {
         return postal;
     }   
-    public void setPostal(String postal) {
+    public void setPcode(String postal) {
         this.postal = postal;
     }
     
@@ -114,10 +112,10 @@ public class CustomerInfo implements Serializable {
      *
      * @return Primary Telephone string
      */
-    public String getPhone() {
+    public String getPhone1() {
         return phone;
     }
-    public void setPhone(String phone) {
+    public void setPhone1(String phone) {
         this.phone = phone;
     }
 
@@ -125,10 +123,10 @@ public class CustomerInfo implements Serializable {
      *
      * @return email string
      */
-    public String getEmail() {
+    public String getCemail() {
         return email;
     }
-    public void setEmail(String email) {
+    public void setCemail(String email) {
         this.email = email;
     }
 

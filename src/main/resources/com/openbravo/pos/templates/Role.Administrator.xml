@@ -183,9 +183,9 @@
     <class name="com.openbravo.pos.epm.BreaksPanel" /> 
     <class name="com.openbravo.pos.epm.LeavesPanel" />
     <class name="com.openbravo.pos.epm.JPanelEmployeePresence" />
-        <class name="/com/openbravo/reports/dailypresencereport.bs" />
-        <class name="/com/openbravo/reports/dailyschedulereport.bs" />
-        <class name="/com/openbravo/reports/performancereport.bs" />
+        <class name="/com/openbravo/reports/epm_dailypresence.bs" />
+        <class name="/com/openbravo/reports/epm_dailyschedule.bs" />
+        <class name="/com/openbravo/reports/epm_performancereport.bs" />
     
 <!--    <class name="com.openbravo.possync.ProductsSyncCreate"/> -->
 <!--    <class name="com.openbravo.possync.OrdersSyncCreate"/> -->

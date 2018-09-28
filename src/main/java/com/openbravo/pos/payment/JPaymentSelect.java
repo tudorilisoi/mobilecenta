@@ -652,6 +652,8 @@ public abstract class JPaymentSelect extends javax.swing.JDialog
         m_jButtonOK.setRequestFocusEnabled(false);
         m_jButtonOK.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
+                m_jButtonOK.setEnabled(false);
+                m_jButtonCancel.setEnabled(false);
                 m_jButtonOKActionPerformed(evt);
             }
         });
@@ -733,7 +735,8 @@ public abstract class JPaymentSelect extends javax.swing.JDialog
 
             @Override
             public void done() {
-            
+                m_jButtonOK.setEnabled(true);
+                m_jButtonCancel.setEnabled(true);
                 if (returnPayment != null) {
                     m_aPaymentInfo.add(returnPayment);
                     accepted = true;
@@ -743,16 +746,6 @@ public abstract class JPaymentSelect extends javax.swing.JDialog
         };
  
         worker.execute();
-
-/* This is original minimal way from years ago and using to try and eliminate the dobling up of Credit card payment values
-PaymentInfo returnPayment = ((JPaymentInterface) m_jTabPayment.getSelectedComponent()).executePayment();
-    if (returnPayment != null) {
-            m_aPaymentInfo.add(returnPayment);
-            accepted = true;
-            dispose();
-        }           
-*/
- 
     }//GEN-LAST:event_m_jButtonOKActionPerformed
 
     private void m_jButtonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jButtonCancelActionPerformed

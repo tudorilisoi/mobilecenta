@@ -129,7 +129,7 @@ CREATE TABLE IF NOT EXISTS `csvimport` (
 	`previoussell` double default NULL,
 	`category` varchar(255) default NULL,
 	`tax` varchar(255) default NULL,
-	`searchkey` varchar(255) default NULL
+	`searchkey` varchar(255) default NULL,
 	PRIMARY KEY  ( `id` )
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT = Compact;
 
@@ -226,7 +226,7 @@ CREATE TABLE IF NOT EXISTS `moorers` (
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT = Compact;
 
 /* Header line. Object: orders. Script date: 01/01/2017 00:00:01. */
-CREATE TABLE `orders` (
+CREATE TABLE IF NOT EXISTS `orders` (
     `id` int(11) NOT NULL,
     `orderid` varchar(50) DEFAULT NULL,
     `qty` int(11) DEFAULT '1',
@@ -237,7 +237,7 @@ CREATE TABLE `orders` (
     `ordertime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `displayid` int(11) DEFAULT '1',
     `auxiliary` int(11) DEFAULT NULL,
-    `completetime` timestamp DEFAULT 0,
+    `completetime` timestamp,
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT = Compact;
 

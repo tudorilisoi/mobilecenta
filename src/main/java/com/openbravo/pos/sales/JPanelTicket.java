@@ -31,7 +31,6 @@ import com.openbravo.data.gui.ComboBoxValModel;
 import com.openbravo.data.gui.ListKeyed;
 import com.openbravo.data.gui.MessageInf;
 import com.openbravo.data.loader.SentenceList;
-import com.openbravo.format.Formats;
 import com.openbravo.pos.customers.CustomerInfoExt;
 import com.openbravo.pos.customers.CustomerInfoGlobal;
 import com.openbravo.pos.customers.DataLogicCustomers;
@@ -65,6 +64,8 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Toolkit;
+import java.awt.Window;
+import static java.awt.Window.getWindows;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -78,6 +79,7 @@ import javax.print.PrintService;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -237,11 +239,12 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         senttaxcategories = dlSales.getTaxCategoriesList();       
         taxcategoriesmodel = new ComboBoxValModel();
         
+/*
         ComboBoxValModel m_ReasonModel = new ComboBoxValModel();
         m_ReasonModel.add(AppLocal.getIntString("cboption.find"));
         m_ReasonModel.add(AppLocal.getIntString("cboption.create"));              
-        webCBCustomer.setModel(m_ReasonModel);         
-        
+        jCBCustomer.setModel(m_ReasonModel);         
+*/        
         stateToZero();  
         
         m_oTicket = null;
@@ -261,29 +264,40 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
     }
 
     private class logout extends AbstractAction {
+
         public logout() {
         }
         @Override
         public void actionPerformed(ActionEvent ae){
-
+            closeAllDialogs();
             switch (m_App.getProperties().getProperty("machine.ticketsbag")){
             case "restaurant":                   
+                if ("false".equals(m_App.getProperties().getProperty("till.autoLogoffrestaurant")))  {
+                    deactivate();
+                    ((JRootApp)m_App).closeAppView();
+                    break;
+                }     
 
-            if ("false".equals(m_App.getProperties().getProperty("till.autoLogoffrestaurant")))  {
+                deactivate();
+                setActiveTicket(null, null);      
+                break;                
+
+            default:
                 deactivate();
                 ((JRootApp)m_App).closeAppView();
-                break;
-            }     
-
-            deactivate();
-            setActiveTicket(null, null);      
-                break;                
-            default:
-            deactivate();
-            ((JRootApp)m_App).closeAppView();
             }
         }
     }
+    
+    private void closeAllDialogs() {
+        Window[] windows = getWindows();
+
+        for (Window window : windows) {
+            if (window instanceof JDialog) {
+                window.dispose();
+            }
+        }
+    }    
 
     private void saveCurrentTicket() {
         String currentTicket =(String)m_oTicketExt;
@@ -363,6 +377,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         m_jNumberKeys.setEqualsEnabled(m_App.getAppUserView().getUser().hasPermission("sales.Total"));
         m_jbtnconfig.setPermissions(m_App.getAppUserView().getUser());  
                
+        m_ticketsbag.setEnabled(false);
         m_ticketsbag.activate();  
         
         CustomerInfoGlobal customerInfoGlobal = CustomerInfoGlobal.getInstance();
@@ -495,10 +510,10 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
                 m_jList.setVisible(false);
             }
             
-            for (TicketLineInfo line : m_oTicket.getLines()) {
+            m_oTicket.getLines().forEach((line) -> {
                 line.setTaxInfo(taxeslogic.getTaxInfo(line
-                    .getProductTaxCategoryID(), m_oTicket.getCustomer()));
-            }  
+                        .getProductTaxCategoryID(), m_oTicket.getCustomer()));
+            });  
         
             m_jTicketId.setText(m_oTicket.getName(m_oTicketExt));
             m_ticketlines.clearTicketLines();
@@ -542,9 +557,9 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
     }
     
        
-//    private void printPartialTotals(){
-    public void printPartialTotals(){    
-               
+    private void printPartialTotals(){
+//    public void printPartialTotals(){    
+            
         if (m_oTicket.getLinesCount() == 0) {
             m_jSubtotalEuros.setText(null);
             m_jTaxesEuros.setText(null);
@@ -553,9 +568,8 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             m_jSubtotalEuros.setText(m_oTicket.printSubTotal());
             m_jTaxesEuros.setText(m_oTicket.printTax());
             m_jTotalEuros.setText(m_oTicket.printTotal());
-            repaint();
+//            repaint();
         }
-    
         repaint();
     }
     
@@ -567,7 +581,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             m_oTicket.setLine(index, oLine);
             m_ticketlines.setTicketLine(index, oLine);
             m_ticketlines.setSelectedIndex(index);
-         
+
             countArticles();
             visorTicketLine(oLine);
             printPartialTotals();   
@@ -607,9 +621,13 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             }
             
         } else {        
-            TaxInfo tax = taxeslogic.getTaxInfo(oProduct.getTaxCategoryID(), m_oTicket.getCustomer());
+// get the line product tax
+            TaxInfo tax = taxeslogic.getTaxInfo(oProduct.getTaxCategoryID(), m_oTicket.getCustomer());  
+
             addTicketLine(new TicketLineInfo(oProduct, dMul, dPrice, tax,
-                (java.util.Properties) (oProduct.getProperties().clone())));           
+                (java.util.Properties) (oProduct.getProperties().clone()))); 
+            refreshTicket();
+           
         }
 
         j_btnRemotePrt.setEnabled(true);
@@ -665,7 +683,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
                     msg.show(this);
                 }          
             }
-
+            
             visorTicketLine(oLine);
             printPartialTotals();   
             stateToZero();  
@@ -881,7 +899,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             incProduct(prod);
         } else if (m_iNumberStatusInput == NUMBERVALID && m_iNumberStatusPor == NUMBERZERO) {          
             incProduct(getInputValue(), prod);
-        } else if (prod.isVprice()){           
+        } else if (prod.isVprice()) {           
             addTicketLine(prod, getPorValue(), getInputValue()) ;                
         } else {
             Toolkit.getDefaultToolkit().beep();
@@ -1723,14 +1741,14 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             MessageInf msg = new MessageInf(MessageInf.SGN_WARNING, AppLocal.getIntString("message.cannotexecute"));
             msg.show(this);
         } else {
-            try {
-// calculate taxes
-            taxeslogic.calculateTaxes(m_oTicket);
+//            try {
+// JG 5 Jul 17 calculate taxes disabled as causing incorrect tax recalc
+//            taxeslogic.calculateTaxes(m_oTicket);
             printTicket(resource, m_oTicket, m_oTicketExt);
-            } catch (TaxesException e) {
-                MessageInf msg = new MessageInf(MessageInf.SGN_WARNING, AppLocal.getIntString("message.cannotcalculatetaxes"));
-                msg.show(this);
-            }
+//            } catch (TaxesException e) {
+//                MessageInf msg = new MessageInf(MessageInf.SGN_WARNING, AppLocal.getIntString("message.cannotcalculatetaxes"));
+//                msg.show(this);
+//            }
         }
     
          Notify(AppLocal.getIntString("notify.printed"));                                    
@@ -1975,7 +1993,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
                     
                 String lName = (m_App.getProperties().getProperty("machine.department"));
                 lName = "'" + lName + "'";
-                System.out.println(lName);
+//                System.out.println(lName);
                     ProductStock checkProduct;
                     String location = m_App.getInventoryLocation();
                     checkProduct = dlSales.getProductStockState(pId, location);
@@ -2151,8 +2169,8 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         m_jButtons = new javax.swing.JPanel();
         btnSplit = new javax.swing.JButton();
         btnReprint1 = new javax.swing.JButton();
-        webCBCustomer = new com.alee.laf.combobox.WebComboBox();
         j_btnRemotePrt = new javax.swing.JButton();
+        jBtnCustomer = new javax.swing.JButton();
         m_jPanelScripts = new javax.swing.JPanel();
         m_jButtonsExt = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
@@ -2276,33 +2294,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             }
         });
 
-        webCBCustomer.setBackground(new java.awt.Color(237, 237, 237));
-        webCBCustomer.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Find", "Create" }));
-        webCBCustomer.setToolTipText(AppLocal.getIntString("tooltip.salescustomer")); // NOI18N
-        webCBCustomer.setExpandIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/customer.png")));
-        webCBCustomer.setFocusable(false);
-        webCBCustomer.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        webCBCustomer.setLightWeightPopupEnabled(false);
-        webCBCustomer.setPreferredSize(new java.awt.Dimension(80, 45));
-        webCBCustomer.setRound(0);
-        webCBCustomer.setShadeWidth(1);
-        webCBCustomer.setWebColoredBackground(false);
-        webCBCustomer.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                webCBCustomerMouseReleased(evt);
-            }
-        });
-        webCBCustomer.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                webCBCustomerActionPerformed(evt);
-            }
-        });
-        webCBCustomer.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                webCBCustomerKeyReleased(evt);
-            }
-        });
-
         j_btnRemotePrt.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         j_btnRemotePrt.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/remote_print.png"))); // NOI18N
         j_btnRemotePrt.setText(bundle.getString("button.sendorder")); // NOI18N
@@ -2317,13 +2308,23 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             }
         });
 
+        jBtnCustomer.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jBtnCustomer.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/customer.png"))); // NOI18N
+        jBtnCustomer.setToolTipText(bundle.getString("tooltip.salescustomer")); // NOI18N
+        jBtnCustomer.setPreferredSize(new java.awt.Dimension(80, 45));
+        jBtnCustomer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnCustomerActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout m_jButtonsLayout = new javax.swing.GroupLayout(m_jButtons);
         m_jButtons.setLayout(m_jButtonsLayout);
         m_jButtonsLayout.setHorizontalGroup(
             m_jButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(m_jButtonsLayout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addComponent(webCBCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addComponent(jBtnCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnSplit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2340,8 +2341,8 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
                     .addComponent(j_btnRemotePrt, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnSplit, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnReprint1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(webCBCustomer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                    .addComponent(jBtnCustomer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         m_jPanelBag.add(m_jButtons);
@@ -2905,102 +2906,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
 
     }//GEN-LAST:event_btnSplitActionPerformed
 
-    private void webCBCustomerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webCBCustomerActionPerformed
-        if (listener  != null) { 
-            listener.stop(); 
-        }
-       
-        if(webCBCustomer.getSelectedIndex() == 0){
-
-            JCustomerFinder finder = JCustomerFinder.getCustomerFinder(this, dlCustomers);
-
-            if (m_oTicket.getCustomerId() == null) {
-                finder.setAppView(m_App);
-                finder.search(m_oTicket.getCustomer());
-                finder.executeSearch();
-                finder.setVisible(true);
-
-                if (finder.getSelectedCustomer() != null) {
-                    try {
-                        m_oTicket.setCustomer(dlSales.loadCustomerExt
-                            (finder.getSelectedCustomer().getId()));
-                        if ("restaurant".equals(m_App.getProperties().getProperty("machine.ticketsbag"))) {
-                            restDB.setCustomerNameInTableByTicketId(dlSales.loadCustomerExt
-                                (finder.getSelectedCustomer().getId()).toString(), m_oTicket.getId());
-
-                        }
-                        
-                            checkCustomer();
-
-                        m_jTicketId.setText(m_oTicket.getName(m_oTicketExt));
-                                
-                    } catch (BasicException e) {
-                        MessageInf msg = new MessageInf(MessageInf.SGN_WARNING,
-                            AppLocal.getIntString("message.cannotfindcustomer"), e);
-                        msg.show(this);
-                    }
-                } else {
-                    restDB.setCustomerNameInTableByTicketId(null, m_oTicket.getId());
-                    m_oTicket.setCustomer(null);
-                    Notify("notify.customerremove");                    
-                }
-
-            } else {
-                if (JOptionPane.showConfirmDialog(this,
-                    AppLocal.getIntString("message.customerchange"),
-                    AppLocal.getIntString("title.editor"),
-                    JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION){
-
-                    finder.setAppView(m_App);
-                    finder.search(m_oTicket.getCustomer());
-                    finder.executeSearch();
-                    finder.setVisible(true);
-
-                    if (finder.getSelectedCustomer() != null) {
-                        try {
-                            m_oTicket.setCustomer(dlSales.loadCustomerExt
-                               (finder.getSelectedCustomer().getId()));
-                            if ("restaurant".equals(m_App.getProperties().getProperty("machine.ticketsbag"))) {
-                                restDB.setCustomerNameInTableByTicketId(dlSales.loadCustomerExt
-                                    (finder.getSelectedCustomer().getId()).toString(), m_oTicket.getId());
-                            }
-
-                            checkCustomer();
-
-                            m_jTicketId.setText(m_oTicket.getName());
-
-                        } catch (BasicException e) {
-                            MessageInf msg = new MessageInf(MessageInf.SGN_WARNING,
-                            AppLocal.getIntString("message.cannotfindcustomer"), e);
-                            msg.show(this);
-                        }
-                    } else {
-                        restDB.setCustomerNameInTableByTicketId(null, m_oTicket.getId());
-                            m_oTicket.setCustomer(null);
-                    }
-                }
-            }
-           
-        } else {
-            if(webCBCustomer.getSelectedIndex() == 1){
-                JDialogNewCustomer dialog = JDialogNewCustomer.getDialog(this,m_App);
-                dialog.setVisible(true);
-       
-                CustomerInfoExt m_customerInfo = dialog.getSelectedCustomer();
-                if (dialog.getSelectedCustomer()!=null){
-                    try {
-                        m_oTicket.setCustomer(dlSales.loadCustomerExt
-                                    (dialog.getSelectedCustomer().getId())); 
-                    } catch (BasicException ex) {
-                        Logger.getLogger(JPanelTicket.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }                
-            }
-        }
-            refreshTicket(); 
-        
-    }//GEN-LAST:event_webCBCustomerActionPerformed
-
     private void jCheckStockActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckStockActionPerformed
 
         if (listener  != null) {
@@ -3142,14 +3047,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         m_jKeyFactory.requestFocus();
     }//GEN-LAST:event_m_jaddtaxActionPerformed
 
-    private void webCBCustomerKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_webCBCustomerKeyReleased
-            m_jKeyFactory.requestFocus();
-    }//GEN-LAST:event_webCBCustomerKeyReleased
-
-    private void webCBCustomerMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_webCBCustomerMouseReleased
-            m_jKeyFactory.requestFocus();
-    }//GEN-LAST:event_webCBCustomerMouseReleased
-
     private void jTBtnShowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTBtnShowActionPerformed
         if (jTBtnShow.isSelected()) {
             m_jPanelScripts.setVisible(true);
@@ -3158,13 +3055,120 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             m_jPanelScripts.setVisible(false);
             m_jButtonsExt.setVisible(false);            
         }
+            refreshTicket();        
+        m_jKeyFactory.requestFocus();
     }//GEN-LAST:event_jTBtnShowActionPerformed
+
+    private void jBtnCustomerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnCustomerActionPerformed
+        if (listener  != null) {
+            listener.stop();
+        }
+        Object[] options = {"Create", "Find","Cancel"};
+        
+        int n = JOptionPane.showOptionDialog(null,
+            AppLocal.getIntString("message.customeradd"),
+            AppLocal.getIntString("label.customer"),            
+            JOptionPane.YES_NO_CANCEL_OPTION,
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            options,
+            options[2]);
+
+        if (n == 0) {
+            JDialogNewCustomer dialog = JDialogNewCustomer.getDialog(this,m_App);
+            dialog.setVisible(true);
+
+            CustomerInfoExt m_customerInfo = dialog.getSelectedCustomer();
+            if (dialog.getSelectedCustomer()!=null){
+                try {
+                    m_oTicket.setCustomer(dlSales.loadCustomerExt
+                        (dialog.getSelectedCustomer().getId()));
+                } catch (BasicException ex) {
+                    Logger.getLogger(JPanelTicket.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }        
+        
+        if (n == 1) {
+            JCustomerFinder finder = JCustomerFinder.getCustomerFinder(this, dlCustomers);
+
+            if (m_oTicket.getCustomerId() == null) {
+                finder.setAppView(m_App);
+                finder.search(m_oTicket.getCustomer());
+                finder.executeSearch();
+                finder.setVisible(true);
+
+                if (finder.getSelectedCustomer() != null) {
+                    try {
+                        m_oTicket.setCustomer(dlSales.loadCustomerExt
+                            (finder.getSelectedCustomer().getId()));
+                        if ("restaurant".equals(m_App.getProperties().getProperty("machine.ticketsbag"))) {
+                            restDB.setCustomerNameInTableByTicketId(dlSales.loadCustomerExt
+                                (finder.getSelectedCustomer().getId()).toString(), m_oTicket.getId());
+                        }
+
+                        checkCustomer();
+
+                        m_jTicketId.setText(m_oTicket.getName(m_oTicketExt));
+
+                    } catch (BasicException e) {
+                        MessageInf msg = new MessageInf(MessageInf.SGN_WARNING,
+                            AppLocal.getIntString("message.cannotfindcustomer"), e);
+                        msg.show(this);
+                    }
+                } else {
+                    restDB.setCustomerNameInTableByTicketId(null, m_oTicket.getId());
+                    m_oTicket.setCustomer(null);
+                    Notify("notify.customerremove");
+                }
+
+            } else {
+                if (JOptionPane.showConfirmDialog(this,
+                    AppLocal.getIntString("message.customerchange"),
+                    AppLocal.getIntString("title.editor"),
+                    JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION){
+
+                finder.setAppView(m_App);
+                finder.search(m_oTicket.getCustomer());
+                finder.executeSearch();
+                finder.setVisible(true);
+
+                if (finder.getSelectedCustomer() != null) {
+                    try {
+                        m_oTicket.setCustomer(dlSales.loadCustomerExt
+                            (finder.getSelectedCustomer().getId()));
+                        if ("restaurant".equals(m_App.getProperties().getProperty("machine.ticketsbag"))) {
+                            restDB.setCustomerNameInTableByTicketId(dlSales.loadCustomerExt
+                                (finder.getSelectedCustomer().getId()).toString(), m_oTicket.getId());
+                        }
+
+                        checkCustomer();
+
+                        m_jTicketId.setText(m_oTicket.getName());
+
+                    } catch (BasicException e) {
+                        MessageInf msg = new MessageInf(MessageInf.SGN_WARNING,
+                            AppLocal.getIntString("message.cannotfindcustomer"), e);
+                        msg.show(this);
+                    }
+                } else {
+                    restDB.setCustomerNameInTableByTicketId(null, m_oTicket.getId());
+                    m_oTicket.setCustomer(null);
+                }
+            }    
+            }
+        }
+    
+        refreshTicket();
+        
+    }//GEN-LAST:event_jBtnCustomerActionPerformed
                                        
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnReprint1;
     private javax.swing.JButton btnSplit;
     private javax.swing.JPanel catcontainer;
     private javax.swing.Box.Filler filler2;
+    private javax.swing.JButton jBtnCustomer;
     private javax.swing.JButton jCheckStock;
     private javax.swing.JButton jEditAttributes;
     private javax.swing.JPanel jPanel1;
@@ -3204,7 +3208,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
     private javax.swing.JLabel m_jTotalEuros;
     private com.alee.extended.button.WebSwitch m_jaddtax;
     private javax.swing.JButton m_jbtnScale;
-    private com.alee.laf.combobox.WebComboBox webCBCustomer;
     // End of variables declaration//GEN-END:variables
 
 /* Remote Orders Display

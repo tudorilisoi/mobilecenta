@@ -31,6 +31,11 @@ import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import javax.swing.JFrame;
 
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+
 /**
  *
  * @author  adrianromero
@@ -79,11 +84,37 @@ public class JRootKiosk extends javax.swing.JFrame implements AppMessage {
             
             Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
             setBounds(0, 0, d.width, d.height);        
-            
-            setVisible(true);                        
-        } else {
-            new JFrmConfig(props).setVisible(true); // Show the configuration window.
-        }        
+
+/*  
+ *  4 Sep 17 JG
+ *  Change here for Linux/Ubuntu full screen
+ *  Thanks to Hans Lengerke for solution
+*/            
+            GraphicsDevice device = GraphicsEnvironment
+                .getLocalGraphicsEnvironment().getDefaultScreenDevice();
+
+            if (device.isFullScreenSupported()) {
+
+                setResizable(true);
+
+                addFocusListener(new FocusListener() {
+                    @Override
+                    public void focusGained(FocusEvent arg0) {
+                        setAlwaysOnTop(true);
+                    }
+                    @Override
+                    public void focusLost(FocusEvent arg0) {
+                        setAlwaysOnTop(false);
+                    }
+                });
+
+                device.setFullScreenWindow(this);
+            } else {
+                setVisible(true);
+            }
+         } else {
+             new JFrmConfig(props).setVisible(true); // Show the configuration window.
+         }       
     }
 
     @Override

@@ -365,6 +365,11 @@ public class JPanelConfigGeneral extends javax.swing.JPanel implements PanelConf
         jbtnText.setMaximumSize(new java.awt.Dimension(64, 32));
         jbtnText.setMinimumSize(new java.awt.Dimension(64, 32));
         jbtnText.setPreferredSize(new java.awt.Dimension(80, 45));
+        jbtnText.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jbtnTextActionPerformed(evt);
+            }
+        });
 
         jbtnTextClear.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
         jbtnTextClear.setForeground(new java.awt.Color(255, 0, 153));
@@ -553,7 +558,7 @@ public class JPanelConfigGeneral extends javax.swing.JPanel implements PanelConf
                     .addComponent(jbtnClearHTML))
                 .addGap(18, 18, 18)
                 .addComponent(jchkHideInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(41, Short.MAX_VALUE))
+                .addContainerGap(42, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -620,6 +625,10 @@ public class JPanelConfigGeneral extends javax.swing.JPanel implements PanelConf
             "URL", 
             JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_jLblURLMouseClicked
+
+    private void jbtnTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnTextActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jbtnTextActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;

@@ -19,8 +19,8 @@
 
 /*
  * Script created by Jack, uniCenta 07/08/2016 08:00:00
- * Modified 21 Apr 2017 to lowercase
- * Called by Transfer for v4.2 after MySQL-create-transfer.sql
+ * Modified 10 Sept 2017
+ * Called by Transfer for v4.4 after MySQL-create-transfer.sql
 */
 
 set foreign_key_checks = 0;
@@ -45,6 +45,9 @@ alter table payments drop foreign key payments_fk_receipt;
 alter table products drop foreign key products_attrset_fk;
 alter table products drop foreign key products_taxcat_fk;
 alter table products drop foreign key products_fk_1;
+
+alter table products_bundle drop foreign key products_bundle_fk_1;
+alter table products_bundle drop foreign key products_bundle_fk_2;
 
 alter table products_cat drop foreign key products_cat_fk_1;
 

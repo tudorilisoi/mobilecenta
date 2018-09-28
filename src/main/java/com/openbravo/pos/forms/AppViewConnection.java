@@ -69,7 +69,7 @@ public class AppViewConnection {
             }
             
             if("true".equals(props.getProperty("db.multi"))) {
-                ImageIcon icon = new ImageIcon("../unicentaopos4.2-src/unicentaopos.png");
+                ImageIcon icon = new ImageIcon("/com/openbravo/images/unicentaopos.png");
                 Object[] dbs = {
                     "0 - " + props.getProperty("db.name"),
                     "1 - " + props.getProperty("db1.name")};

@@ -78,7 +78,7 @@ public class JTicketsBagSharedList extends javax.swing.JDialog {
 
         return m_sDialogTicket;
     }
-
+    
     /**
      *
      * @param ticketsbagshared
@@ -93,7 +93,7 @@ public class JTicketsBagSharedList extends javax.swing.JDialog {
         } else {
             mydialog = new JTicketsBagSharedList((Dialog) window, true);
         } 
-        
+ 
         mydialog.initComponents();
         
         mydialog.jScrollPane1.getVerticalScrollBar().setPreferredSize(new Dimension(35, 35));

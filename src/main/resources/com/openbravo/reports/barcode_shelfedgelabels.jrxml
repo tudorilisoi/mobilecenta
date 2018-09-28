@@ -20,6 +20,7 @@
 	<field name="NAME" class="java.lang.String"/>
 	<field name="PRICESELL" class="java.lang.Double"/>
 	<field name="CODETYPE" class="java.lang.String"/>
+	<field name="TAXRATE" class="java.lang.Double"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -51,7 +52,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="SansSerif" size="20" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($F{PRICESELL})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($F{PRICESELL} * $F{TAXRATE})]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

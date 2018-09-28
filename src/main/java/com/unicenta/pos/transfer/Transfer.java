@@ -51,6 +51,7 @@ import com.openbravo.data.gui.MessageInf;
 import com.openbravo.data.user.DirtyManager;
 import com.openbravo.pos.forms.AppLocal;
 import com.openbravo.pos.forms.AppView;
+import java.awt.Color;
 import java.sql.BatchUpdateException;
 import java.util.ArrayList;
 import java.util.List;
@@ -283,7 +284,7 @@ public final class Transfer extends JPanel implements JPanelView {
         try {
             txtOut.append("Adding Foreign Keys" + "\n");
             webPBar.setString("Adding Keys...");
-                    
+            webPBar.setBgBottom(Color.MAGENTA);
             BatchSentence bsentence = new BatchSentenceResource(session_target, targetFKadd);
             
             java.util.List l = bsentence.list();
@@ -442,7 +443,7 @@ public final class Transfer extends JPanel implements JPanelView {
                     Dbtname="attribute";
                     ResultSet rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Attribute" + "\n");                  
-                        SQL = "SELECT * FROM attribute";
+                        SQL = "SELECT ID, NAME FROM attribute";
                         rs = stmt_source.executeQuery(SQL); 
                         
                         while (rs.next()) {
@@ -457,11 +458,29 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.executeUpdate();                 
                         }
 
+                    Dbtname="attributevalue";
+                    rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+                        txtOut.append("Attributevalue" + "\n");
+                        SQL = "SELECT ID, ATTRIBUTE_ID, VALUE FROM attributevalue";
+                        rs = stmt_source.executeQuery(SQL);
+                    
+                        while (rs.next()) {
+                            SQL = "INSERT INTO attributevalue ("
+                                + "ID, ATTRIBUTE_ID, VALUE) "
+                                + "VALUES (?, ?, ?)";
+            
+                            pstmt = con_target.prepareStatement(SQL);
+                            pstmt.setString(1, rs.getString("ID"));
+                            pstmt.setString(2, rs.getString("ATTRIBUTE_ID"));
+                            pstmt.setString(3, rs.getString("VALUE"));
+                        
+                            pstmt.executeUpdate();
+                        }                         
 
                     Dbtname="attributeinstance";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Attributeinstance" + "\n");                  
-                        SQL = "SELECT * FROM attributeinstance";
+                        SQL = "SELECT ID, ATTRIBUTESETINSTANCE_ID, ATTRIBUTE_ID, VALUE FROM attributeinstance";
                         rs = stmt_source.executeQuery(SQL);
                     
                         while (rs.next()) {
@@ -477,29 +496,11 @@ public final class Transfer extends JPanel implements JPanelView {
 
                             pstmt.executeUpdate();
                         }
-      
-                    Dbtname="attributeset";
-                    rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Attributeset" + "\n");                  
-                        SQL = "SELECT * FROM attributeset";
-                        rs = stmt_source.executeQuery(SQL);
-
-                        while (rs.next()) {
-                            SQL = "INSERT INTO attributeset ("
-                                + "ID, NAME) "
-                                + "VALUES (?, ?)";
-                        
-                            pstmt = con_target.prepareStatement(SQL);
-                            pstmt.setString(1, rs.getString("ID"));
-                            pstmt.setString(2, rs.getString("NAME"));
-                        
-                            pstmt.executeUpdate();
-                        }    
 
                     Dbtname="attributesetinstance";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Attributesetinstance" + "\n");                  
-                        SQL = "SELECT * FROM attributesetinstance";
+                        SQL = "SELECT ID, ATTRIBUTESET_ID, DESCRIPTION FROM attributesetinstance";
                         rs = stmt_source.executeQuery(SQL);
 
                         while (rs.next()) {
@@ -518,43 +519,45 @@ public final class Transfer extends JPanel implements JPanelView {
                     Dbtname="attributeuse";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Attributeuse" + "\n");
-                        SQL = "SELECT * FROM attributeuse";
+                        SQL = "SELECT ID, ATTRIBUTESET_ID, ATTRIBUTE_ID FROM attributeuse";
                         rs = stmt_source.executeQuery(SQL);
+
+// removed LINENO as for some weird bug in MySQL causes Lock Timeout
+// only happens to this table, no other affected
 
                         while (rs.next()) {
                             SQL = "INSERT INTO attributeuse("
-                                + "ID, ATTRIBUTESET_ID, ATTRIBUTE_ID, LINENO) "
-                                + "VALUES (?, ?, ?, ?)";
+                                + "ID, ATTRIBUTESET_ID, ATTRIBUTE_ID) "
+                                + "VALUES (?, ?, ?)";
             
                             pstmt = con_target.prepareStatement(SQL);
                             pstmt.setString(1, rs.getString("ID"));
                             pstmt.setString(2, rs.getString("ATTRIBUTESET_ID"));
                             pstmt.setString(3, rs.getString("ATTRIBUTE_ID"));
-                            pstmt.setInt(4, rs.getInt("LINENO"));
                         
                             pstmt.executeUpdate();
-                        }
+                        }                         
                     
-                    Dbtname="attributevalue";
+                    Dbtname="attributeset";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Attributevalue" + "\n");
-                        SQL = "SELECT * FROM attributevalue";
+                        txtOut.append("Attributeset" + "\n");                  
+                        SQL = "SELECT ID, NAME FROM attributeset";
                         rs = stmt_source.executeQuery(SQL);
-                    
+
                         while (rs.next()) {
-                            SQL = "INSERT INTO attributevalue ("
-                                + "ID, ATTRIBUTE_ID, VALUE) "
-                                + "VALUES (?, ?, ?)";
-            
+                            SQL = "INSERT INTO attributeset ("
+                                + "ID, NAME) "
+                                + "VALUES (?, ?)";
+                        
                             pstmt = con_target.prepareStatement(SQL);
                             pstmt.setString(1, rs.getString("ID"));
-                            pstmt.setString(2, rs.getString("ATTRIBUTE_ID"));
-                            pstmt.setString(3, rs.getString("VALUE"));
+                            pstmt.setString(2, rs.getString("NAME"));
                         
                             pstmt.executeUpdate();
-                        }   
+                        }    
                     
-                    Dbtname="breaks";
+                if (!jlblVersion.getText().startsWith("2")) {
+                        Dbtname="breaks";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Breaks" + "\n");
                         SQL = "SELECT * FROM breaks";
@@ -572,7 +575,10 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.setBoolean(4, rs.getBoolean("NOTES"));
 
                             pstmt.executeUpdate();                       
-                        }   
+                        }
+                    } else {
+                        txtOut.append("Breaks... skipped" + "\n");                            
+                    }                        
                     
                     Dbtname="categories";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
@@ -580,6 +586,7 @@ public final class Transfer extends JPanel implements JPanelView {
                         SQL = "SELECT * FROM categories";
                         rs = stmt_source.executeQuery(SQL);
 
+                    if (rs.getMetaData().getColumnCount() == 6) {
                         while (rs.next()) {
 
                             SQL = "INSERT INTO categories("
@@ -598,6 +605,22 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }
+                    } else {
+                        while (rs.next()) {
+
+                            SQL = "INSERT INTO categories("
+                                + "ID, NAME, PARENTID, IMAGE) "
+                                + "VALUES (?, ?, ?, ?)";
+
+                            pstmt = con_target.prepareStatement(SQL);
+                            pstmt.setString(1, rs.getString("ID"));
+                            pstmt.setString(2, rs.getString("NAME"));
+                            pstmt.setString(3, rs.getString("PARENTID"));
+                            pstmt.setBytes(4, rs.getBytes("IMAGE"));
+                        
+                            pstmt.executeUpdate();
+                        }
+                    }    
                     
                     Dbtname="closedcash";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
@@ -608,7 +631,7 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                         SQL = "SELECT * FROM closedcash";
                         rs = stmt_source.executeQuery(SQL);
-
+                    if (rs.getMetaData().getColumnCount() == 6) {
                         while (rs.next()) {
                             SQL = "INSERT INTO closedcash("
                                 + "MONEY, HOST, HOSTSEQUENCE, "
@@ -625,7 +648,25 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.setInt(6, rs.getInt("NOSALES"));                        
                         
                             pstmt.executeUpdate();
-                        }    
+                        }
+                    } else {
+                        while (rs.next()) {
+                            SQL = "INSERT INTO closedcash("
+                                + "MONEY, HOST, HOSTSEQUENCE, "
+                                + "DATESTART, DATEEND) "
+                                + "VALUES (?, ?, ?, "
+                                + "?, ?)";
+    
+                            pstmt = con_target.prepareStatement(SQL);
+                            pstmt.setString(1, rs.getString("MONEY"));
+                            pstmt.setString(2, rs.getString("HOST"));
+                            pstmt.setInt(3, rs.getInt("HOSTSEQUENCE"));                        
+                            pstmt.setTimestamp(4, rs.getTimestamp("DATESTART"));                                               
+                            pstmt.setTimestamp(5, rs.getTimestamp("DATEEND"));
+                        
+                            pstmt.executeUpdate();
+                        }                        
+                    }
 
                     Dbtname="customers";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
@@ -633,8 +674,57 @@ public final class Transfer extends JPanel implements JPanelView {
                         SQL = "SELECT * FROM customers";
                         rs = stmt_source.executeQuery(SQL);
 
+                    if (rs.getMetaData().getColumnCount() == 27) {
                         while (rs.next()) {
                             SQL = "INSERT INTO customers("
+                                + "ID, SEARCHKEY, TAXID, NAME, TAXCATEGORY, "
+                                + "CARD, MAXDEBT,ADDRESS, ADDRESS2, POSTAL, "
+                                + "CITY, REGION, COUNTRY, FIRSTNAME, LASTNAME,"
+                                + "EMAIL, PHONE, PHONE2, FAX, NOTES, "
+                                + "VISIBLE, CURDATE, CURDEBT, IMAGE, ISVIP, "
+                                + "DISCOUNT, MEMODATE)"
+                                + " VALUES ("
+                                + "?, ?, ?, ?, ?, "
+                                + "?, ?, ?, ?, ?, "
+                                + "?, ?, ?, ?, ?, "
+                                + "?, ?, ?, ?, ?, "
+                                + "?, ?, ?, ?, ?, "
+                                + "?, ?)";
+
+                            pstmt = con_target.prepareStatement(SQL);
+                            pstmt.setString(1, rs.getString("ID"));
+                            pstmt.setString(2, rs.getString("SEARCHKEY"));
+                            pstmt.setString(3, rs.getString("TAXID"));
+                            pstmt.setString(4, rs.getString("NAME"));
+                            pstmt.setString(5, rs.getString("TAXCATEGORY"));
+                            pstmt.setString(6, rs.getString("CARD"));
+                            pstmt.setDouble(7, rs.getDouble("MAXDEBT"));
+                            pstmt.setString(8, rs.getString("ADDRESS"));
+                            pstmt.setString(9, rs.getString("ADDRESS2"));
+                            pstmt.setString(10, rs.getString("POSTAL"));
+                            pstmt.setString(11, rs.getString("CITY"));
+                            pstmt.setString(12, rs.getString("REGION"));
+                            pstmt.setString(13, rs.getString("COUNTRY"));
+                            pstmt.setString(14, rs.getString("FIRSTNAME"));
+                            pstmt.setString(15, rs.getString("LASTNAME"));
+                            pstmt.setString(16, rs.getString("EMAIL"));
+                            pstmt.setString(17, rs.getString("PHONE"));
+                            pstmt.setString(18, rs.getString("PHONE2"));
+                            pstmt.setString(19, rs.getString("FAX"));
+                            pstmt.setString(20, rs.getString("NOTES"));
+                            pstmt.setBoolean(21, rs.getBoolean("VISIBLE"));
+                            pstmt.setTimestamp(22, rs.getTimestamp("CURDATE"));
+                            pstmt.setDouble(23, rs.getDouble("CURDEBT"));
+                            pstmt.setBytes(24, rs.getBytes("IMAGE"));
+                            pstmt.setBoolean(25, rs.getBoolean("ISVIP"));
+                            pstmt.setDouble(26, rs.getDouble("DISCOUNT"));                            
+                            pstmt.setTimestamp(27, rs.getTimestamp("MEMODATE"));                              
+                         
+                            pstmt.executeUpdate();
+                        }
+                    } else {
+                        while (rs.next()) {                        
+                           SQL = "INSERT INTO customers("
                                 + "ID, SEARCHKEY, TAXID, NAME, "
                                 + "TAXCATEGORY, CARD, MAXDEBT,"
                                 + "ADDRESS, ADDRESS2, POSTAL, CITY, "
@@ -677,7 +767,9 @@ public final class Transfer extends JPanel implements JPanelView {
                          
                             pstmt.executeUpdate();
                         }
+                    }
                     
+                if (!jlblVersion.getText().startsWith("2")) {
                     Dbtname="draweropened";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("DrawerOpened" + "\n");
@@ -696,6 +788,7 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }
+                }        
                     
                     Dbtname="floors";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
@@ -716,6 +809,7 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.executeUpdate();
                         }    
                     
+                if (!jlblVersion.getText().startsWith("2")) {
                     Dbtname="leaves";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Leaves" + "\n");
@@ -739,7 +833,11 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }
+                    } else {
+                        txtOut.append("Leaves... skipped" + "\n");                            
+                    }                
                     
+                if (!jlblVersion.getText().startsWith("2")) {
                     Dbtname="lineremoved";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("LineRemoved" + "\n");
@@ -762,7 +860,10 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.setDouble(6, rs.getDouble("UNITS"));                        
                         
                             pstmt.executeUpdate();
-                        }                    
+                        }
+                } else {
+                    txtOut.append("Line Removed... skipped" + "\n");                            
+                }                        
 
                     Dbtname="locations";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
@@ -783,7 +884,8 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.executeUpdate();
                         }     
                     
-                    Dbtname="moorers";
+                if (!jlblVersion.getText().startsWith("2")) {
+                        Dbtname="moorers";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Moorers" + "\n");
                         SQL = "SELECT * FROM moorers";
@@ -801,7 +903,10 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.setBoolean(4, rs.getBoolean("POWER"));
                         
                             pstmt.executeUpdate();
-                        }    
+                        }
+                } else {
+                    txtOut.append("Moorers... skipped" + "\n");                            
+                }                        
                     
                     Dbtname="payments";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
@@ -809,6 +914,7 @@ public final class Transfer extends JPanel implements JPanelView {
                         SQL = "SELECT * FROM payments";
                         rs = stmt_source.executeQuery(SQL);
 
+                    if (!jlblVersion.getText().startsWith("2")) {                        
                         while (rs.next()) {
                             SQL = "INSERT INTO payments("
                                 + "ID, RECEIPT, PAYMENT, TOTAL, "
@@ -828,6 +934,25 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }   
+                    } else {
+                        while (rs.next()) {
+                            SQL = "INSERT INTO payments("
+                                + "ID, RECEIPT, PAYMENT, TOTAL, "
+                                + "TRANSID, RETURNMSG) "
+                                + "VALUES (?, ?, ?, ?, "
+                                + "?, ?)";
+                
+                            pstmt = con_target.prepareStatement(SQL);
+                            pstmt.setString(1, rs.getString("ID"));
+                            pstmt.setString(2, rs.getString("RECEIPT"));
+                            pstmt.setString(3, rs.getString("PAYMENT"));
+                            pstmt.setDouble(4, rs.getDouble("TOTAL"));                       
+                            pstmt.setString(5, rs.getString("TRANSID"));
+                            pstmt.setBytes(6, rs.getBytes("RETURNMSG"));                        
+                        
+                            pstmt.executeUpdate();
+                        }                       
+                    }
                     
                     Dbtname="people";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
@@ -854,6 +979,7 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.executeUpdate();
                         }
                     
+                if (!jlblVersion.getText().startsWith("2")) {
                     Dbtname="pickup_number";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Pickup Number" + "\n");
@@ -868,7 +994,10 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.setString(1, rs.getString("ID"));
                         
                             pstmt.executeUpdate();
-                        }    
+                        }
+                } else {
+                    txtOut.append("Pickup Number... skipped" + "\n");                            
+                }                        
                     
                     Dbtname="places";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
@@ -876,6 +1005,7 @@ public final class Transfer extends JPanel implements JPanelView {
                         SQL = "SELECT * FROM places";
                         rs = stmt_source.executeQuery(SQL);
 
+                    if (rs.getMetaData().getColumnCount() == 9) {
                         while (rs.next()) {
                             SQL = "INSERT INTO places ("
                                 + "ID, NAME, X, Y, FLOOR, "
@@ -896,65 +1026,165 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }    
+                    } else {
+                        while (rs.next()) {
+                            SQL = "INSERT INTO places ("
+                                + "ID, NAME, X, Y, FLOOR) "
+                                + "VALUES (?, ?, ?, ?, ?)";
+    
+                            pstmt = con_target.prepareStatement(SQL);
+                            pstmt.setString(1, rs.getString("ID"));
+                            pstmt.setString(2, rs.getString("NAME"));
+                            pstmt.setInt(3, rs.getInt("X"));
+                            pstmt.setInt(4, rs.getInt("Y"));
+                            pstmt.setString(5, rs.getString("FLOOR"));
+                        
+                            pstmt.executeUpdate();                        
+                        }
+                    }
 
-// Products is verbose SELECT
                     Dbtname="products";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Products" + "\n");
-                        SQL = "SELECT "
-                            + "ID, REFERENCE, CODE, CODETYPE, NAME, " 
-                            + "PRICEBUY, PRICESELL, CATEGORY, TAXCAT, "
-                            + "ATTRIBUTESET_ID, STOCKCOST, STOCKVOLUME, IMAGE, "
-                            + "ISCOM, ISSCALE, PRINTKB, SENDSTATUS, "
-                            + "ISSERVICE, ATTRIBUTES, DISPLAY, ISVPRICE, "
-                            + "ISVERPATRIB, TEXTTIP, WARRANTY, STOCKUNITS "
-                            + "FROM products ";
-                        rs = stmt_source.executeQuery(SQL);
-                    
-                        while (rs.next()) {
-                            SQL = "INSERT INTO products("
-                                + "ID, REFERENCE, CODE, CODETYPE, NAME, " 
-                                + "PRICEBUY, PRICESELL, CATEGORY, TAXCAT, "
-                                + "ATTRIBUTESET_ID, STOCKCOST, STOCKVOLUME, IMAGE, "
-                                + "ISCOM, ISSCALE, PRINTKB, SENDSTATUS, "
-                                + "ISSERVICE, ATTRIBUTES, DISPLAY, ISVPRICE, "
-                                + "ISVERPATRIB, TEXTTIP, WARRANTY, STOCKUNITS) "
-                                + "VALUES (?, ?, ?, ?, ?, "
-                                + "?, ?, ?, ?, "
-                                + "?, ?, ?, ?, "
-                                + "?, ?, ?, ?, "
-                                + "?, ?, ?, ?, "
-                                + "?, ?, ?, ?)";
-        
-                            pstmt = con_target.prepareStatement(SQL);
-                            pstmt.setString(1, rs.getString("ID"));
-                            pstmt.setString(2, rs.getString("REFERENCE"));
-                            pstmt.setString(3, rs.getString("CODE"));
-                            pstmt.setString(4, rs.getString("CODETYPE"));
-                            pstmt.setString(5, rs.getString("NAME"));
-                            pstmt.setDouble(6, rs.getDouble("PRICEBUY"));
-                            pstmt.setDouble(7, rs.getDouble("PRICESELL"));
-                            pstmt.setString(8, rs.getString("CATEGORY"));
-                            pstmt.setString(9, rs.getString("TAXCAT"));
-                            pstmt.setString(10, rs.getString("ATTRIBUTESET_ID"));
-                            pstmt.setDouble(11, rs.getDouble("STOCKCOST"));
-                            pstmt.setDouble(12, rs.getDouble("STOCKVOLUME"));
-                            pstmt.setBytes(13, rs.getBytes("IMAGE"));
-                            pstmt.setBoolean(14, rs.getBoolean("ISCOM"));
-                            pstmt.setBoolean(15, rs.getBoolean("ISSCALE"));
-                            pstmt.setBoolean(16, rs.getBoolean("PRINTKB"));
-                            pstmt.setBoolean(17, rs.getBoolean("SENDSTATUS"));
-                            pstmt.setBoolean(18, rs.getBoolean("ISSERVICE"));
-                            pstmt.setBytes(19, rs.getBytes("ATTRIBUTES"));
-                            pstmt.setString(20, rs.getString("DISPLAY"));
-                            pstmt.setBoolean(21, rs.getBoolean("ISVPRICE"));
-                            pstmt.setBoolean(22, rs.getBoolean("ISVERPATRIB"));
-                            pstmt.setString(23, rs.getString("TEXTTIP"));
-                            pstmt.setBoolean(24, rs.getBoolean("WARRANTY"));
-                            pstmt.setDouble(25, rs.getDouble("STOCKUNITS"));                       
 
-                            pstmt.executeUpdate();                                
-                        }    
+                        SQL = "SELECT * FROM products";
+                        rs = stmt_source.executeQuery(SQL);
+                        switch (rs.getMetaData().getColumnCount()) {
+                            case 30:
+                                while (rs.next()) {
+                                    SQL = "INSERT INTO products("
+                                            + "ID, REFERENCE, CODE, CODETYPE, NAME, "
+                                            + "PRICEBUY, PRICESELL, CATEGORY, TAXCAT, ATTRIBUTESET_ID, "
+                                            + "STOCKCOST, STOCKVOLUME, IMAGE, ISCOM, ISSCALE, "
+                                            + "ISCONSTANT, PRINTKB, SENDSTATUS, ISSERVICE, ATTRIBUTES, "
+                                            + "DISPLAY, ISVPRICE, ISVERPATRIB, TEXTTIP, WARRANTY, "
+                                            + "STOCKUNITS, PRINTTO, SUPPLIER, UOM, MEMODATE) "
+                                            + "VALUES (?, ?, ?, ?, ?, "
+                                            + "?, ?, ?, ?, ?,"
+                                            + "?, ?, ?, ?, ?,"
+                                            + "?, ?, ?, ?, ?, "
+                                            + "?, ?, ?, ?, ?, "
+                                            + "?, ?, ?, ? ,?)";
+                                    
+                                    pstmt = con_target.prepareStatement(SQL);
+                                    pstmt.setString(1, rs.getString("ID"));
+                                    pstmt.setString(2, rs.getString("REFERENCE"));
+                                    pstmt.setString(3, rs.getString("CODE"));
+                                    pstmt.setString(4, rs.getString("CODETYPE"));
+                                    pstmt.setString(5, rs.getString("NAME"));
+                                    pstmt.setDouble(6, rs.getDouble("PRICEBUY"));
+                                    pstmt.setDouble(7, rs.getDouble("PRICESELL"));
+                                    pstmt.setString(8, rs.getString("CATEGORY"));
+                                    pstmt.setString(9, rs.getString("TAXCAT"));
+                                    pstmt.setString(10, rs.getString("ATTRIBUTESET_ID"));
+                                    pstmt.setDouble(11, rs.getDouble("STOCKCOST"));
+                                    pstmt.setDouble(12, rs.getDouble("STOCKVOLUME"));
+                                    pstmt.setBytes(13, rs.getBytes("IMAGE"));
+                                    pstmt.setBoolean(14, rs.getBoolean("ISCOM"));
+                                    pstmt.setBoolean(15, rs.getBoolean("ISSCALE"));
+                                    pstmt.setBoolean(16, rs.getBoolean("ISCONSTANT"));
+                                    pstmt.setBoolean(17, rs.getBoolean("PRINTKB"));
+                                    pstmt.setBoolean(18, rs.getBoolean("SENDSTATUS"));
+                                    pstmt.setBoolean(19, rs.getBoolean("ISSERVICE"));
+                                    pstmt.setBytes(20, rs.getBytes("ATTRIBUTES"));
+                                    pstmt.setString(21, rs.getString("DISPLAY"));
+                                    pstmt.setBoolean(22, rs.getBoolean("ISVPRICE"));
+                                    pstmt.setBoolean(23, rs.getBoolean("ISVERPATRIB"));
+                                    pstmt.setString(24, rs.getString("TEXTTIP"));
+                                    pstmt.setBoolean(25, rs.getBoolean("WARRANTY"));
+                                    pstmt.setDouble(26, rs.getDouble("STOCKUNITS"));
+                                    pstmt.setString(27, rs.getString("PRINTTO"));
+                                    pstmt.setString(28, rs.getString("SUPPLIER"));
+                                    pstmt.setString(29, rs.getString("UOM"));
+                                    pstmt.setTimestamp(30, rs.getTimestamp("MEMODATE"));
+                                                                    
+                                    pstmt.executeUpdate();
+                                }       break;
+                            case 29:
+                                while (rs.next()) {
+                                    SQL = "INSERT INTO products("
+                                            + "ID, REFERENCE, CODE, CODETYPE, NAME, "
+                                            + "PRICEBUY, PRICESELL, CATEGORY, TAXCAT, ATTRIBUTESET_ID, "
+                                            + "STOCKCOST, STOCKVOLUME, IMAGE, ISCOM, ISSCALE, "
+                                            + "ISCONSTANT, PRINTKB, SENDSTATUS, ISSERVICE, ATTRIBUTES, "
+                                            + "DISPLAY, ISVPRICE, ISVERPATRIB, TEXTTIP, WARRANTY, "
+                                            + "STOCKUNITS, PRINTTO, SUPPLIER, UOM) "
+                                            + "VALUES (?, ?, ?, ?, ?, "
+                                            + "?, ?, ?, ?, ?,"
+                                            + "?, ?, ?, ?, ?,"
+                                            + "?, ?, ?, ?, ?, "
+                                            + "?, ?, ?, ?, ?, "
+                                            + "?, ?, ?, ?)";
+                                    
+                                    pstmt = con_target.prepareStatement(SQL);
+                                    pstmt.setString(1, rs.getString("ID"));
+                                    pstmt.setString(2, rs.getString("REFERENCE"));
+                                    pstmt.setString(3, rs.getString("CODE"));
+                                    pstmt.setString(4, rs.getString("CODETYPE"));
+                                    pstmt.setString(5, rs.getString("NAME"));
+                                    pstmt.setDouble(6, rs.getDouble("PRICEBUY"));
+                                    pstmt.setDouble(7, rs.getDouble("PRICESELL"));
+                                    pstmt.setString(8, rs.getString("CATEGORY"));
+                                    pstmt.setString(9, rs.getString("TAXCAT"));
+                                    pstmt.setString(10, rs.getString("ATTRIBUTESET_ID"));
+                                    pstmt.setDouble(11, rs.getDouble("STOCKCOST"));
+                                    pstmt.setDouble(12, rs.getDouble("STOCKVOLUME"));
+                                    pstmt.setBytes(13, rs.getBytes("IMAGE"));
+                                    pstmt.setBoolean(14, rs.getBoolean("ISCOM"));
+                                    pstmt.setBoolean(15, rs.getBoolean("ISSCALE"));
+                                    pstmt.setBoolean(16, rs.getBoolean("ISCONSTANT"));
+                                    pstmt.setBoolean(17, rs.getBoolean("PRINTKB"));
+                                    pstmt.setBoolean(18, rs.getBoolean("SENDSTATUS"));
+                                    pstmt.setBoolean(19, rs.getBoolean("ISSERVICE"));
+                                    pstmt.setBytes(20, rs.getBytes("ATTRIBUTES"));
+                                    pstmt.setString(21, rs.getString("DISPLAY"));
+                                    pstmt.setBoolean(22, rs.getBoolean("ISVPRICE"));
+                                    pstmt.setBoolean(23, rs.getBoolean("ISVERPATRIB"));
+                                    pstmt.setString(24, rs.getString("TEXTTIP"));
+                                    pstmt.setBoolean(25, rs.getBoolean("WARRANTY"));
+                                    pstmt.setDouble(26, rs.getDouble("STOCKUNITS"));
+                                    pstmt.setString(27, rs.getString("PRINTTO"));
+                                    pstmt.setString(28, rs.getString("SUPPLIER"));
+                                    pstmt.setString(29, rs.getString("UOM"));
+                                    
+                                    pstmt.executeUpdate();
+                                }       break;
+                            default:
+                                SQL = "SELECT * FROM products ";
+                                rs = stmt_source.executeQuery(SQL);
+                                while (rs.next()) {
+                                    SQL = "INSERT INTO products("
+                                            + "ID, REFERENCE, CODE, CODETYPE, NAME, "
+                                            + "PRICEBUY, PRICESELL, CATEGORY, TAXCAT, "
+                                            + "ATTRIBUTESET_ID, STOCKCOST, STOCKVOLUME, IMAGE, "
+                                            + "ISCOM, ISSCALE, ATTRIBUTES, DISPLAY) "
+                                            + "VALUES (?, ?, ?, ?, ?, "
+                                            + "?, ?, ?, ?, "
+                                            + "?, ?, ?, ?, "
+                                            + "?, ?, ?, ?)";
+                                    
+                                    pstmt = con_target.prepareStatement(SQL);
+                                    pstmt.setString(1, rs.getString("ID"));
+                                    pstmt.setString(2, rs.getString("REFERENCE"));
+                                    pstmt.setString(3, rs.getString("CODE"));
+                                    pstmt.setString(4, rs.getString("CODETYPE"));
+                                    pstmt.setString(5, rs.getString("NAME"));
+                                    pstmt.setDouble(6, rs.getDouble("PRICEBUY"));
+                                    pstmt.setDouble(7, rs.getDouble("PRICESELL"));
+                                    pstmt.setString(8, rs.getString("CATEGORY"));
+                                    pstmt.setString(9, rs.getString("TAXCAT"));
+                                    pstmt.setString(10, rs.getString("ATTRIBUTESET_ID"));
+                                    pstmt.setDouble(11, rs.getDouble("STOCKCOST"));
+                                    pstmt.setDouble(12, rs.getDouble("STOCKVOLUME"));
+                                    pstmt.setBytes(13, rs.getBytes("IMAGE"));
+                                    pstmt.setBoolean(14, rs.getBoolean("ISCOM"));
+                                    pstmt.setBoolean(15, rs.getBoolean("ISSCALE"));
+                                    pstmt.setBytes(16, rs.getBytes("ATTRIBUTES"));
+                                    pstmt.setString(17, "<html><center>" + rs.getString("NAME"));                                    
+                                    
+                                    pstmt.executeUpdate();
+                                }       break;
+                        }
                     
                     Dbtname="products_cat";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
@@ -999,6 +1229,7 @@ public final class Transfer extends JPanel implements JPanelView {
                         SQL = "SELECT * FROM receipts";
                         rs = stmt_source.executeQuery(SQL);
 
+                    if (rs.getMetaData().getColumnCount() == 5) {
                         while (rs.next()) {
                             SQL = "INSERT INTO receipts("
                                 + "ID, MONEY, DATENEW, "
@@ -1014,7 +1245,22 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.setString(5, rs.getString("PERSON"));
                         
                             pstmt.executeUpdate();
-                        }    
+                        }
+                    } else {
+                        while (rs.next()) {
+                            SQL = "INSERT INTO receipts("
+                                + "ID, MONEY, DATENEW, ATTRIBUTES) "
+                                + "VALUES (?, ?, ?, ?)";
+            
+                            pstmt = con_target.prepareStatement(SQL);
+                            pstmt.setString(1, rs.getString("ID"));
+                            pstmt.setString(2, rs.getString("MONEY"));
+                            pstmt.setTimestamp(3, rs.getTimestamp("DATENEW"));
+                            pstmt.setBytes(4, rs.getBytes("ATTRIBUTES"));
+                        
+                            pstmt.executeUpdate();
+                        }
+                    }
                     
                     Dbtname="reservation_customers";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
@@ -1079,6 +1325,7 @@ public final class Transfer extends JPanel implements JPanelView {
                         pstmt.executeUpdate();
                     }
                     
+                if (!jlblVersion.getText().startsWith("2")) {
                     Dbtname="shift_breaks";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Shift_breaks" + "\n");
@@ -1100,8 +1347,12 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.setTimestamp(5, rs.getTimestamp("ENDTIME"));
                         
                             pstmt.executeUpdate();
-                        }    
+                        }
+                    } else {
+                        txtOut.append("Shift Breaks... skipped" + "\n");                            
+                    }                        
                     
+                if (!jlblVersion.getText().startsWith("2")) {
                     Dbtname="shifts";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Shifts" + "\n");
@@ -1120,7 +1371,10 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.setString(4, rs.getString("PPLID"));
                         
                             pstmt.executeUpdate();
-                        }    
+                        }
+                    } else {
+                        txtOut.append("Shifts... skipped" + "\n");                            
+                    }                        
 
                     Dbtname="stockcurrent";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
@@ -1142,14 +1396,15 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.setDouble(4, rs.getDouble("UNITS"));
                         
                             pstmt.executeUpdate();
-                        }   
+                        }
+
                     
                     Dbtname="stockdiary";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Stockdiary" + "\n");
                         SQL = "SELECT * FROM stockdiary";
                         rs = stmt_source.executeQuery(SQL);
-
+                    if (rs.getMetaData().getColumnCount() == 9) {
                         while (rs.next()) {
                             SQL = "INSERT INTO stockdiary("
                                 + "ID, DATENEW, REASON, LOCATION, "
@@ -1171,7 +1426,30 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.setString(9, rs.getString("APPUSER"));                        
                         
                             pstmt.executeUpdate();
-                        }    
+                        }
+                    } else {
+                        while (rs.next()) {
+                            SQL = "INSERT INTO stockdiary("
+                                + "ID, DATENEW, REASON, LOCATION, "
+                                + "PRODUCT, ATTRIBUTESETINSTANCE_ID, UNITS, "
+                                + "PRICE) "
+                                + "VALUES (?, ?, ?, ?, "
+                                + "?, ?, ?, "
+                                + "?)";
+        
+                            pstmt = con_target.prepareStatement(SQL);
+                            pstmt.setString(1, rs.getString("ID"));
+                            pstmt.setTimestamp(2, rs.getTimestamp("DATENEW"));
+                            pstmt.setInt(3, rs.getInt("REASON"));
+                            pstmt.setString(4, rs.getString("LOCATION"));
+                            pstmt.setString(5, rs.getString("PRODUCT"));
+                            pstmt.setString(6, rs.getString("ATTRIBUTESETINSTANCE_ID"));
+                            pstmt.setDouble(7, rs.getDouble("UNITS"));
+                            pstmt.setDouble(8, rs.getDouble("PRICE"));
+                        
+                            pstmt.executeUpdate();
+                        }
+                    }                                                
                     
                     Dbtname="stocklevel";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
@@ -1243,7 +1521,11 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.executeUpdate();
                         }
                     } else {
-                        txtOut.append("Suppliers... skipped" + "\n");                            
+                            SQL = "INSERT INTO suppliers("
+                                + "ID, NAME, SEARCHKEY)"
+                                + " VALUES ('0', 'uniCenta', 'unicenta')";
+                            pstmt.executeUpdate(SQL);                            
+                            txtOut.append("Added Supplier... uniCenta" + "\n");
                     }
 
                     Dbtname="taxcategories";
@@ -1471,7 +1753,11 @@ public final class Transfer extends JPanel implements JPanelView {
                         pstmt.executeUpdate();
                     }
                 } else {
-                    txtOut.append("UOM... skipped" + "\n");                            
+                    SQL = "INSERT INTO uom("
+                        + "ID, NAME)"
+                        + " VALUES ('0', 'Each')";
+                    pstmt.executeUpdate(SQL);                            
+                    txtOut.append("Added UOM... Each" + "\n");                    
                 }                    
 
                 if (jlblVersion.getText().startsWith("4")) {
@@ -1516,6 +1802,7 @@ public final class Transfer extends JPanel implements JPanelView {
                     txtOut.append("Data Transfer Complete" + "\n");
                     
                     webPBar.setString("Finished!");
+                    webPBar.setBgBottom(Color.GREEN);                    
                     jbtnTransfer.setEnabled(true);
 
                     JOptionPane.showMessageDialog(this
@@ -1633,7 +1920,6 @@ public final class Transfer extends JPanel implements JPanelView {
         jLabel6.setForeground(new java.awt.Color(51, 51, 51));
         jLabel6.setText("TRANSFER TO :");
         jLabel6.setPreferredSize(new java.awt.Dimension(150, 30));
-        jLabel6.setSize(new java.awt.Dimension(150, 30));
 
         webPanel2.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -1661,7 +1947,7 @@ public final class Transfer extends JPanel implements JPanelView {
         jtxtDbDriverLib.setForeground(new java.awt.Color(51, 51, 51));
         jtxtDbDriverLib.setToolTipText(bundle.getString("tootltip.transferlib")); // NOI18N
         jtxtDbDriverLib.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jtxtDbDriverLib.setPreferredSize(new java.awt.Dimension(300, 30));
+        jtxtDbDriverLib.setPreferredSize(new java.awt.Dimension(370, 30));
 
         jbtnDbDriverLib.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/fileopen.png"))); // NOI18N
         jbtnDbDriverLib.setToolTipText(bundle.getString("tooltip.openfile")); // NOI18N
@@ -1672,12 +1958,12 @@ public final class Transfer extends JPanel implements JPanelView {
         jtxtDbDriver.setForeground(new java.awt.Color(51, 51, 51));
         jtxtDbDriver.setToolTipText(bundle.getString("tootltip.transferclass")); // NOI18N
         jtxtDbDriver.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jtxtDbDriver.setPreferredSize(new java.awt.Dimension(300, 30));
+        jtxtDbDriver.setPreferredSize(new java.awt.Dimension(370, 30));
 
         jtxtDbURL.setForeground(new java.awt.Color(51, 51, 51));
         jtxtDbURL.setToolTipText(bundle.getString("tootltip.transferdbname")); // NOI18N
         jtxtDbURL.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jtxtDbURL.setPreferredSize(new java.awt.Dimension(300, 30));
+        jtxtDbURL.setPreferredSize(new java.awt.Dimension(370, 30));
 
         jlblVersion.setFont(new java.awt.Font("Arial", 1, 16)); // NOI18N
         jlblVersion.setForeground(new java.awt.Color(0, 204, 255));
@@ -1690,12 +1976,12 @@ public final class Transfer extends JPanel implements JPanelView {
         txtDbUser.setForeground(new java.awt.Color(51, 51, 51));
         txtDbUser.setToolTipText(bundle.getString("tooltip.dbuser")); // NOI18N
         txtDbUser.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        txtDbUser.setPreferredSize(new java.awt.Dimension(300, 30));
+        txtDbUser.setPreferredSize(new java.awt.Dimension(370, 30));
 
         txtDbPass.setForeground(new java.awt.Color(51, 51, 51));
         txtDbPass.setToolTipText(bundle.getString("tooltip.dbpassword")); // NOI18N
         txtDbPass.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        txtDbPass.setPreferredSize(new java.awt.Dimension(300, 30));
+        txtDbPass.setPreferredSize(new java.awt.Dimension(370, 30));
 
         jScrollPane1.setBorder(null);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -1716,13 +2002,11 @@ public final class Transfer extends JPanel implements JPanelView {
         jLabel8.setForeground(new java.awt.Color(0, 153, 255));
         jLabel8.setText("PROGRESS");
         jLabel8.setPreferredSize(new java.awt.Dimension(150, 30));
-        jLabel8.setSize(new java.awt.Dimension(150, 30));
 
         jlblSource.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
         jlblSource.setForeground(new java.awt.Color(0, 153, 255));
         jlblSource.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jlblSource.setPreferredSize(new java.awt.Dimension(150, 30));
-        jlblSource.setSize(new java.awt.Dimension(150, 30));
 
         jbtnExit.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         jbtnExit.setText(AppLocal.getIntString("Button.Exit")); // NOI18N
@@ -1739,7 +2023,7 @@ public final class Transfer extends JPanel implements JPanelView {
         jtxtDbName.setForeground(new java.awt.Color(51, 51, 51));
         jtxtDbName.setToolTipText(bundle.getString("tooltip.dbname")); // NOI18N
         jtxtDbName.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jtxtDbName.setPreferredSize(new java.awt.Dimension(300, 30));
+        jtxtDbName.setPreferredSize(new java.awt.Dimension(370, 30));
         jtxtDbName.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 jtxtDbNameFocusLost(evt);
@@ -1785,7 +2069,9 @@ public final class Transfer extends JPanel implements JPanelView {
         });
 
         webPBar.setFont(new java.awt.Font("Arial", 0, 13)); // NOI18N
+        webPBar.setHighlightDarkWhite(new java.awt.Color(204, 0, 0));
         webPBar.setPreferredSize(new java.awt.Dimension(240, 30));
+        webPBar.setProgressBottomColor(new java.awt.Color(0, 153, 255));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -1842,12 +2128,12 @@ public final class Transfer extends JPanel implements JPanelView {
                             .addComponent(jLabel18, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jtxtDbURL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jtxtDbDriverLib, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jbtnDbDriverLib, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jtxtDbDriver, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jtxtDbURL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jtxtDbDriver, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addComponent(webPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -1873,10 +2159,9 @@ public final class Transfer extends JPanel implements JPanelView {
                             .addComponent(jtxtDbName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabel18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jtxtDbDriverLib, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                            .addComponent(jLabel18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jtxtDbDriverLib, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jbtnDbDriverLib, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1903,7 +2188,7 @@ public final class Transfer extends JPanel implements JPanelView {
                             .addComponent(jbtnTest, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jbtnTransfer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jbtnExit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(webPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -2032,7 +2317,7 @@ public final class Transfer extends JPanel implements JPanelView {
                 , "/lib/mysql-connector-java-5.1.39.jar").getAbsolutePath());
     
             jtxtDbDriver.setText("com.mysql.jdbc.Driver");
-            jtxtDbURL.setText("jdbc:mysql://localhost:3306/unicentaopos");
+            jtxtDbURL.setText("jdbc:mysql://localhost:3306/unicentaopos?zeroDateTimeBehavior=convertToNull");
         }
     }//GEN-LAST:event_cbSourceActionPerformed
 
@@ -2049,7 +2334,8 @@ public final class Transfer extends JPanel implements JPanelView {
                 + jtxtDbName.getText());            
         } else {
             jtxtDbURL.setText("jdbc:mysql://localhost:3306/"
-                + jtxtDbName.getText()); 
+                + jtxtDbName.getText()
+                + "?zeroDateTimeBehavior=convertToNull"); 
         }        
         
     }//GEN-LAST:event_jtxtDbNameFocusLost

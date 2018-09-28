@@ -31,8 +31,8 @@ report.setSentence("SELECT " +
                         "products.NAME, " +
                         "PRICESELL AS PRICE, " +
                             "Sum(ticketlines.UNITS) AS UNITS, " +
-                            "Sum((products.PRICESELL+products.PRICESELL*taxes.RATE)*UNITS) AS VALUE, " +
-                            "Sum((products.PRICESELL+products.PRICESELL*taxes.RATE)*ticketlines.UNITS-(ticketlines.PRICE+(ticketlines.PRICE*taxes.RATE))*ticketlines.UNITS) AS DISCOUNT, " +
+                            "Sum((ticketlines.PRICE+ticketlines.PRICE*taxes.RATE)*UNITS) AS VALUE, " +
+                            "Sum((ticketlines.PRICE+ticketlines.PRICE*taxes.RATE)*ticketlines.UNITS-(ticketlines.PRICE+(ticketlines.PRICE*taxes.RATE))*ticketlines.UNITS) AS DISCOUNT, " +
                             "Sum((ticketlines.PRICE+(ticketlines.PRICE*taxes.RATE))*ticketlines.UNITS) AS TOTAL " +
                         "FROM ((tickets INNER JOIN (ticketlines INNER JOIN products ON ticketlines.PRODUCT = products.ID) " +
                             "ON tickets.ID = ticketlines.TICKET) INNER JOIN (receipts INNER JOIN closedcash " +

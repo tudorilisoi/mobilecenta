@@ -90,7 +90,8 @@ public class JProductAttEdit2 extends javax.swing.JDialog {
                 SerializerWriteString.INSTANCE,
                 (DataRead dr) -> new AttributeSetInfo(dr.getString(1), dr.getString(2)));
         attsetinstExistsSent = new PreparedSentence(s,
-                "SELECT ID FROM attributesetinstance WHERE ATTRIBUTESET_ID = ? AND DESCRIPTION = ?",
+//                "SELECT ID FROM attributesetinstance WHERE ATTRIBUTESET_ID = ? AND DESCRIPTION = ?",
+                "SELECT ID, DESCRIPTION FROM attributesetinstance WHERE ATTRIBUTESET_ID = ? AND DESCRIPTION = ?",                
                 new SerializerWriteBasic(Datas.STRING, Datas.STRING),
                 SerializerReadString.INSTANCE);
 
@@ -353,19 +354,14 @@ public class JProductAttEdit2 extends javax.swing.JDialog {
     private void m_jButtonOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jButtonOKActionPerformed
 
         StringBuilder description = new StringBuilder();
-        itemslist.stream().map((item) 
-                -> item.getValue())
-                .filter((value) 
-                    -> (value != null && value.length() > 0))
-                .forEach((value) 
-                    -> {
-                    
-            if (description.length() > 0) {
-                description.append(", ");
-            }
-            description.append(value);
-        });
-
+        itemslist.stream().map((item) -> item.getValue())
+            .filter((value) -> (value != null && value.length() > 0))
+            .forEach((value) -> {                    
+                if (description.length() > 0) {
+                    description.append(", ");
+                }
+                description.append(value);
+            });
 
         String id;
 
@@ -381,11 +377,11 @@ public class JProductAttEdit2 extends javax.swing.JDialog {
                 return;
             }            
 
-//            if (id == null) {
-            if (id == null ? (String.valueOf(description)) != null : !id.equals(String.valueOf(description))) {                
-                // No, create a new ATTRIBUTESETINSTANCE and return the ID generated
-                // or return null... That means that that product does not exists....
-                // Maybe these two modes must be supported one for selection and other for creation....
+            if (id == null) {
+//            if (id == null ? (String.valueOf(description)) != null : !id.equals(String.valueOf(description))) {                
+                // Now creates a new ATTRIBUTESETINSTANCE and returns the ID generated
+                // to allow for ad-hoc user input i.e.: Serial No
+
                 id = UUID.randomUUID().toString();
 
                 try {

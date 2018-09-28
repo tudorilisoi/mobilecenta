@@ -48,7 +48,7 @@ report.setSentence("SELECT " +
                     "products.NAME, products.CATEGORY, categories.NAME, products.PRICEBUY, " +
                     "products.PRICESELL, products.STOCKVOLUME, products.STOCKCOST, " +
                     "stocklevel.STOCKSECURITY, stocklevel.STOCKMAXIMUM " +
-                "ORDER BY STOCKCURRENT.LOCATION, CATEGORIES.NAME, PRODUCTS.NAME");
+                "ORDER BY STOCKCURRENT.LOCATION, categories.NAME, PRODUCTS.NAME");
 
 report.addParameter("products.NAME");
 report.addParameter("products.PRICEBUY");

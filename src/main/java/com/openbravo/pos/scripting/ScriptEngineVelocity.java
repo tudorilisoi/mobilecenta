@@ -20,7 +20,7 @@
 package com.openbravo.pos.scripting;
 
 import com.openbravo.pos.forms.AppView;
-import com.unicenta.pos.util.ScriptletUtil;
+// import com.unicenta.pos.util.ScriptletUtil;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -70,7 +70,7 @@ class ScriptEngineVelocity implements ScriptEngine {
          c = new VelocityContext();     
 
 // Add JG uniCenta - see com.unicenta.pos.ScriptletUtil
-         this.put("scriptletutil", new ScriptletUtil());                        
+//         this.put("scriptletutil", new ScriptletUtil());                        
 
     }
     

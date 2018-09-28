@@ -104,6 +104,7 @@
 <!-- ADDITIONAL FEATURES ************************************************* -->
     <!-- SET Show Change in Cash Sale (Default=ENABLED -->
         <event key="ticket.close" code="Ticket.Close"/>
+		<event key="cash.close" code="Cash.Close"/>
 
     <!-- SET Consolidate Receipt - Multiple ProductID's (Default=DISABLED) -->
         <!-- <event  key="ticket.total" code="script.ReceiptConsolidate"/> -->

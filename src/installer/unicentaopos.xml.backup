@@ -1,7 +1,7 @@
 <project>
     <shortName>unicentaopos</shortName>
     <fullName>uniCenta oPOS</fullName>
-    <version>4.3.2</version>
+    <version>4.4.2</version>
     <readmeFile>README</readmeFile>
     <licenseFile>licensing/uniCenta oPOS Notice.txt</licenseFile>
     <leftImage>v_logo_dark.png</leftImage>
@@ -238,13 +238,18 @@ Then continue with uniCenta oPOS installation.</text>
             </validVersionList>
         </autodetectJava>
     </preInstallationActionList>
+    <postInstallationActionList>
+        <launchBrowser>
+            <url>https://unicenta.com/pages/configure-unicenta-opos/</url>
+        </launchBrowser>
+    </postInstallationActionList>
     <createOsxBundleZip>1</createOsxBundleZip>
     <description>uniCenta oPOS - Touch Friendly Point of Sale</description>
     <enableRollback>1</enableRollback>
     <enableTimestamp>1</enableTimestamp>
     <licenseFileEncoding>utf-8</licenseFileEncoding>
     <nativePackageName>uniCenta oPOS</nativePackageName>
-    <outputDirectory>installers</outputDirectory>
+    <outputDirectory>../../target/installers</outputDirectory>
     <productComments>uniCenta oPOS Touch Friendly Point of Sale</productComments>
     <productContact>info@unicenta.com</productContact>
     <productUrlHelpLink>https://unicenta.com/support</productUrlHelpLink>

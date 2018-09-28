@@ -243,7 +243,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
     `ordertime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `displayid` int(11) DEFAULT '1',
     `auxiliary` int(11) DEFAULT NULL,
-    `completetime` timestamp DEFAULT 0,
+    `completetime` timestamp,
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT = Compact;
 
@@ -924,6 +924,7 @@ INSERT INTO resources(id, name, restype, content) VALUES('75', 'Window.Logo', 1,
 INSERT INTO resources(id, name, restype, content) VALUES('76', 'Window.Title', 0, $FILE{/com/openbravo/pos/templates/Window.Title.txt});
 INSERT INTO resources(id, name, restype, content) VALUES('77', 'script.posapps', 0, $FILE{/com/openbravo/pos/templates/script.posapps.txt});
 INSERT INTO resources(id, name, restype, content) VALUES('78', 'img.posapps', 1, $FILE{/com/openbravo/pos/templates/img.posapps.png});
+INSERT INTO resources(id, name, restype, content) VALUES('79', 'Cash.Close', 0, $FILE{/com/openbravo/pos/templates/Cash.Close.xml});
 
 -- ADD CATEGORIES
 INSERT INTO categories(id, name) VALUES ('000', 'Category Standard');

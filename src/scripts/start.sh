@@ -19,38 +19,7 @@
 #    along with uniCenta oPOS.  If not, see <http://www.gnu.org/licenses/>.
 
 DIRNAME=`dirname $0`
-CP=$DIRNAME/unicentaopos4.2.jar
-
-CP=$CP:$DIRNAME/lib/bsh-core-2.0b4.jar
-CP=$CP:$DIRNAME/lib/barcode4j-2.0.jar
-CP=$CP:$DIRNAME/lib/commons-beanutils-1.8.3.jar
-CP=$CP:$DIRNAME/lib/commons-codec-1.4.jar
-CP=$CP:$DIRNAME/lib/commons-collections-3.2.1.jar
-CP=$CP:$DIRNAME/lib/commons-configuration2-2.1.jar
-CP=$CP:$DIRNAME/lib/commons-dbcp2-2.1.1.jar
-CP=$CP:$DIRNAME/lib/commons-digester-2.1.jar
-CP=$CP:$DIRNAME/lib/commons-discovery-0.5.0.jar
-CP=$CP:$DIRNAME/lib/commons-lang3-3.5.jar
-CP=$CP:$DIRNAME/lib/commons-logging-1.2.jar
-CP=$CP:$DIRNAME/lib/iText-4.2.1.jar
-CP=$CP:$DIRNAME/lib/jasperreports-6.4.0.jar
-CP=$CP:$DIRNAME/lib/jcl_editor.jar
-CP=$CP:$DIRNAME/lib/jcommon-1.0.15.jar
-CP=$CP:$DIRNAME/lib/jdt-compiler-3.1.1.jar
-CP=$CP:$DIRNAME/lib/jfreechart-1.0.19.jar
-CP=$CP:$DIRNAME/lib/jpos-1.13.0.jar
-CP=$CP:$DIRNAME/lib/jpos-2.0.10.jar
-CP=$CP:$DIRNAME/lib/oro-2.0.8.jar
-CP=$CP:$DIRNAME/lib/poi-3.10.1.jar
-CP=$CP:$DIRNAME/lib/RXTXcomm.jar
-CP=$CP:$DIRNAME/lib/swingx-all-1.6.4.jar
-CP=$CP:$DIRNAME/lib/velocity-1.7-dep.jar
-
-# Apache Axis SOAP libraries.
-CP=$CP:$DIRNAME/lib/axis.jar
-CP=$CP:$DIRNAME/lib/jaxrpc-1.4.0.jar
-CP=$CP:$DIRNAME/lib/saaj-1.4.0.jar
-CP=$CP:$DIRNAME/lib/wsdl4j-1.6.3.jar
+CP=$DIRNAME/unicentaopos.jar
 
 CP=$CP:$DIRNAME/locales/
 CP=$CP:$DIRNAME/reports/
@@ -73,4 +42,4 @@ CYGWIN*|MINGW32*) LIBRARYPATH=/lib/Windows/i368-mingw32;;
 esac
 
 # start uniCenta oPOS
-java -cp $CP -Xms512m -Xmx1024m -splash:unicenta_splash_dark.png -Djava.library.path=$DIRNAME$LIBRARYPATH -Ddirname.path=$DIRNAME/ com.openbravo.pos.forms.StartPOS “$@“
+java -cp $CP -Xms512m -Xmx1024m -splash:unicenta_splash_dark.png -Djava.library.path=$DIRNAME$LIBRARYPATH -Ddirname.path=$DIRNAME/ com.openbravo.pos.forms.StartPOS

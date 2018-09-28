@@ -190,7 +190,7 @@ public class DataLogicSales extends BeanFactoryDataSingle {
         this.s = s;
 
         m_createCat = new StaticSentence(s, 
-                "INSERT INTO CATEGORIES ( ID, NAME, CATSHOWNAME ) "
+                "INSERT INTO categories ( ID, NAME, CATSHOWNAME ) "
                 + "VALUES (?, ?, ?)"
                 , new SerializerWriteBasic(new Datas[]{
                     Datas.STRING,
@@ -1687,46 +1687,47 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                 , SerializerWriteParams.INSTANCE);
                 
             for (final PaymentInfo p : ticket.getPayments()) {
-                payments.addPayment(p.getName(),p.getTotal(), p.getPaid(),ticket.getReturnMessage());  
+//                payments.addPayment(p.getName(),p.getTotal(), p.getPaid(),ticket.getReturnMessage());  
 //                payments.addPayment(p.getName(),p.getTotal(), p.getPaid(),ticket.getReturnMessage(), p.getVoucher()); 
-            }
-                while (payments.getSize()>=1){                
+//            }
+//                while (payments.getSize()>=1){                
                     paymentinsert.exec(new DataParams() {
                        @Override
                         public void writeValues() throws BasicException {
-                            pName = payments.getFirstElement();
-                            getTotal = payments.getPaidAmount(pName);
-                            getTendered = payments.getTendered(pName);
-                            getRetMsg = payments.getRtnMessage(pName);
-//                            getVoucher = p.getVoucher();    
-                            payments.removeFirst(pName);                        
+//                            pName = payments.getFirstElement();
+//                            getTotal = payments.getPaidAmount(pName);
+//                            getTendered = payments.getTendered(pName);
+//                            getRetMsg = payments.getRtnMessage(pName);
+//                            getVoucher = payments.getVoucher(pName);    
+//                            payments.removeFirst(pName);                        
             
                             setString(1, UUID.randomUUID().toString());
                             setString(2, ticket.getId());
-                            setString(3, pName);
-                            setDouble(4, getTotal);
+                            setString(3, p.getName());
+                            setDouble(4, p.getTotal());
                             setString(5, ticket.getTransactionID());
                             setBytes(6, (byte[]) Formats.BYTEA.parseValue(getRetMsg));
-                            setDouble(7, getTendered);
+                            setDouble(7, p.getTendered());
                             setString(8, getCardName);
-                            setString(9, getVoucher);
-                            payments.removeFirst(pName);
-                        }
+                            setString(9, p.getVoucher());
+//                            payments.removeFirst(pName);                           
+                                                                  
+                        }                        
                     });
+
+                    if (p.getVoucher() != null) {
+                        getVoucherNonActive().exec(p.getVoucher());
+                    }                   
         
-//                    if (p.getVoucher() !=null) {
-//                        getVoucherNonActive().exec(p.getVoucher());
-//                    }
-        
-                    if ("debt".equals(pName) || "debtpaid".equals(pName)) {                                     
-                        ticket.getCustomer().updateCurDebt(getTotal, ticket.getDate());                        
+                    if ("debt".equals(p.getName()) || "debtpaid".equals(p.getName())) {                                     
+                        ticket.getCustomer().updateCurDebt(p.getTotal(), ticket.getDate());                        
                         getDebtUpdate().exec(new DataParams() {
 
                             @Override
                             public void writeValues() throws BasicException {
-                            setDouble(1, ticket.getCustomer().getCurdebt());
-                            setTimestamp(2, ticket.getCustomer().getCurdate());
-                            setString(3, ticket.getCustomer().getId());
+                                setDouble(1, ticket.getCustomer().getAccdebt());
+                                setTimestamp(2, ticket.getCustomer().getCurdate());
+                                setString(3, ticket.getCustomer().getId());
                             }
                         });
                     }
@@ -1736,7 +1737,9 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                     , "INSERT INTO taxlines (ID, RECEIPT, TAXID, BASE, AMOUNT)  "
                     + "VALUES (?, ?, ?, ?, ?)"
                     , SerializerWriteParams.INSTANCE);
-
+                
+                   
+           
                 if (ticket.getTaxes() != null) {
                     for (final TicketTaxInfo tickettax: ticket.getTaxes()) {
                         taxlinesinsert.exec(new DataParams() {
@@ -1824,7 +1827,7 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                         getDebtUpdate().exec(new DataParams() {
                             @Override
                             public void writeValues() throws BasicException {
-                                setDouble(1, ticket.getCustomer().getCurdebt());
+                                setDouble(1, ticket.getCustomer().getAccdebt());
                                 setTimestamp(2, ticket.getCustomer().getCurdate());
                                 setString(3, ticket.getCustomer().getId());
                             }});
@@ -2478,20 +2481,20 @@ public class DataLogicSales extends BeanFactoryDataSingle {
             c.setMaxdebt(dr.getDouble(7));
             c.setAddress(dr.getString(8));
             c.setAddress2(dr.getString(9));
-            c.setPostal(dr.getString(10));
+            c.setPcode(dr.getString(10));
             c.setCity(dr.getString(11));
             c.setRegion(dr.getString(12));
             c.setCountry(dr.getString(13));
             c.setFirstname(dr.getString(14));
             c.setLastname(dr.getString(15));
-            c.setEmail(dr.getString(16));
-            c.setPhone(dr.getString(17));
+            c.setCemail(dr.getString(16));
+            c.setPhone1(dr.getString(17));
             c.setPhone2(dr.getString(18));
             c.setFax(dr.getString(19));
             c.setNotes(dr.getString(20));
             c.setVisible(dr.getBoolean(21));
             c.setCurdate(dr.getTimestamp(22));
-            c.setCurdebt(dr.getDouble(23));
+            c.setAccdebt(dr.getDouble(23));
             c.setImage(ImageUtils.readImage(dr.getString(24)));
             c.setisVIP(dr.getBoolean(25));
             c.setDiscount(dr.getDouble(26));
@@ -2535,11 +2538,11 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                 "customers.NAME,AMOUNT " +
               "FROM vouchers   " +
                 "JOIN customers ON customers.id = vouchers.CUSTOMER  " +
-              "WHERE STATUS='A'" 
+              "WHERE STATUS='A' " +
+              "ORDER BY vouchers.VOUCHER_NUMBER ASC"
             , null, VoucherInfo.getSerializerRead());      
     }
     public final SentenceExec getVoucherNonActive() {
-
         return new PreparedSentence(s, 
                 "UPDATE vouchers SET STATUS = 'D' " +
                 "WHERE VOUCHER_NUMBER = ?"

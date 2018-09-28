@@ -374,8 +374,6 @@ public class JProductAttEdit extends javax.swing.JDialog {
             }
         }
 
-
-
         String id;
 
         if (description.length() == 0) {

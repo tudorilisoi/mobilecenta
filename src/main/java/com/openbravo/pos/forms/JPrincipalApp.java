@@ -574,6 +574,7 @@ public class JPrincipalApp extends javax.swing.JPanel implements AppUserView {
         m_jTitle = new javax.swing.JLabel();
         m_jPanelContainer = new javax.swing.JPanel();
 
+        setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         setLayout(new java.awt.BorderLayout());
 
         jPanel1.setLayout(new java.awt.BorderLayout());

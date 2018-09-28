@@ -32,11 +32,6 @@ public abstract class PaymentInfo {
     public abstract double getTendered();
     public abstract String getCardName();
     public abstract String getVoucher();        
-    
-//    public abstract double getTip();
-//    public abstract boolean getIsProcessed();
-//    public abstract void setIsProcessed(boolean value);
-//    public abstract String getReturnMessage();
 
     public String printTotal() {
         return Formats.CURRENCY.formatValue(getTotal());

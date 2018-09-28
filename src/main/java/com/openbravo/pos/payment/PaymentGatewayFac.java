@@ -40,6 +40,8 @@ public class PaymentGatewayFac {
                 return new PaymentGatewayExt();
             case "Dejavoo":
                 return new PaymentGatewayDejavoo();
+            case "PaymentSense":
+                return new PaymentGatewayPaymentSense();
             default:
                 return null;
         }

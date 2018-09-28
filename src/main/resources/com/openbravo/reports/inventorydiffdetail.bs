@@ -34,14 +34,14 @@ report.setSentence("SELECT " +
                 "SUM(CASE WHEN stockdiary.UNITS >=0 THEN stockdiary.UNITS * stockdiary.PRICE ELSE 0 END) AS TOTALIN, " +
                 "SUM(stockdiary.UNITS) AS UNITSDIFF, " +
                 "SUM(stockdiary.UNITS * stockdiary.PRICE) AS TOTALDIFF " +
-                "FROM stockdiary " +
+            "FROM stockdiary " +
                 "JOIN locations ON stockdiary.LOCATION = locations.ID " +
                 "JOIN products ON products.ID = stockdiary.PRODUCT " +
-                "LEFT OUTER JOIN categories ON products.CATEGORY = categories.ID " +
-                "LEFT OUTER JOIN attributesetinstance ON stockdiary.ATTRIBUTESETINSTANCE_ID = attributesetinstance.ID " +
-                "WHERE ?(QBF_FILTER) " +
-                "GROUP BY locations.ID, locations.NAME, products.REFERENCE, products.NAME, products.CATEGORY, categories.NAME, stockdiary.ATTRIBUTESETINSTANCE_ID, attributesetinstance.DESCRIPTION " +
-                "ORDER BY locations.ID, categories.NAME, products.NAME");
+                        "LEFT OUTER JOIN categories ON products.CATEGORY = categories.ID " +
+                    "LEFT OUTER JOIN attributesetinstance ON stockdiary.ATTRIBUTESETINSTANCE_ID = attributesetinstance.ID " +
+            "WHERE ?(QBF_FILTER) " +
+            "GROUP BY locations.ID, products.CATEGORY, products.REFERENCE, DESCRIPTION " +
+            "ORDER BY locations.ID, categories.NAME, products.NAME");
 
 report.addParameter("stockdiary.DATENEW");
 report.addParameter("stockdiary.DATENEW");
