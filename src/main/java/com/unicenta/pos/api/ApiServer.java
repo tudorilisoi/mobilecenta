@@ -8,26 +8,26 @@ package com.unicenta.pos.api;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.openbravo.basic.BasicException;
+import com.openbravo.pos.forms.AppUser;
 import com.openbravo.pos.forms.JRootApp;
+import com.openbravo.pos.sales.DataLogicReceipts;
+import com.openbravo.pos.ticket.TicketInfo;
+import com.openbravo.pos.util.Hashcypher;
+import spark.Spark;
 
-import java.lang.reflect.Array;
+import javax.servlet.http.HttpServletResponse;
+import java.math.BigInteger;
+import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import static spark.Spark.*;
-
-import com.google.gson.*;
-
-import java.security.MessageDigest;
-import java.math.*;
-
-import com.openbravo.pos.sales.DataLogicReceipts;
-import com.openbravo.pos.ticket.TicketInfo;
-import spark.Spark;
-
-import javax.servlet.http.HttpServletResponse;
 
 
 /**
@@ -54,6 +54,7 @@ public class ApiServer {
         DSL = (DSL) app.getBean("com.unicenta.pos.api.DSL");
         DSL.setReceiptsLogic(receiptsLogic);
 
+        DSL.getAppUserByID("0");
 
         ticketDSL = (TicketDSL) app.getBean("com.unicenta.pos.api.TicketDSL");
         ticketDSL.setReceiptsLogic(receiptsLogic);
@@ -238,6 +239,42 @@ public class ApiServer {
         );
 
 
+        post("/authenticate/", (request, response) -> {
+            JsonObject body = new Gson().fromJson(request.body(), JsonObject.class);
+
+
+            String ID = body.get("id").getAsString();
+            String password = body.get("password").getAsString();
+
+//            logger.info("AUTH BODY: " + body.toString());
+
+            AppUser user = DSL.getAppUserByID(ID);
+            logger.info(String.format(" id: %s, pass: %s savedpass %s, hashed %s",
+                    ID, password, user.getPassword(), Hashcypher.hashString(password)
+                    )
+            );
+            JSONPayload ret = new JSONPayload();
+            ret.setStatus("ERROR");
+            if (user == null) {
+                response.status(404);
+                ret.setErrorMessage("NO SUCH USER ID");
+                return ret.getString();
+            }
+            if (!Hashcypher.authenticate(password, user.getPassword())) {
+                response.status(400);
+                ret.setErrorMessage("BAD PASSWORD");
+                return ret.getString();
+            }
+
+            HashMap retObj = new HashMap();
+            retObj.put("authToken", "123456");
+            Gson b = new GsonBuilder().serializeNulls().create();
+
+            ret.setStatus("OK");
+            ret.setData(b.toJsonTree(retObj));
+            return ret.getString();
+        });
+
         get("/dbimage/:tableName/:pk/:size/", (request, response) -> {
             HashMap params = new HashMap(); //params, not used here
             params.put("tableName", request.params(":tableName"));
@@ -391,6 +428,10 @@ class JSONPayload {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public void setErrorMessage(String message) {
+        this.errorMessage = message;
     }
 
     public JsonElement getData() {

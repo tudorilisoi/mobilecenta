@@ -3,18 +3,18 @@ package com.unicenta.pos.api;
 import com.google.common.io.Resources;
 import com.openbravo.basic.BasicException;
 import com.openbravo.data.loader.*;
+import com.openbravo.pos.forms.AppUser;
 import com.openbravo.pos.forms.DataLogicSystem;
 import com.openbravo.pos.sales.DataLogicReceipts;
 import com.openbravo.pos.sales.SharedTicketInfo;
 import com.openbravo.pos.ticket.TicketInfo;
 import com.openbravo.pos.util.ThumbNailBuilder;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.IOUtils;
 
 import javax.imageio.ImageIO;
-import java.io.*;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -72,6 +72,10 @@ public class DSL extends DataLogicSystem {
         return null;
     }
 
+    public final String escapeSQLString(String s) {
+        return s.replace("`", "``");
+    }
+
     /**
      * converts strinngs like 'P.ID' into 'ID'
      *
@@ -126,7 +130,7 @@ public class DSL extends DataLogicSystem {
     public final Object getDBImageBytes(String tableName, String pk) {
         String query = String.format(
                 "SELECT IMAGE FROM `%s` WHERE ID = ? LIMIT 1",
-                tableName.replace("`", "``")
+                escapeSQLString(tableName)
         );
 
         logger.warning(tableName);
@@ -333,6 +337,45 @@ public class DSL extends DataLogicSystem {
         return tryCatchList(sl);
     }
 
+    public final AppUser getAppUserByID(String ID) {
+        String[] columnNames = "ID NAME APPPASSWORD CARD ROLE IMAGE".split(" ");
+        String query = "SELECT "
+                + String.join(", ", columnNames)
+                + " FROM people WHERE VISIBLE = " + s.DB.TRUE()
+                + " AND ID = ? ";
+
+        PreparedSentence ps = new PreparedSentence(
+                s,
+                query,
+//                new SerializerWriteBasic(Datas.STRING),
+                new SerializerWriteBasic(Datas.STRING),
+                getReader(columnNames));
+        try {
+            Object data = ps.find(new String[]{ID});
+            if (data == null) {
+                return null;
+            }
+
+            HashMap h = (HashMap) data;
+            AppUser u = new AppUser(
+                    (String) h.get("ID"),
+                    (String) h.get("NAME"),
+                    (String) h.get("APPPASSWORD"),
+                    (String) h.get("CARD"),
+                    (String) h.get("ROLE"),
+                    (Icon) h.get("IMAGE")
+            );
+            return u;
+//            return null;
+
+            //return new AppUser(data.name);
+
+        } catch (BasicException e) {
+            e.printStackTrace(System.out);
+            return null;
+        }
+
+    }
 
     public final List listUsers() throws BasicException {
         String[] columnNames = "ID NAME CARD ROLE IMAGE".split(" ");
