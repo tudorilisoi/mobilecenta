@@ -244,15 +244,9 @@ public class ApiServer {
 
 
             String ID = body.get("id").getAsString();
-            String password = body.get("password").getAsString();
-
-//            logger.info("AUTH BODY: " + body.toString());
+            String password = new String(body.get("password").getAsString());
 
             AppUser user = DSL.getAppUserByID(ID);
-            logger.info(String.format(" id: %s, pass: %s savedpass %s, hashed %s",
-                    ID, password, user.getPassword(), Hashcypher.hashString(password)
-                    )
-            );
             JSONPayload ret = new JSONPayload();
             ret.setStatus("ERROR");
             if (user == null) {
@@ -408,7 +402,7 @@ public class ApiServer {
 
 class JSONPayload {
     String status;
-    String errorMessage = "";
+    String errorMessage = null;
     JsonElement data;
 
     public String getString() {
