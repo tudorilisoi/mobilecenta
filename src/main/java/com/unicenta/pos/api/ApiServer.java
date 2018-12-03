@@ -18,6 +18,8 @@ import com.openbravo.pos.forms.JRootApp;
 import com.openbravo.pos.sales.DataLogicReceipts;
 import com.openbravo.pos.ticket.TicketInfo;
 import com.openbravo.pos.util.Hashcypher;
+import spark.Request;
+import spark.Response;
 import spark.Spark;
 
 import javax.servlet.http.HttpServletResponse;
@@ -45,6 +47,7 @@ public class ApiServer {
     private Cache cacheFloors = null;
     private Cache cacheTickets = null;
     private Cache cacheImages = null;
+    private JWTStore jwtStore = JWTStore.instance("123456");
 
     public ApiServer(JRootApp app) {
         this.running = false;
@@ -229,6 +232,37 @@ public class ApiServer {
         });
     }
 
+    private String authenticateRoute(Request request, Response response) {
+        JsonObject body = new Gson().fromJson(request.body(), JsonObject.class);
+
+
+        String ID = body.get("id").getAsString();
+        //TODO wrap this in try-catch
+        String password = new String(body.get("password").getAsString());
+
+        AppUser user = DSL.getAppUserByID(ID);
+        JSONPayload ret = new JSONPayload();
+        ret.setStatus("ERROR");
+        if (user == null) {
+            response.status(404);
+            ret.setErrorMessage("NO SUCH USER ID");
+            return ret.getString();
+        }
+        if (!Hashcypher.authenticate(password, user.getPassword())) {
+            response.status(400);
+            ret.setErrorMessage("BAD PASSWORD");
+            return ret.getString();
+        }
+
+        HashMap retObj = new HashMap();
+        retObj.put("authToken", jwtStore.getToken(ID));
+        Gson b = new GsonBuilder().serializeNulls().create();
+
+        ret.setStatus("OK");
+        ret.setData(b.toJsonTree(retObj));
+        return ret.getString();
+    }
+
     public int start() {
         port(7777);
         running = true;
@@ -238,36 +272,12 @@ public class ApiServer {
                 "Content-type,X-Requested-With"
         );
 
+        // NOTE test with
+        // curl  -X POST localhost:7777/authenticate/ -H "Content-Type: application/json; charset=utf8" --data '{"id":"0", "password":"123"}'
 
-        post("/authenticate/", (request, response) -> {
-            JsonObject body = new Gson().fromJson(request.body(), JsonObject.class);
+        //NOTE when changing pass in Unicenta mind the keyb switching from numbers to letters
 
-
-            String ID = body.get("id").getAsString();
-            String password = new String(body.get("password").getAsString());
-
-            AppUser user = DSL.getAppUserByID(ID);
-            JSONPayload ret = new JSONPayload();
-            ret.setStatus("ERROR");
-            if (user == null) {
-                response.status(404);
-                ret.setErrorMessage("NO SUCH USER ID");
-                return ret.getString();
-            }
-            if (!Hashcypher.authenticate(password, user.getPassword())) {
-                response.status(400);
-                ret.setErrorMessage("BAD PASSWORD");
-                return ret.getString();
-            }
-
-            HashMap retObj = new HashMap();
-            retObj.put("authToken", "123456");
-            Gson b = new GsonBuilder().serializeNulls().create();
-
-            ret.setStatus("OK");
-            ret.setData(b.toJsonTree(retObj));
-            return ret.getString();
-        });
+        post("/authenticate/", this::authenticateRoute);
 
         get("/dbimage/:tableName/:pk/:size/", (request, response) -> {
             HashMap params = new HashMap(); //params, not used here
