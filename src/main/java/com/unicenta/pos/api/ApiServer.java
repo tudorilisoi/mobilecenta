@@ -22,11 +22,9 @@ import spark.Request;
 import spark.Response;
 import spark.Spark;
 
-import javax.crypto.SecretKey;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigInteger;
 import java.security.MessageDigest;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
