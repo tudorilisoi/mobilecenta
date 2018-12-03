@@ -8,8 +8,12 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.logging.Logger;
 
 public class AESUtil {
+
+    private static final Logger logger = Logger.getLogger("AESUtil");
+
     private static SecretKey key;
     static Cipher cipher;
 
@@ -17,12 +21,13 @@ public class AESUtil {
 
     public AESUtil(SecretKey key) throws NoSuchPaddingException, NoSuchAlgorithmException {
         this.key = key;
-        cipher = Cipher.getInstance("AES");
+        cipher = Cipher.getInstance(ALGORITHM);
+
     }
 
     public static SecretKey generateKey() throws NoSuchAlgorithmException {
         KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-        keyGen.init(256); // for example
+        keyGen.init(128); // for example
         SecretKey secretKey = keyGen.generateKey();
         return secretKey;
     }

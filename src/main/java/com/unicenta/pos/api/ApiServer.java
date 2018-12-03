@@ -60,15 +60,19 @@ public class ApiServer {
         DSL.setReceiptsLogic(receiptsLogic);
 
         try {
-            SecretKey key = AESUtil.generateKey();
-            AESUtil ae = new AESUtil(key);
+//            SecretKey key = AESUtil.generateKey();
+//            AESUtil ae = new AESUtil(key);
+
             String payload = "Tudor was here";
             String enc = null;
             String dec = null;
-            enc = ae.encrypt(payload);
-            dec = ae.decrypt(enc);
+//            enc = ae.encrypt(payload);
+//            dec = ae.decrypt(enc);
+            enc = AES256Cryptor.encrypt(payload, "secret");
+            dec = AES256Cryptor.decrypt(enc, "secret");
+
             logger.warning(String.format("enc: %s dec: %s", enc, dec));
-            logger.warning(Base64.getEncoder().encodeToString(key.getEncoded()));
+
 
         } catch (Exception e) {
             e.printStackTrace();
