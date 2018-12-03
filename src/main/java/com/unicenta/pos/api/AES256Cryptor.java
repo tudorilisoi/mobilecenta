@@ -3,7 +3,9 @@ package com.unicenta.pos.api;
 /**
  * Created by kientux on 3/20/15
  * https://gist.githubusercontent.com/kientux/bb48259c6f2133e628ad/raw/3d38015e43ed0cc88e59c0fd1af43231ffbf6403/AES256Cryptor.java
+ *
  * NOTE this enables Crypto-js (tested with 3.1.9-1) and Java to encrypt/decrypt AES
+ * It is an OpenSSL compatible implementation
  */
 
 import java.util.Base64;
