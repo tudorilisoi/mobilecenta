@@ -70,6 +70,7 @@ public class ApiServer {
 //            dec = ae.decrypt(enc);
             enc = AES256Cryptor.encrypt(payload, "secret");
             dec = AES256Cryptor.decrypt(enc, "secret");
+            dec = AES256Cryptor.decrypt("U2FsdGVkX1+30P+7lZfHufktcX020h5KgOjVf6WlgA4=", "secret");
 
             logger.warning(String.format("enc: %s dec: %s", enc, dec));
 
