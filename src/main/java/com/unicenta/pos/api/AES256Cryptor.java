@@ -6,6 +6,10 @@ package com.unicenta.pos.api;
  *
  * NOTE this enables Crypto-js (tested with 3.1.9-1) and Java to encrypt/decrypt AES
  * It is an OpenSSL compatible implementation
+ *
+ * JS example:
+ * var encoded=CryptoJS.AES.encrypt(original,key).toString(CryptoJS.enc.Utf8);
+ * var decoded=CryptoJS.AES.decrypt(encoded,key).toString(CryptoJS.enc.Utf8);
  */
 
 import java.util.Base64;
