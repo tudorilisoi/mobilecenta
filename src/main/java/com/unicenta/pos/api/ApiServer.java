@@ -22,9 +22,11 @@ import spark.Request;
 import spark.Response;
 import spark.Spark;
 
+import javax.crypto.SecretKey;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -57,7 +59,20 @@ public class ApiServer {
         DSL = (DSL) app.getBean("com.unicenta.pos.api.DSL");
         DSL.setReceiptsLogic(receiptsLogic);
 
-        DSL.getAppUserByID("0");
+        try {
+            SecretKey key = AESUtil.generateKey();
+            AESUtil ae = new AESUtil(key);
+            String payload = "Tudor was here";
+            String enc = null;
+            String dec = null;
+            enc = ae.encrypt(payload);
+            dec = ae.decrypt(enc);
+            logger.warning(String.format("enc: %s dec: %s", enc, dec));
+            logger.warning(Base64.getEncoder().encodeToString(key.getEncoded()));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         ticketDSL = (TicketDSL) app.getBean("com.unicenta.pos.api.TicketDSL");
         ticketDSL.setReceiptsLogic(receiptsLogic);
