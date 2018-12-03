@@ -233,8 +233,8 @@ public class ApiServer {
     }
 
     private String authenticateRoute(Request request, Response response) {
-        JsonObject body = new Gson().fromJson(request.body(), JsonObject.class);
-
+        JsonObject _body = new Gson().fromJson(request.body(), JsonObject.class);
+        JsonObject body = _body.get("data").getAsJsonObject();
 
         String ID = body.get("id").getAsString();
         //TODO wrap this in try-catch

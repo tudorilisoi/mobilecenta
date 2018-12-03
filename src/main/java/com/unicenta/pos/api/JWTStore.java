@@ -28,13 +28,14 @@ public class JWTStore {
         if (existingToken != null) {
             return existingToken;
         }
-        String token = generateToken();
+        String token = generateToken(userID);
         store.put(userID, token);
         return token;
     }
 
-    public String generateToken() {
+    public String generateToken(String userID) {
         String token = JWT.create()
+                .withClaim("sub", userID)
                 .sign(algorithmHS);
         return token;
     }
