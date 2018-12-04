@@ -49,6 +49,14 @@ public class ApiServer {
     private Cache cacheImages = null;
     private JWTStore jwtStore = JWTStore.instance("123456");
 
+    // encryption settings
+    // since there is no easy way to run HTTPS on a LAN server
+    // we use a shared private key
+    // TODO make a barcode generator to easily scan it in the mobile app
+
+    private String AESKey = "a disturbing secret";
+    private boolean useEncryption = true; //set to false in dev mode for easier debugging
+
     public ApiServer(JRootApp app) {
         this.running = false;
         this.app = app;
@@ -92,6 +100,20 @@ public class ApiServer {
         });
     }
 
+    private String encrypt(String payload) {
+        if (!useEncryption) {
+            return payload;
+        }
+        return AES256Cryptor.encrypt(payload, AESKey);
+    }
+
+    private String decrypt(String payload) {
+        if (!useEncryption) {
+            return payload;
+        }
+        return AES256Cryptor.decrypt(payload, AESKey);
+    }
+
     private Cache makeCache(String routeMethod, Integer size) {
         return CacheBuilder.newBuilder()
                 .maximumSize(size)
@@ -118,7 +140,7 @@ public class ApiServer {
 
                                 }
                                 ret.setData(data);
-                                return ret.getString();
+                                return encrypt(ret.getString());
                             }
                         }
                 );
@@ -362,13 +384,13 @@ public class ApiServer {
             HashMap params = new HashMap(); //params, not used here
             ret.setData(usersRoute(params));
             response.header("Content-Encoding", "gzip");
-            return ret.getString();
+            return encrypt(ret.getString());
         });
 
         get("/floors", (request, response) -> {
             response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
-            return (String) cacheFloors.get(params);
+            return (String) cacheProducts.get(params);
         });
 
 
@@ -378,6 +400,7 @@ public class ApiServer {
             return (String) cacheProducts.get(params);
         });
 
+        //TODO complete this
         get("/ticket/:placeID", (request, response) -> {
             String placeID = request.params(":placeID");
 //            TicketDSL t = TicketDSL.getInstance();
@@ -397,6 +420,7 @@ public class ApiServer {
             return ret.getString();
         });
 
+        //TODO complete this
         post("/ticket/:placeID", (request, response) -> {
 
             String placeID = request.params(":placeID");
