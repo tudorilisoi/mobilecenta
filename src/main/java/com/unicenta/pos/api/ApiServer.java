@@ -285,9 +285,6 @@ public class ApiServer {
         JsonObject body = new Gson().fromJson(request.body(), JsonObject.class);
         boolean _encrypted = body.get("encrypted").getAsBoolean();
 
-        logger.warning("REQ encrypted? " + (_encrypted ? "YES" : "NO"));
-        logger.warning(body.get("encrypted").getAsString());
-
         if (_encrypted) {
             String payload = body.get("data").toString();
             String decodedPayload = decrypt(payload);
