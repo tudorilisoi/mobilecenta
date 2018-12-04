@@ -54,8 +54,8 @@ public class ApiServer {
     // we use a shared private key
     // TODO make a barcode generator to easily scan it in the mobile app
 
-    private String AESKey = "a disturbing secret";
-    private boolean useEncryption = true; //set to false in dev mode for easier debugging
+    private static String AESKey = "a disturbing secret";
+    private static boolean useEncryption = true; //set to false in dev mode for easier debugging
 
     public ApiServer(JRootApp app) {
         this.running = false;
@@ -100,14 +100,18 @@ public class ApiServer {
         });
     }
 
-    private String encrypt(String payload) {
+    private static JSONPayload createJSONPayload() {
+        return new JSONPayload(useEncryption);
+    }
+
+    public static String encrypt(String payload) {
         if (!useEncryption) {
             return payload;
         }
         return AES256Cryptor.encrypt(payload, AESKey);
     }
 
-    private String decrypt(String payload) {
+    public static String decrypt(String payload) {
         if (!useEncryption) {
             return payload;
         }
@@ -122,7 +126,7 @@ public class ApiServer {
                         new CacheLoader<HashMap, Object>() {
                             @Override
                             public Object load(HashMap params) throws Exception {
-                                JSONPayload ret = new JSONPayload();
+                                JSONPayload ret = createJSONPayload();
                                 ret.setStatus("OK");
                                 JsonElement data = null;
                                 switch (routeMethod) {
@@ -140,7 +144,7 @@ public class ApiServer {
 
                                 }
                                 ret.setData(data);
-                                return encrypt(ret.getString());
+                                return ret.getString();
                             }
                         }
                 );
@@ -281,7 +285,7 @@ public class ApiServer {
         String password = new String(body.get("password").getAsString());
 
         AppUser user = DSL.getAppUserByID(ID);
-        JSONPayload ret = new JSONPayload();
+        JSONPayload ret = createJSONPayload();
         ret.setStatus("ERROR");
         if (user == null) {
             response.status(404);
@@ -379,12 +383,12 @@ public class ApiServer {
         });
 
         get("/users", (request, response) -> {
-            JSONPayload ret = new JSONPayload();
+            JSONPayload ret = createJSONPayload();
             ret.setStatus("OK");
             HashMap params = new HashMap(); //params, not used here
             ret.setData(usersRoute(params));
             response.header("Content-Encoding", "gzip");
-            return encrypt(ret.getString());
+            return ret.getString();
         });
 
         get("/floors", (request, response) -> {
@@ -407,7 +411,7 @@ public class ApiServer {
             response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
 
-            JSONPayload ret = new JSONPayload();
+            JSONPayload ret = createJSONPayload();
             ret.setStatus("OK");
 
             TicketInfo ti = ticketDSL.getTicketByPlaceID(placeID);
@@ -428,7 +432,7 @@ public class ApiServer {
             response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
 
-            JSONPayload ret = new JSONPayload();
+            JSONPayload ret = createJSONPayload();
             ret.setStatus("OK");
 
             TicketInfo ti = ticketDSL.getTicketByPlaceID(placeID);
@@ -456,16 +460,32 @@ class JSONPayload {
     String status;
     String errorMessage = null;
     JsonElement data;
+    boolean encrypt = true;
+
+    public JSONPayload(boolean encrypt) {
+        this.encrypt = encrypt;
+    }
 
     public String getString() {
         HashMap d = new HashMap();
-        d.put("data", data);
+
+        Object dataValue;
+        if (data == null) {
+            dataValue = "";
+        } else if (data.isJsonNull()) {
+            dataValue = "";
+        } else {
+            dataValue = encrypt ? ApiServer.encrypt(data.toString()) : data;
+        }
+
+        d.put("encrypted", encrypt);
+        d.put("data", dataValue);
         d.put("status", status);
         d.put("errorMessage", errorMessage);
         Gson gson = new GsonBuilder()
                 .serializeNulls()
                 .setPrettyPrinting().create();
-        return gson.toJson(d).toString();
+        return gson.toJson(d);
     }
 
     public String getStatus() {
