@@ -65,17 +65,12 @@ public class ApiServer {
         DSL = (DSL) app.getBean("com.unicenta.pos.api.DSL");
         DSL.setReceiptsLogic(receiptsLogic);
 
-        try {
-//            SecretKey key = AESUtil.generateKey();
-//            AESUtil ae = new AESUtil(key);
+        /*try {
 
             String payload = "Tudor was here";
             String enc = null;
             String dec = null;
-//            enc = ae.encrypt(payload);
-//            dec = ae.decrypt(enc);
             enc = AES256Cryptor.encrypt(payload, "secret");
-            dec = AES256Cryptor.decrypt(enc, "secret");
             dec = AES256Cryptor.decrypt("U2FsdGVkX1+30P+7lZfHufktcX020h5KgOjVf6WlgA4=", "secret");
 
             logger.warning(String.format("enc: %s dec: %s", enc, dec));
@@ -83,7 +78,7 @@ public class ApiServer {
 
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
 
         ticketDSL = (TicketDSL) app.getBean("com.unicenta.pos.api.TicketDSL");
         ticketDSL.setReceiptsLogic(receiptsLogic);
