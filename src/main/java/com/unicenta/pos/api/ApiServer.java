@@ -55,7 +55,7 @@ public class ApiServer {
     // TODO make a barcode generator to easily scan it in the mobile app
 
     private static String AESKey = "a disturbing secret";
-    private static boolean useEncryption = true; //set to false in dev mode for easier debugging
+    private static boolean useEncryption = false; //set to false in dev mode for easier debugging
 
     public ApiServer(JRootApp app) {
         this.running = false;
@@ -410,7 +410,7 @@ public class ApiServer {
         get("/floors", (request, response) -> {
             response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
-            return (String) cacheProducts.get(params);
+            return (String) cacheFloors.get(params);
         });
 
 
