@@ -271,13 +271,37 @@ public class ApiServer {
         });
     }
 
-    private String authenticateRoute(Request request, Response response) {
-        JsonObject _body = new Gson().fromJson(request.body(), JsonObject.class);
-        JsonObject body = _body.get("data").getAsJsonObject();
+    /**
+     * Gets (and decrypts if necessary) the data member of the request JSON body
+     *
+     * <p>
+     * HTTP request body should follow the {encrypted:true|false, data:{...}} pattern
+     * </p>
+     *
+     * @param request a sparkjava request object
+     * @return
+     */
+    private JsonObject getPostData(Request request) {
+        JsonObject body = new Gson().fromJson(request.body(), JsonObject.class);
+        boolean _encrypted = body.get("encrypted").getAsBoolean();
 
-        String ID = body.get("id").getAsString();
+        logger.warning("REQ encrypted? " + (_encrypted ? "YES" : "NO"));
+        logger.warning(body.get("encrypted").getAsString());
+
+        if (_encrypted) {
+            String payload = body.get("data").toString();
+            String decodedPayload = decrypt(payload);
+            JsonObject data = new Gson().fromJson(decodedPayload, JsonObject.class);
+            return data;
+        }
+        return body.get("data").getAsJsonObject();
+    }
+
+    private String authenticateRoute(Request request, Response response) {
+        JsonObject data = getPostData(request);
+        String ID = data.get("id").getAsString();
         //TODO wrap this in try-catch
-        String password = new String(body.get("password").getAsString());
+        String password = new String(data.get("password").getAsString());
 
         AppUser user = DSL.getAppUserByID(ID);
         JSONPayload ret = createJSONPayload();
@@ -466,9 +490,9 @@ class JSONPayload {
 
         Object dataValue;
         if (data == null) {
-            dataValue = "";
+            dataValue = null;
         } else if (data.isJsonNull()) {
-            dataValue = "";
+            dataValue = null;
         } else {
             dataValue = encrypt ? ApiServer.encrypt(data.toString()) : data;
         }
