@@ -65,21 +65,6 @@ public class ApiServer {
         DSL = (DSL) app.getBean("com.unicenta.pos.api.DSL");
         DSL.setReceiptsLogic(receiptsLogic);
 
-        /*try {
-
-            String payload = "Tudor was here";
-            String enc = null;
-            String dec = null;
-            enc = AES256Cryptor.encrypt(payload, "secret");
-            dec = AES256Cryptor.decrypt("U2FsdGVkX1+30P+7lZfHufktcX020h5KgOjVf6WlgA4=", "secret");
-
-            logger.warning(String.format("enc: %s dec: %s", enc, dec));
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }*/
-
         ticketDSL = (TicketDSL) app.getBean("com.unicenta.pos.api.TicketDSL");
         ticketDSL.setReceiptsLogic(receiptsLogic);
         ticketDSL.setApp(app);
@@ -243,6 +228,26 @@ public class ApiServer {
     }
 
 
+    private void jwtAuthMiddleWare() {
+        before((request, response) -> {
+            String whiteList = "^\\/(dbimage|authenticate)\\/(.+)?";
+            if (request.pathInfo().matches(whiteList)) {
+                return;
+            }
+
+            String authHeader = getAuthTokenFromHeader(request);
+            if (authHeader != null) {
+                boolean result = jwtStore.validateToken(authHeader);
+                if (!result) {
+                    halt(401, "token expired");
+                }
+
+            } else {
+                halt(401, "header token not found");
+            }
+        });
+    }
+
     // Enables CORS on requests. This method is an initialization method and should be called once.
     // @see https://sparktutorials.github.io/2016/05/01/cors.html
     private static void enableCORS(final String origin, final String methods, final String headers) {
@@ -271,6 +276,26 @@ public class ApiServer {
         });
     }
 
+
+    private String getAuthTokenFromHeader(Request request) {
+
+        String authHeader = request.headers("Authorization");
+        logger.warning("Authorization header is " + authHeader);
+        boolean encrypted = isRequestEncrypted(request);
+
+        if (encrypted) {
+            String decodedPayload = AES256Cryptor.decrypt(authHeader, AESKey);
+            logger.warning("Authorization header is " + decodedPayload);
+            return decodedPayload;
+        }
+        return authHeader;
+    }
+
+    private boolean isRequestEncrypted(Request request) {
+        String encryptionHeader = request.headers("X-AES-Encrypted");
+        return "true".equals(encryptionHeader);
+    }
+
     /**
      * Gets (and decrypts if necessary) the data member of the request JSON body
      *
@@ -283,11 +308,10 @@ public class ApiServer {
      */
     private JsonObject getPostData(Request request) {
         JsonObject body = new Gson().fromJson(request.body(), JsonObject.class);
-        boolean _encrypted = body.get("encrypted").getAsBoolean();
-
-        if (_encrypted) {
+        boolean encrypted = isRequestEncrypted(request);
+        if (encrypted) {
             String payload = body.get("data").toString();
-            String decodedPayload = decrypt(payload);
+            String decodedPayload = AES256Cryptor.decrypt(payload, AESKey);
             JsonObject data = new Gson().fromJson(decodedPayload, JsonObject.class);
             return data;
         }
@@ -331,6 +355,8 @@ public class ApiServer {
                 "GET,POST,PUT,DELETE,PATCH,OPTIONS",
                 "Content-type,X-Requested-With"
         );
+        jwtAuthMiddleWare();
+
 
         // NOTE test with
         // curl  -X POST localhost:7777/authenticate/ -H "Content-Type: application/json; charset=utf8" --data '{"id":"0", "password":"123"}'
