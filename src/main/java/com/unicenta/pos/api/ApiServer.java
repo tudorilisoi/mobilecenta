@@ -55,7 +55,7 @@ public class ApiServer {
     // TODO make a barcode generator to easily scan it in the mobile app
 
     private static String AESKey = "a disturbing secret";
-    private static boolean useEncryption = false; //set to false in dev mode for easier debugging
+    private static boolean useEncryption = true; //set to false in dev mode for easier debugging
 
     public ApiServer(JRootApp app) {
         this.running = false;
@@ -235,15 +235,19 @@ public class ApiServer {
                 return;
             }
 
+            JSONPayload ret = new JSONPayload(isRequestEncrypted(request));
+
             String authHeader = getAuthTokenFromHeader(request);
             if (authHeader != null) {
                 boolean result = jwtStore.validateToken(authHeader);
                 if (!result) {
-                    halt(401, "token expired");
+                    ret.setErrorMessage("TOKEN_INVALID");
+                    halt(401, ret.getString());
                 }
 
             } else {
-                halt(401, "header token not found");
+                ret.setErrorMessage("TOKEN_NOT_FOUND");
+                halt(401, ret.getString());
             }
         });
     }
