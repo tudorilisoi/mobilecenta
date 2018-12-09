@@ -30,7 +30,6 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lblTxtServerPort" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="lblTktFooter1" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
@@ -47,6 +46,7 @@
                       </Group>
                   </Group>
                   <Component id="lblTktHeader6" alignment="1" max="-2" attributes="0"/>
+                  <Component id="lblTxtServerPort" alignment="1" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -71,9 +71,9 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lblTxtServerPort" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jtxtServerPort" alignment="0" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="jtxtServerPort" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblTxtServerPort" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -174,7 +174,7 @@
     <Component class="javax.swing.JLabel" name="lblTxtAESkey">
       <Properties>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Arial" size="14" style="0"/>
+          <Font name="Arial" size="14" style="1"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="pos_messages.properties" key="label.tktheader2" replaceFormat="AppLocal.getIntString(&quot;{key}&quot;)"/>

@@ -82,7 +82,11 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
     @Override
     public void loadProperties(AppConfig config) {
 
-        jtxtServerPort.setText(config.getProperty("mobilecenta.server_port"));
+        String port = config.getProperty("mobilecenta.server_port");
+        if (port == null) {
+            port = "7777";
+        }
+        jtxtServerPort.setText(port);
         String aesKey = config.getProperty("mobilecenta.aes_private_key");
         if (aesKey != null && aesKey.startsWith("crypt:")) {
             AltEncrypter cypher = new AltEncrypter("cypherkey");
@@ -115,7 +119,12 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
     @Override
     public void saveProperties(AppConfig config) {
 
-        config.setProperty("mobilecenta.server_port", jtxtServerPort.getText());
+        String port = jtxtServerPort.getText();
+        if (port == null) {
+            port = "7777";
+            jtxtServerPort.setText(port);
+        }
+        config.setProperty("mobilecenta.server_port", port);
 
         String aesKey = jtxtAESKey.getText();
         AltEncrypter cypher = new AltEncrypter("cypherkey");
@@ -143,7 +152,7 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
         new Random().nextBytes(array);
         String generatedString = Base64.getEncoder().encodeToString(array);
         //cut the == padding
-        return generatedString.substring(0, generatedString.length()-2);
+        return generatedString.substring(0, generatedString.length() - 2);
     }
 
     /**
@@ -195,7 +204,7 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
         jtxtServerPort.setMinimumSize(new java.awt.Dimension(0, 0));
         jtxtServerPort.setPreferredSize(new java.awt.Dimension(300, 30));
 
-        lblTxtAESkey.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        lblTxtAESkey.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         lblTxtAESkey.setText(AppLocal.getIntString("label.tktheader2")); // NOI18N
         lblTxtAESkey.setMaximumSize(new java.awt.Dimension(0, 25));
         lblTxtAESkey.setMinimumSize(new java.awt.Dimension(0, 0));
@@ -324,7 +333,6 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
                         .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(lblTxtServerPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(lblTktFooter1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGroup(layout.createSequentialGroup()
                                                 .addGap(10, 10, 10)
@@ -338,7 +346,8 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
                                                         .addComponent(lblTktHeader3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                         .addComponent(lblTktHeader4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                         .addComponent(lblTktHeader5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                        .addComponent(lblTktHeader6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(lblTktHeader6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(lblTxtServerPort, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                         .addComponent(jtxtTktFooter5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -359,9 +368,9 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(lblTxtServerPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jtxtServerPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(jtxtServerPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(lblTxtServerPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addComponent(lblTxtAESkey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)

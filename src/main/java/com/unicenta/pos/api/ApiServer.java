@@ -13,16 +13,20 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.openbravo.basic.BasicException;
+import com.openbravo.pos.forms.AppConfig;
+import com.openbravo.pos.forms.AppProperties;
 import com.openbravo.pos.forms.AppUser;
 import com.openbravo.pos.forms.JRootApp;
 import com.openbravo.pos.sales.DataLogicReceipts;
 import com.openbravo.pos.ticket.TicketInfo;
+import com.openbravo.pos.util.AltEncrypter;
 import com.openbravo.pos.util.Hashcypher;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.HashMap;
@@ -78,9 +82,6 @@ public class ApiServer {
         Spark.exception(Exception.class, (exception, request, response) -> {
             exception.printStackTrace();
         });
-
-        //TODO move this to JpanelConfigMobileCenta
-        NetworkInfo.getAllAddresses();
 
     }
 
@@ -356,7 +357,25 @@ public class ApiServer {
     }
 
     public int start() {
-        port(7777);
+
+        //TODO move this to JpanelConfigMobileCenta
+        NetworkInfo.getAllAddresses();
+        File configFile = app.getProperties().getConfigFile();
+        AppProperties props = app.getProperties();
+
+        String aesKey = props.getProperty("mobilecenta.aes_private_key");
+        if (aesKey != null && aesKey.startsWith("crypt:")) {
+            AltEncrypter cypher = new AltEncrypter("cypherkey");
+            aesKey = cypher.decrypt(aesKey.substring(6));
+        }
+        AESKey = aesKey;
+
+        String portStr = props.getProperty("mobilecenta.server_port");
+        if (portStr == null) {
+            portStr = "7777";
+        }
+
+        port(Integer.parseInt(portStr));
         running = true;
 
         enableCORS("*",
