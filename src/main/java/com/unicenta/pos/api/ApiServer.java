@@ -78,6 +78,10 @@ public class ApiServer {
         Spark.exception(Exception.class, (exception, request, response) -> {
             exception.printStackTrace();
         });
+
+        //TODO move this to JpanelConfigMobileCenta
+        NetworkInfo.getAllAddresses();
+
     }
 
     private static JSONPayload createJSONPayload() {
