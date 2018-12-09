@@ -30,12 +30,12 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lblTktHeader1" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblTxtServerPort" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="lblTktFooter1" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="lblTktHeader2" max="-2" attributes="0"/>
+                          <Component id="lblTxtAESkey" max="-2" attributes="0"/>
                           <Component id="lblTktFooter2" max="-2" attributes="0"/>
                           <Component id="lblTktFooter4" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="lblTktFooter3" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -59,8 +59,8 @@
                   <Component id="jtxtTktHeader5" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="jtxtTktHeader4" alignment="0" max="-2" attributes="0"/>
                   <Component id="jtxtTktHeader3" alignment="0" max="-2" attributes="0"/>
-                  <Component id="jtxtTktHeader2" alignment="0" max="-2" attributes="0"/>
-                  <Component id="jtxtTktHeader1" alignment="0" max="-2" attributes="0"/>
+                  <Component id="jtxtAESKey" alignment="0" max="-2" attributes="0"/>
+                  <Component id="jtxtServerPort" alignment="0" max="-2" attributes="0"/>
                   <Component id="jtxtTktFooter6" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -72,13 +72,13 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lblTktHeader1" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jtxtTktHeader1" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblTxtServerPort" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="jtxtServerPort" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lblTktHeader2" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jtxtTktHeader2" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblTxtAESkey" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="jtxtAESKey" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -136,7 +136,7 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="lblTktHeader1">
+    <Component class="javax.swing.JLabel" name="lblTxtServerPort">
       <Properties>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
           <Font name="Arial" size="14" style="1"/>
@@ -155,7 +155,7 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="jtxtTktHeader1">
+    <Component class="javax.swing.JTextField" name="jtxtServerPort">
       <Properties>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
           <Font name="Arial" size="14" style="0"/>
@@ -171,7 +171,7 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="lblTktHeader2">
+    <Component class="javax.swing.JLabel" name="lblTxtAESkey">
       <Properties>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
           <Font name="Arial" size="14" style="0"/>
@@ -190,7 +190,7 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="jtxtTktHeader2">
+    <Component class="javax.swing.JTextField" name="jtxtAESKey">
       <Properties>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
           <Font name="Arial" size="14" style="0"/>

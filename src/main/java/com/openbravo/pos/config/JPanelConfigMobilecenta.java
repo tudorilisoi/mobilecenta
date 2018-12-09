@@ -40,8 +40,8 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
         
         initComponents();
                           
-        jtxtTktHeader1.getDocument().addDocumentListener(dirty);
-        jtxtTktHeader2.getDocument().addDocumentListener(dirty);
+        jtxtServerPort.getDocument().addDocumentListener(dirty);
+        jtxtAESKey.getDocument().addDocumentListener(dirty);
         jtxtTktHeader3.getDocument().addDocumentListener(dirty);
         jtxtTktHeader4.getDocument().addDocumentListener(dirty);
         jtxtTktHeader5.getDocument().addDocumentListener(dirty);
@@ -81,8 +81,8 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
     @Override
     public void loadProperties(AppConfig config) {
 
-        jtxtTktHeader1.setText(config.getProperty("tkt.header1"));
-        jtxtTktHeader2.setText(config.getProperty("tkt.header2"));
+        jtxtServerPort.setText(config.getProperty("mobilecenta.server_port"));
+        jtxtAESKey.setText(config.getProperty("mobilecenta.aes_private_key"));
         jtxtTktHeader3.setText(config.getProperty("tkt.header3"));  
         jtxtTktHeader4.setText(config.getProperty("tkt.header4"));  
         jtxtTktHeader5.setText(config.getProperty("tkt.header5"));  
@@ -106,8 +106,8 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
     @Override
     public void saveProperties(AppConfig config) {
         
-        config.setProperty("tkt.header1", jtxtTktHeader1.getText());
-        config.setProperty("tkt.header2", jtxtTktHeader2.getText()); 
+        config.setProperty("mobilecenta.server_port", jtxtServerPort.getText());
+        config.setProperty("mobilecenta.aes_private_key", jtxtAESKey.getText()); 
         config.setProperty("tkt.header3", jtxtTktHeader3.getText()); 
         config.setProperty("tkt.header4", jtxtTktHeader4.getText()); 
         config.setProperty("tkt.header5", jtxtTktHeader5.getText()); 
@@ -131,10 +131,10 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lblTktHeader1 = new javax.swing.JLabel();
-        jtxtTktHeader1 = new javax.swing.JTextField();
-        lblTktHeader2 = new javax.swing.JLabel();
-        jtxtTktHeader2 = new javax.swing.JTextField();
+        lblTxtServerPort = new javax.swing.JLabel();
+        jtxtServerPort = new javax.swing.JTextField();
+        lblTxtAESkey = new javax.swing.JLabel();
+        jtxtAESKey = new javax.swing.JTextField();
         lblTktHeader3 = new javax.swing.JLabel();
         jtxtTktHeader3 = new javax.swing.JTextField();
         lblTktHeader4 = new javax.swing.JLabel();
@@ -160,27 +160,27 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
         setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         setPreferredSize(new java.awt.Dimension(700, 500));
 
-        lblTktHeader1.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
-        lblTktHeader1.setText(AppLocal.getIntString("label.tktheader1")); // NOI18N
-        lblTktHeader1.setMaximumSize(new java.awt.Dimension(0, 25));
-        lblTktHeader1.setMinimumSize(new java.awt.Dimension(0, 0));
-        lblTktHeader1.setPreferredSize(new java.awt.Dimension(150, 30));
+        lblTxtServerPort.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        lblTxtServerPort.setText(AppLocal.getIntString("label.tktheader1")); // NOI18N
+        lblTxtServerPort.setMaximumSize(new java.awt.Dimension(0, 25));
+        lblTxtServerPort.setMinimumSize(new java.awt.Dimension(0, 0));
+        lblTxtServerPort.setPreferredSize(new java.awt.Dimension(150, 30));
 
-        jtxtTktHeader1.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jtxtTktHeader1.setMaximumSize(new java.awt.Dimension(0, 25));
-        jtxtTktHeader1.setMinimumSize(new java.awt.Dimension(0, 0));
-        jtxtTktHeader1.setPreferredSize(new java.awt.Dimension(300, 30));
+        jtxtServerPort.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jtxtServerPort.setMaximumSize(new java.awt.Dimension(0, 25));
+        jtxtServerPort.setMinimumSize(new java.awt.Dimension(0, 0));
+        jtxtServerPort.setPreferredSize(new java.awt.Dimension(300, 30));
 
-        lblTktHeader2.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        lblTktHeader2.setText(AppLocal.getIntString("label.tktheader2")); // NOI18N
-        lblTktHeader2.setMaximumSize(new java.awt.Dimension(0, 25));
-        lblTktHeader2.setMinimumSize(new java.awt.Dimension(0, 0));
-        lblTktHeader2.setPreferredSize(new java.awt.Dimension(150, 30));
+        lblTxtAESkey.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        lblTxtAESkey.setText(AppLocal.getIntString("label.tktheader2")); // NOI18N
+        lblTxtAESkey.setMaximumSize(new java.awt.Dimension(0, 25));
+        lblTxtAESkey.setMinimumSize(new java.awt.Dimension(0, 0));
+        lblTxtAESkey.setPreferredSize(new java.awt.Dimension(150, 30));
 
-        jtxtTktHeader2.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jtxtTktHeader2.setMaximumSize(new java.awt.Dimension(0, 25));
-        jtxtTktHeader2.setMinimumSize(new java.awt.Dimension(0, 0));
-        jtxtTktHeader2.setPreferredSize(new java.awt.Dimension(300, 30));
+        jtxtAESKey.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jtxtAESKey.setMaximumSize(new java.awt.Dimension(0, 25));
+        jtxtAESKey.setMinimumSize(new java.awt.Dimension(0, 0));
+        jtxtAESKey.setPreferredSize(new java.awt.Dimension(300, 30));
 
         lblTktHeader3.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         lblTktHeader3.setText(AppLocal.getIntString("label.tktheader3")); // NOI18N
@@ -300,12 +300,12 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblTktHeader1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblTxtServerPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblTktFooter1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(10, 10, 10)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblTktHeader2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lblTxtAESkey, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(lblTktFooter2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(lblTktFooter4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(lblTktFooter3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -326,8 +326,8 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
                     .addComponent(jtxtTktHeader5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jtxtTktHeader4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jtxtTktHeader3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jtxtTktHeader2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jtxtTktHeader1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jtxtAESKey, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jtxtServerPort, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jtxtTktFooter6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -336,12 +336,12 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblTktHeader1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jtxtTktHeader1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lblTxtServerPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jtxtServerPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblTktHeader2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jtxtTktHeader2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lblTxtAESkey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jtxtAESKey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jtxtTktHeader3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -388,14 +388,14 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField jtxtAESKey;
+    private javax.swing.JTextField jtxtServerPort;
     private javax.swing.JTextField jtxtTktFooter1;
     private javax.swing.JTextField jtxtTktFooter2;
     private javax.swing.JTextField jtxtTktFooter3;
     private javax.swing.JTextField jtxtTktFooter4;
     private javax.swing.JTextField jtxtTktFooter5;
     private javax.swing.JTextField jtxtTktFooter6;
-    private javax.swing.JTextField jtxtTktHeader1;
-    private javax.swing.JTextField jtxtTktHeader2;
     private javax.swing.JTextField jtxtTktHeader3;
     private javax.swing.JTextField jtxtTktHeader4;
     private javax.swing.JTextField jtxtTktHeader5;
@@ -406,12 +406,12 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
     private javax.swing.JLabel lblTktFooter4;
     private javax.swing.JLabel lblTktFooter5;
     private javax.swing.JLabel lblTktFooter6;
-    private javax.swing.JLabel lblTktHeader1;
-    private javax.swing.JLabel lblTktHeader2;
     private javax.swing.JLabel lblTktHeader3;
     private javax.swing.JLabel lblTktHeader4;
     private javax.swing.JLabel lblTktHeader5;
     private javax.swing.JLabel lblTktHeader6;
+    private javax.swing.JLabel lblTxtAESkey;
+    private javax.swing.JLabel lblTxtServerPort;
     // End of variables declaration//GEN-END:variables
     
 }
