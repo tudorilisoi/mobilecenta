@@ -39,6 +39,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+
+import com.unicenta.pos.api.UIHelpers;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 // import org.jdesktop.swingx.painter.MattePainter;
@@ -101,7 +103,8 @@ public class JPrincipalApp extends javax.swing.JPanel implements AppUserView {
         m_principalnotificator.applyComponentOrientation(getComponentOrientation());
         m_principalnotificator.setText(m_appuser.getName());
         m_principalnotificator.setIcon(m_appuser.getIcon());
-        
+        // NOTE @tudorilisoi here you can set API server status
+
         if (jButton1.getComponentOrientation().isLeftToRight()) {
             menu_open = new javax.swing.ImageIcon(getClass().getResource(
                 "/com/openbravo/images/menu-right.png"));
