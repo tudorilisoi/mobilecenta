@@ -135,6 +135,7 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
             lblQRImage.setIcon(new ImageIcon(imgBytes));
         } catch (Exception e) {
             //TODO set an informative message
+            lblQRImage.setText("ERROR: Cannot generate QR code");
         }
     }
 
