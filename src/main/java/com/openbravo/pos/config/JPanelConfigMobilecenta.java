@@ -25,11 +25,11 @@ import com.openbravo.data.user.DirtyManager;
 import com.openbravo.pos.forms.AppConfig;
 import com.openbravo.pos.forms.AppLocal;
 import com.openbravo.pos.util.AltEncrypter;
+import com.unicenta.pos.api.NetworkInfo;
 import com.unicenta.pos.api.QRCodeGenerator;
 
 import javax.swing.*;
 import java.awt.Component;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -43,7 +43,7 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
     private final DirtyManager dirty = new DirtyManager();
     private String port;
     private String aesKey;
-    private String networkIP;
+    private String serverIPAddress;
 
     /**
      *
@@ -100,13 +100,11 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
         jtxtAESKey.setText(aesKey);
 
 
-        ArrayList<String> names = new ArrayList<String>();
-        names.add("jessy");
-        names.add("albert");
-        names.add("grace");
+        serverIPAddress = config.getProperty("mobilecenta.server_ip_address");
+        ArrayList<String> addresses = NetworkInfo.getAllAddresses();
 
-        for (int i = 0; i < names.size(); i++) {
-            jComboBoxNetworkIPs.addItem(names.get(i));
+        for (int i = 0; i < addresses.size(); i++) {
+            jComboBoxNetworkIPs.addItem(addresses.get(i));
         }
 
         setQRCode(getQRJSONString());
@@ -133,6 +131,10 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
         config.setProperty("mobilecenta.aes_private_key", "crypt:" +
                 cypher.encrypt(new String(aesKey)));
 
+        serverIPAddress = (String) jComboBoxNetworkIPs.getSelectedItem();
+        serverIPAddress = NetworkInfo.parseAddress(serverIPAddress);
+        config.setProperty("mobilecenta.server_ip_address", serverIPAddress);
+
         setQRCode(getQRJSONString());
         dirty.setDirty(false);
     }
@@ -151,6 +153,7 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
 
         d.put("port", port);
         d.put("aesKey", aesKey);
+        d.put("serverIPAddress", serverIPAddress);
 
         Gson gson = new GsonBuilder()
                 .serializeNulls()

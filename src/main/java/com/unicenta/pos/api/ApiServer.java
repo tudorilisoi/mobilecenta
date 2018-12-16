@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -359,7 +360,9 @@ public class ApiServer {
     public int start() {
 
         //TODO move this to JpanelConfigMobileCenta
-        NetworkInfo.getAllAddresses();
+        ArrayList<String> s = NetworkInfo.getAllAddresses();
+        logger.warning(s.toString());
+
         File configFile = app.getProperties().getConfigFile();
         AppProperties props = app.getProperties();
 
