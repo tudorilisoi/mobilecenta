@@ -13,7 +13,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.openbravo.basic.BasicException;
-import com.openbravo.pos.forms.AppConfig;
 import com.openbravo.pos.forms.AppProperties;
 import com.openbravo.pos.forms.AppUser;
 import com.openbravo.pos.forms.JRootApp;
@@ -233,8 +232,24 @@ public class ApiServer {
         }
     }
 
+    private void middlewareVerifyAESKey() {
+        before((request, response) -> {
+            boolean encrypted = isRequestEncrypted(request);
+            if (!encrypted) {
+                return;
+            }
+            String verifyHeader = request.headers("X-AES-Verify");
 
-    private void jwtAuthMiddleWare() {
+            String decodedPayload = AES256Cryptor.decrypt(verifyHeader, AESKey);
+            if (decodedPayload == null) {
+                JSONPayload ret = new JSONPayload(false);
+                ret.setErrorMessage("BAD_AES_KEY");
+                halt(401, ret.getString());
+            }
+        });
+    }
+
+    private void middleWareJWTAuth() {
         before((request, response) -> {
             String whiteList = "^\\/(dbimage|authenticate)\\/(.+)?";
             if (request.pathInfo().matches(whiteList)) {
@@ -255,7 +270,6 @@ public class ApiServer {
                 }
 
             } else {
-
                 ret.setErrorMessage("TOKEN_NOT_FOUND");
                 halt(401, ret.getString());
             }
@@ -343,12 +357,12 @@ public class ApiServer {
         ret.setStatus("ERROR");
         if (user == null) {
             response.status(404);
-            ret.setErrorMessage("NO SUCH USER ID");
+            ret.setErrorMessage("NO_SUCH_USER_ID");
             return ret.getString();
         }
         if (!Hashcypher.authenticate(password, user.getPassword())) {
             response.status(400);
-            ret.setErrorMessage("BAD PASSWORD");
+            ret.setErrorMessage("BAD_PASSWORD");
             return ret.getString();
         }
 
@@ -398,7 +412,8 @@ public class ApiServer {
                 "GET,POST,PUT,DELETE,PATCH,OPTIONS",
                 "Content-type,X-Requested-With"
         );
-        jwtAuthMiddleWare();
+        middlewareVerifyAESKey();
+        middleWareJWTAuth();
 
 
         // NOTE test with
