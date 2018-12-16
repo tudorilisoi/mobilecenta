@@ -151,9 +151,10 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
     private String getQRJSONString() {
         HashMap d = new HashMap();
 
-        d.put("port", port);
         d.put("aesKey", aesKey);
-        d.put("serverIPAddress", serverIPAddress);
+        d.put("baseURL", "http://" + serverIPAddress + ":" + port);
+//        d.put("port", port);
+//        d.put("serverIPAddress", serverIPAddress);
 
         Gson gson = new GsonBuilder()
                 .serializeNulls()
