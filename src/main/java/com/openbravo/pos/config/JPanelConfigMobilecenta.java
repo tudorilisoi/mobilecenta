@@ -19,6 +19,8 @@
 
 package com.openbravo.pos.config;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.openbravo.data.user.DirtyManager;
 import com.openbravo.pos.forms.AppConfig;
 import com.openbravo.pos.forms.AppLocal;
@@ -30,6 +32,7 @@ import java.awt.Component;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -38,7 +41,9 @@ import java.util.Random;
 public class JPanelConfigMobilecenta extends javax.swing.JPanel implements PanelConfig {
 
     private final DirtyManager dirty = new DirtyManager();
-
+    private String port;
+    private String aesKey;
+    private String networkIP;
 
     /**
      *
@@ -76,13 +81,14 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
     public void loadProperties(AppConfig config) {
         boolean _dirty = false;
 
-        String port = config.getProperty("mobilecenta.server_port");
+        port = config.getProperty("mobilecenta.server_port");
         if (port == null) {
             port = "7777";
             _dirty = true;
         }
         jtxtServerPort.setText(port);
-        String aesKey = config.getProperty("mobilecenta.aes_private_key");
+
+        aesKey = config.getProperty("mobilecenta.aes_private_key");
         if (aesKey != null && aesKey.startsWith("crypt:")) {
             AltEncrypter cypher = new AltEncrypter("cypherkey");
             aesKey = cypher.decrypt(aesKey.substring(6));
@@ -103,7 +109,7 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
             jComboBoxNetworkIPs.addItem(names.get(i));
         }
 
-//        setQRCode("Tudor was here");
+        setQRCode(getQRJSONString());
 
         dirty.setDirty(_dirty);
 
@@ -115,19 +121,19 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
     @Override
     public void saveProperties(AppConfig config) {
 
-        String port = jtxtServerPort.getText();
+        port = jtxtServerPort.getText();
         if (port == null) {
             port = "7777";
             jtxtServerPort.setText(port);
         }
         config.setProperty("mobilecenta.server_port", port);
 
-        String aesKey = jtxtAESKey.getText();
+        aesKey = jtxtAESKey.getText();
         AltEncrypter cypher = new AltEncrypter("cypherkey");
         config.setProperty("mobilecenta.aes_private_key", "crypt:" +
                 cypher.encrypt(new String(aesKey)));
 
-
+        setQRCode(getQRJSONString());
         dirty.setDirty(false);
     }
 
@@ -140,6 +146,17 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
         return generatedString.substring(0, generatedString.length() - 2);
     }
 
+    private String getQRJSONString() {
+        HashMap d = new HashMap();
+
+        d.put("port", port);
+        d.put("aesKey", aesKey);
+
+        Gson gson = new GsonBuilder()
+                .serializeNulls()
+                .setPrettyPrinting().create();
+        return gson.toJson(d);
+    }
 
     private void setQRCode(String str) {
         try {
