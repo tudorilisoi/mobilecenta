@@ -244,6 +244,9 @@ public class ApiServer {
             JSONPayload ret = new JSONPayload(isRequestEncrypted(request));
 
             String authHeader = getAuthTokenFromHeader(request);
+
+            // if auth goes wrong do not encrypt the response
+            // not really necessary since errorMessage is always unencrypted
             if (authHeader != null) {
                 boolean result = jwtStore.validateToken(authHeader);
                 if (!result) {
@@ -252,6 +255,7 @@ public class ApiServer {
                 }
 
             } else {
+
                 ret.setErrorMessage("TOKEN_NOT_FOUND");
                 halt(401, ret.getString());
             }
@@ -543,6 +547,10 @@ class JSONPayload {
     JsonElement data;
     boolean encrypt = true;
 
+    public void setEncryption(boolean encrypt) {
+        this.encrypt = encrypt;
+    }
+
     public JSONPayload(boolean encrypt) {
         this.encrypt = encrypt;
     }
@@ -579,6 +587,7 @@ class JSONPayload {
 
     public void setErrorMessage(String message) {
         this.errorMessage = message;
+        this.setEncryption(false);
     }
 
     public JsonElement getData() {

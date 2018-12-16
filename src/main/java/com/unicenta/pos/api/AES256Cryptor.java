@@ -20,12 +20,15 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class AES256Cryptor {
+
+    private static final Logger logger = Logger.getLogger("AES256Cryptor");
 
     /**
      * Encrypt
