@@ -104,7 +104,12 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
         ArrayList<String> addresses = NetworkInfo.getAllAddresses();
 
         for (int i = 0; i < addresses.size(); i++) {
-            jComboBoxNetworkIPs.addItem(addresses.get(i));
+            String addr = addresses.get(i);
+            jComboBoxNetworkIPs.addItem(addr);
+            String parsed = NetworkInfo.parseAddress(addr);
+            if (parsed.equals(serverIPAddress)) {
+                jComboBoxNetworkIPs.setSelectedItem(addr);
+            }
         }
 
         setQRCode(getQRJSONString());

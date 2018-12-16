@@ -11,6 +11,7 @@ public class NetworkInfo {
 
     private static String SEPARATOR = " > ";
 
+    //TODO  switch from strings to hashmap (ifName, addressesArray)
     public static ArrayList<String> getAllAddresses() {
         ArrayList<String> addresses = new ArrayList<String>();
         try {

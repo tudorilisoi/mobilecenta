@@ -373,12 +373,21 @@ public class ApiServer {
         }
         AESKey = aesKey;
 
+
+        String ipAddressStr = props.getProperty("mobilecenta.server_ip_address");
+        if (ipAddressStr != null) {
+            logger.warning("API SERVER IP " + ipAddressStr);
+            ipAddress(ipAddressStr);
+        }
+
+
         String portStr = props.getProperty("mobilecenta.server_port");
         if (portStr == null) {
             portStr = "7777";
         }
-
+        logger.warning("API SERVER PORT " + portStr);
         port(Integer.parseInt(portStr));
+
         running = true;
 
         enableCORS("*",
