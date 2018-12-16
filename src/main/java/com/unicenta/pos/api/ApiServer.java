@@ -278,9 +278,12 @@ public class ApiServer {
 
     // Enables CORS on requests. This method is an initialization method and should be called once.
     // @see https://sparktutorials.github.io/2016/05/01/cors.html
-    private static void enableCORS(final String origin, final String methods, final String headers) {
+    private static void middlewareEnableCORS(final String origin, final String methods, final String headers) {
 
         options("/*", (request, response) -> {
+
+            // hide Jetty version
+            response.header("server", "Mobilecenta API");
 
             String accessControlRequestHeaders = request.headers("Access-Control-Request-Headers");
             if (accessControlRequestHeaders != null) {
@@ -296,6 +299,7 @@ public class ApiServer {
         });
 
         before((request, response) -> {
+            response.header("server", "Mobilecenta API");
             response.header("Access-Control-Allow-Origin", origin);
             response.header("Access-Control-Request-Method", methods);
             response.header("Access-Control-Allow-Headers", headers);
@@ -408,7 +412,7 @@ public class ApiServer {
 
         running = true;
 
-        enableCORS("*",
+        middlewareEnableCORS("*",
                 "GET,POST,PUT,DELETE,PATCH,OPTIONS",
                 "Content-type,X-Requested-With"
         );
