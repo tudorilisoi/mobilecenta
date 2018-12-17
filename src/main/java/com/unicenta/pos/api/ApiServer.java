@@ -338,7 +338,7 @@ public class ApiServer {
      * @param request a sparkjava request object
      * @return
      */
-    private JsonObject getPostData(Request request) {
+    private JsonObject getRequestBodyData(Request request) {
         JsonObject body = new Gson().fromJson(request.body(), JsonObject.class);
         boolean encrypted = isRequestEncrypted(request);
         if (encrypted) {
@@ -351,7 +351,7 @@ public class ApiServer {
     }
 
     private String authenticateRoute(Request request, Response response) {
-        JsonObject data = getPostData(request);
+        JsonObject data = getRequestBodyData(request);
         String ID = data.get("id").getAsString();
         //TODO wrap this in try-catch
         String password = new String(data.get("password").getAsString());
