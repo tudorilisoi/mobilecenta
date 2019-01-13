@@ -395,7 +395,8 @@ public class ApiServer {
         }
         AESKey = aesKey;
 
-
+        // TODO check if IP address exists!
+        // if it does not spark will bail out with exit code 100
         String ipAddressStr = props.getProperty("mobilecenta.server_ip_address");
         if (ipAddressStr != null) {
             logger.warning("API SERVER IP " + ipAddressStr);
