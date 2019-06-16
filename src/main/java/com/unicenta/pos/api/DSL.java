@@ -312,6 +312,19 @@ public class DSL extends DataLogicSystem {
         return tryCatchList(sl);
     }
 
+    public final List listTaxCategories() throws BasicException {
+        String[] columnNames = "ID NAME"
+                .split(" ");
+        String sql = "SELECT "
+                + String.join(", ", columnNames)
+                + " FROM taxcategories";
+
+        SentenceList sl = new StaticSentence(
+                s, sql, null, getReader(columnNames)
+        );
+        return tryCatchList(sl);
+    }
+
 
     public final List listProductCategories() throws BasicException {
         String[] columnNames = "ID NAME PARENTID IMAGE".split(" ");

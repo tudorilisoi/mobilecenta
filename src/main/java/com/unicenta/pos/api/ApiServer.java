@@ -59,7 +59,7 @@ public class ApiServer {
     // TODO make a barcode generator to easily scan it in the mobile app
 
     private static String AESKey = "a disturbing secret";
-    private static boolean useEncryption = true; //set to false in dev mode for easier debugging
+    private static boolean useEncryption = false; //set to false in dev mode for easier debugging
 
     public ApiServer(JRootApp app) {
         this.running = false;
@@ -182,7 +182,7 @@ public class ApiServer {
     private JsonElement productsRoute(Map params) throws BasicException {
 
         HashMap d = new HashMap();
-
+        d.put("tax_categories", DSL.listTaxCategories());
         d.put("taxes", DSL.listTaxes());
         d.put("categories", DSL.listProductCategories());
         d.put("products", DSL.listProducts());
@@ -396,6 +396,7 @@ public class ApiServer {
         AESKey = aesKey;
 
         // TODO check if IP address exists!
+        // TODO memorize network if name and check if the IP has changed!
         // NOTE if it does not spark will bail out with exit code 100
         String ipAddressStr = props.getProperty("mobilecenta.server_ip_address");
         if (ipAddressStr != null) {
