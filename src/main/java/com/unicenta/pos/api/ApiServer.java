@@ -222,6 +222,7 @@ public class ApiServer {
         String placeID = "af940d9d-d492-41e3-aeb8-c82f9960f895"; //Masa 14
         String productID = "f10e2fd2-7553-464a-8951-13694db0a503"; //Bergenbier 5 RON
         TicketInfo ticketInfo = DSL.getTicketInfo(placeID);
+        //TODO check locked status and user/role
 
 //        TODO!! load the logged in user
         ticketInfo.setUser(app.getAppUserView().getUser().getUserInfo());
