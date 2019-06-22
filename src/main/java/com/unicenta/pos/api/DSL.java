@@ -30,11 +30,11 @@ public class DSL extends DataLogicSystem {
     final ThumbNailBuilder api_thumb = new ThumbNailBuilder(100, 100);
 
     private Session s;
-    private DataLogicReceipts receiptsLogic;
 
 //    TODO!! make it private after sorting out ticket logic
     public DataLogicSales salesLogic;
     public TaxesLogic taxesLogic;
+    public DataLogicReceipts receiptsLogic;
 
     private byte[] defaultCategoryBytes = null;
     private byte[] defaultProductBytes = null;

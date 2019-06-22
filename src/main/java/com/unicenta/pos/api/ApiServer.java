@@ -222,6 +222,9 @@ public class ApiServer {
         String placeID = "af940d9d-d492-41e3-aeb8-c82f9960f895"; //Masa 14
         String productID = "f10e2fd2-7553-464a-8951-13694db0a503"; //Bergenbier 5 RON
         TicketInfo ticketInfo = DSL.getTicketInfo(placeID);
+
+//        TODO!! load the logged in user
+        ticketInfo.setUser(app.getAppUserView().getUser().getUserInfo());
         ProductInfoExt productInfo = DSL.salesLogic.getProductInfo(productID);
         TaxInfo tax = DSL.taxesLogic.getTaxInfo(productInfo.getTaxCategoryID(), ticketInfo.getCustomer());
 
@@ -235,6 +238,13 @@ public class ApiServer {
         );
         lines.add(line);
         ticketInfo.setLines(lines);
+        try {
+            DSL.receiptsLogic.updateSharedTicket(placeID, ticketInfo, 0);
+//            DSL.salesLogic.saveTicket(ticketInfo, app.getInventoryLocation());
+        } catch (BasicException e) {
+//            TODO!! return HTTP 500
+            e.printStackTrace();
+        }
         d.put("ticket", ticketInfo);
 
         Gson b = new GsonBuilder().serializeNulls().create();
