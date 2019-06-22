@@ -814,6 +814,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
     private void incProductByCode(String sCode) {
 
         try {
+//            TODO !! copy logic to API
             ProductInfoExt oProduct = dlSales.getProductInfoByCode(sCode);
 
             if (oProduct == null) {                  
