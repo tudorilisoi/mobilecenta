@@ -18,7 +18,11 @@ import com.openbravo.pos.forms.AppUser;
 import com.openbravo.pos.forms.DataLogicSales;
 import com.openbravo.pos.forms.JRootApp;
 import com.openbravo.pos.sales.DataLogicReceipts;
+import com.openbravo.pos.sales.TaxesLogic;
+import com.openbravo.pos.ticket.ProductInfoExt;
+import com.openbravo.pos.ticket.TaxInfo;
 import com.openbravo.pos.ticket.TicketInfo;
+import com.openbravo.pos.ticket.TicketLineInfo;
 import com.openbravo.pos.util.AltEncrypter;
 import com.openbravo.pos.util.Hashcypher;
 import spark.Request;
@@ -31,6 +35,7 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -72,10 +77,21 @@ public class ApiServer {
 
         DataLogicSales salesLogic = (DataLogicSales) app.getBean("com.openbravo.pos.forms.DataLogicSales");
         DSL.setSalesLogic(salesLogic);
+        TaxesLogic taxesLogic;
+        try {
+            taxesLogic = new TaxesLogic(salesLogic.getTaxList().list());
+            DSL.setTaxesLogic(taxesLogic);
+        } catch (BasicException e) {
+            e.printStackTrace();
+//            TODO bail out
+        }
 
         ticketDSL = (TicketDSL) app.getBean("com.unicenta.pos.api.TicketDSL");
         ticketDSL.setReceiptsLogic(receiptsLogic);
+
+
         ticketDSL.setApp(app);
+
 
         cacheProducts = makeCache("productsRoute", 500);
         cacheFloors = makeCache("floorsRoute", 500);
@@ -190,6 +206,36 @@ public class ApiServer {
         d.put("taxes", DSL.listTaxes());
         d.put("categories", DSL.listProductCategories());
         d.put("products", DSL.listProducts());
+
+        Gson b = new GsonBuilder().serializeNulls().create();
+        return b.toJsonTree(d);
+    }
+
+    private JsonElement updateTicketRoute(Map params) throws BasicException {
+
+        //TODO!! parse req body, move this method into DSL,
+        // cycle through lines and replace them  in the shared ticket
+
+        HashMap d = new HashMap();
+        d.put("tax_categories", DSL.listTaxCategories());
+
+        String placeID = "af940d9d-d492-41e3-aeb8-c82f9960f895"; //Masa 14
+        String productID = "f10e2fd2-7553-464a-8951-13694db0a503"; //Bergenbier 5 RON
+        TicketInfo ticketInfo = DSL.getTicketInfo(placeID);
+        ProductInfoExt productInfo = DSL.salesLogic.getProductInfo(productID);
+        TaxInfo tax = DSL.taxesLogic.getTaxInfo(productInfo.getTaxCategoryID(), ticketInfo.getCustomer());
+
+        List<TicketLineInfo> lines = new ArrayList<>();
+        TicketLineInfo line = new TicketLineInfo(
+                productInfo,
+                1,
+                5,
+                tax,
+                (java.util.Properties) (productInfo.getProperties().clone())
+        );
+        lines.add(line);
+        ticketInfo.setLines(lines);
+        d.put("ticket", ticketInfo);
 
         Gson b = new GsonBuilder().serializeNulls().create();
         return b.toJsonTree(d);
@@ -383,6 +429,7 @@ public class ApiServer {
         return ret.getString();
     }
 
+
     public int start() {
 
         //TODO move this to JpanelConfigMobileCenta
@@ -530,6 +577,21 @@ public class ApiServer {
 
             Gson b = new GsonBuilder().serializeNulls().create();
             ret.setData(b.toJsonTree(ti));
+
+            return ret.getString();
+        });
+
+        post("/ticket/:placeID", (request, response) -> {
+            String placeID = request.params(":placeID");
+//            TicketDSL t = TicketDSL.getInstance();
+            response.header("Content-Encoding", "gzip");
+            HashMap params = new HashMap(); //params, not used here
+
+            JSONPayload ret = createJSONPayload();
+            ret.setStatus("OK");
+
+            JsonElement resp = updateTicketRoute(params);
+            ret.setData(resp);
 
             return ret.getString();
         });

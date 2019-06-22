@@ -8,6 +8,7 @@ import com.openbravo.pos.forms.DataLogicSystem;
 import com.openbravo.pos.sales.DataLogicReceipts;
 import com.openbravo.pos.forms.DataLogicSales;
 import com.openbravo.pos.sales.SharedTicketInfo;
+import com.openbravo.pos.sales.TaxesLogic;
 import com.openbravo.pos.ticket.TicketInfo;
 import com.openbravo.pos.util.ThumbNailBuilder;
 
@@ -30,7 +31,10 @@ public class DSL extends DataLogicSystem {
 
     private Session s;
     private DataLogicReceipts receiptsLogic;
-    private DataLogicSales salesLogic;
+
+//    TODO!! make it private after sorting out ticket logic
+    public DataLogicSales salesLogic;
+    public TaxesLogic taxesLogic;
 
     private byte[] defaultCategoryBytes = null;
     private byte[] defaultProductBytes = null;
@@ -427,4 +431,7 @@ public class DSL extends DataLogicSystem {
     }
 
 
+    public void setTaxesLogic(TaxesLogic taxesLogic) {
+        this.taxesLogic = taxesLogic;
+    }
 }
