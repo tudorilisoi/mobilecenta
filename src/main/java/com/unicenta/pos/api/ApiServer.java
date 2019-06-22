@@ -15,6 +15,7 @@ import com.google.gson.JsonObject;
 import com.openbravo.basic.BasicException;
 import com.openbravo.pos.forms.AppProperties;
 import com.openbravo.pos.forms.AppUser;
+import com.openbravo.pos.forms.DataLogicSales;
 import com.openbravo.pos.forms.JRootApp;
 import com.openbravo.pos.sales.DataLogicReceipts;
 import com.openbravo.pos.ticket.TicketInfo;
@@ -64,10 +65,13 @@ public class ApiServer {
     public ApiServer(JRootApp app) {
         this.running = false;
         this.app = app;
-        DataLogicReceipts receiptsLogic = (DataLogicReceipts) app.getBean("com.openbravo.pos.sales.DataLogicReceipts");
 
         DSL = (DSL) app.getBean("com.unicenta.pos.api.DSL");
+        DataLogicReceipts receiptsLogic = (DataLogicReceipts) app.getBean("com.openbravo.pos.sales.DataLogicReceipts");
         DSL.setReceiptsLogic(receiptsLogic);
+
+        DataLogicSales salesLogic = (DataLogicSales) app.getBean("com.openbravo.pos.forms.DataLogicSales");
+        DSL.setSalesLogic(salesLogic);
 
         ticketDSL = (TicketDSL) app.getBean("com.unicenta.pos.api.TicketDSL");
         ticketDSL.setReceiptsLogic(receiptsLogic);

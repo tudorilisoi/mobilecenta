@@ -6,6 +6,7 @@ import com.openbravo.data.loader.*;
 import com.openbravo.pos.forms.AppUser;
 import com.openbravo.pos.forms.DataLogicSystem;
 import com.openbravo.pos.sales.DataLogicReceipts;
+import com.openbravo.pos.forms.DataLogicSales;
 import com.openbravo.pos.sales.SharedTicketInfo;
 import com.openbravo.pos.ticket.TicketInfo;
 import com.openbravo.pos.util.ThumbNailBuilder;
@@ -29,6 +30,7 @@ public class DSL extends DataLogicSystem {
 
     private Session s;
     private DataLogicReceipts receiptsLogic;
+    private DataLogicSales salesLogic;
 
     private byte[] defaultCategoryBytes = null;
     private byte[] defaultProductBytes = null;
@@ -51,6 +53,10 @@ public class DSL extends DataLogicSystem {
         this.receiptsLogic = receiptsLogic;
     }
 
+    public void setSalesLogic(DataLogicSales salesLogic) {
+        this.salesLogic = salesLogic;
+    }
+
     private void initDefaultImages() {
         try {
 //            defaultCategoryBytes = IOUtils.toByteArray(
@@ -63,7 +69,12 @@ public class DSL extends DataLogicSystem {
         }
     }
 
-    private TicketInfo getTicketInfo(String id) {
+    /**
+     * greturn shared ticket by place id
+     * @param id
+     * @return
+     */
+    public TicketInfo getTicketInfo(String id) {
         try {
             return receiptsLogic.getSharedTicket(id);
         } catch (BasicException e) {
