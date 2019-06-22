@@ -217,7 +217,6 @@ public class ApiServer {
         // cycle through lines and replace them  in the shared ticket
 
         HashMap d = new HashMap();
-        d.put("tax_categories", DSL.listTaxCategories());
 
         String placeID = "af940d9d-d492-41e3-aeb8-c82f9960f895"; //Masa 14
         String productID = "f10e2fd2-7553-464a-8951-13694db0a503"; //Bergenbier 5 RON
