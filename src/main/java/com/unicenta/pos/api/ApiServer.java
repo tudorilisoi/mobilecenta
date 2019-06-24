@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static spark.Spark.*;
@@ -222,6 +223,8 @@ public class ApiServer {
         String productID = "f10e2fd2-7553-464a-8951-13694db0a503"; //Bergenbier 5 RON
         TicketInfo ticketInfo = DSL.getTicketInfo(placeID);
         //TODO check locked status and user/role
+        // m_dlSystem = (DataLogicSystem) getBean("com.openbravo.pos.forms.DataLogicSystem");
+        // java.util.List people = m_dlSystem.listPeopleVisible();
 
 //        TODO!! load the logged in user
         ticketInfo.setUser(app.getAppUserView().getUser().getUserInfo());
@@ -599,6 +602,8 @@ public class ApiServer {
 
             JSONPayload ret = createJSONPayload();
             ret.setStatus("OK");
+
+            logger.log(Level.INFO, request.body());
 
             JsonElement resp = updateTicketRoute(params);
             ret.setData(resp);
