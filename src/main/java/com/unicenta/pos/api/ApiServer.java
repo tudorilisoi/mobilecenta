@@ -231,10 +231,7 @@ public class ApiServer {
         logger.info("ORDER: " + Converter.toJsonString(order));
         logger.info("JWT User: " + userID);
         //TODO check locked status and user/role
-        // m_dlSystem = (DataLogicSystem) getBean("com.openbravo.pos.forms.DataLogicSystem");
-        // java.util.List people = m_dlSystem.listPeopleVisible();
 
-//        TODO!! load the logged in user
         ticketInfo.setUser(user.getUserInfo());
 
         List<TicketLineInfo> lines = new ArrayList<>();
