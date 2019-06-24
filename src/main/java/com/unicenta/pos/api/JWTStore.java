@@ -30,13 +30,13 @@ public class JWTStore {
         return instance;
     }
 
-    public boolean validateToken(String token) {
+    public DecodedJWT decodeToken(String token) {
         try {
             DecodedJWT jwt = verifier.verify(token);
-            return true;
+            return jwt;
         } catch (JWTVerificationException exception) {
             //Invalid signature/claims
-            return false;
+            return null;
         }
     }
 

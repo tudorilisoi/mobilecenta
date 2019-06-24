@@ -5,6 +5,7 @@
  */
 package com.unicenta.pos.api;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -23,20 +24,21 @@ import com.openbravo.pos.ticket.ProductInfoExt;
 import com.openbravo.pos.ticket.TaxInfo;
 import com.openbravo.pos.ticket.TicketInfo;
 import com.openbravo.pos.ticket.TicketLineInfo;
+import com.unicenta.pos.api.JSONOrder.Converter;
 import com.openbravo.pos.util.AltEncrypter;
 import com.openbravo.pos.util.Hashcypher;
+import com.unicenta.pos.api.JSONOrder.JSONOrder;
+import com.unicenta.pos.api.JSONOrder.Line;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -212,7 +214,7 @@ public class ApiServer {
         return b.toJsonTree(d);
     }
 
-    private JsonElement updateTicketRoute(Map params) throws BasicException {
+    private JsonElement updateTicketRoute(Map params) throws BasicException, IOException {
 
         //TODO!! parse req body, move this method into DSL,
         // cycle through lines and replace them  in the shared ticket
@@ -222,24 +224,36 @@ public class ApiServer {
         String placeID = "af940d9d-d492-41e3-aeb8-c82f9960f895"; //Masa 14
         String productID = "f10e2fd2-7553-464a-8951-13694db0a503"; //Bergenbier 5 RON
         TicketInfo ticketInfo = DSL.getTicketInfo(placeID);
+
+        JSONOrder order = Converter.fromJsonString(params.get("body").toString());
+        String userID = (String) params.get("userID");
+        AppUser user = DSL.getAppUserByID(userID);
+        logger.info("ORDER: " + Converter.toJsonString(order));
+        logger.info("JWT User: " + userID);
         //TODO check locked status and user/role
         // m_dlSystem = (DataLogicSystem) getBean("com.openbravo.pos.forms.DataLogicSystem");
         // java.util.List people = m_dlSystem.listPeopleVisible();
 
 //        TODO!! load the logged in user
-        ticketInfo.setUser(app.getAppUserView().getUser().getUserInfo());
-        ProductInfoExt productInfo = DSL.salesLogic.getProductInfo(productID);
-        TaxInfo tax = DSL.taxesLogic.getTaxInfo(productInfo.getTaxCategoryID(), ticketInfo.getCustomer());
+        ticketInfo.setUser(user.getUserInfo());
 
         List<TicketLineInfo> lines = new ArrayList<>();
-        TicketLineInfo line = new TicketLineInfo(
-                productInfo,
-                1,
-                5,
-                tax,
-                (java.util.Properties) (productInfo.getProperties().clone())
-        );
-        lines.add(line);
+        for (Line l : order.getLines()) {
+            ProductInfoExt productInfo = DSL.salesLogic.getProductInfo(l.getProductID());
+            TaxInfo tax = DSL.taxesLogic.getTaxInfo(
+                    productInfo.getTaxCategoryID(),
+                    ticketInfo.getCustomer()
+            );
+            TicketLineInfo line = new TicketLineInfo(
+                    productInfo,
+                    l.getMultiplier(),
+                    l.getPrice(),
+                    tax,
+                    (Properties) (productInfo.getProperties().clone())
+            );
+            lines.add(line);
+        }
+
         ticketInfo.setLines(lines);
         try {
             DSL.receiptsLogic.updateSharedTicket(placeID, ticketInfo, 0);
@@ -326,8 +340,9 @@ public class ApiServer {
             // if auth goes wrong do not encrypt the response
             // not really necessary since errorMessage is always unencrypted
             if (authHeader != null) {
-                boolean result = jwtStore.validateToken(authHeader);
-                if (!result) {
+                DecodedJWT decodedJWT = jwtStore.decodeToken(authHeader);
+                request.attribute("JWT_USER_ID", decodedJWT.getClaim("sub").asString());
+                if (decodedJWT == null) {
                     ret.setErrorMessage("TOKEN_INVALID");
                     halt(401, ret.getString());
                 }
@@ -604,6 +619,8 @@ public class ApiServer {
             ret.setStatus("OK");
 
             logger.log(Level.INFO, request.body());
+            params.put("body", request.body());
+            params.put("userID", request.attribute("JWT_USER_ID"));
 
             JsonElement resp = updateTicketRoute(params);
             ret.setData(resp);
