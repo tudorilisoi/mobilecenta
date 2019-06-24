@@ -38,6 +38,8 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -235,8 +237,12 @@ public class ApiServer {
         ticketInfo.setUser(user.getUserInfo());
 
         List<TicketLineInfo> lines = new ArrayList<>();
+        NumberFormat nf = DecimalFormat.getInstance(Locale.getDefault());
         for (Line l : order.getLines()) {
             ProductInfoExt productInfo = DSL.salesLogic.getProductInfo(l.getProductID());
+            productInfo.setName(
+                    productInfo.getName()
+                            + (l.getUm() == 1.0 ? "" : " (" + nf.format(l.getUm()) + ")"));
             TaxInfo tax = DSL.taxesLogic.getTaxInfo(
                     productInfo.getTaxCategoryID(),
                     ticketInfo.getCustomer()

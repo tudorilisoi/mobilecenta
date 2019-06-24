@@ -10,6 +10,7 @@ public class Line {
     private String productID;
     private double multiplier;
     private double price;
+    private double um;
 
     @JsonProperty("productID")
     public String getProductID() {
@@ -39,5 +40,15 @@ public class Line {
     @JsonProperty("price")
     public void setPrice(double value) {
         this.price = value;
+    }
+
+    @JsonProperty("um")
+    public double getUm() {
+        return um;
+    }
+
+    @JsonProperty("um")
+    public void setUm(double um) {
+        this.um = um;
     }
 }
