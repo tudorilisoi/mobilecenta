@@ -223,11 +223,9 @@ public class ApiServer {
 
         HashMap d = new HashMap();
 
-        String placeID = "af940d9d-d492-41e3-aeb8-c82f9960f895"; //Masa 14
-        String productID = "f10e2fd2-7553-464a-8951-13694db0a503"; //Bergenbier 5 RON
-        TicketInfo ticketInfo = DSL.getTicketInfo(placeID);
-
         JSONOrder order = Converter.fromJsonString(params.get("body").toString());
+        String placeID = order.getPlaceID();
+        TicketInfo ticketInfo = DSL.getTicketInfo(placeID);
         String userID = (String) params.get("userID");
         AppUser user = DSL.getAppUserByID(userID);
         logger.info("ORDER: " + Converter.toJsonString(order));
