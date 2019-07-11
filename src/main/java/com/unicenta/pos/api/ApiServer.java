@@ -468,7 +468,8 @@ public class ApiServer {
         File configFile = app.getProperties().getConfigFile();
         AppProperties props = app.getProperties();
 
-        String aesKey = props.getProperty("mobilecenta.aes_private_key");
+        //TODO read mobilecenta.aes_secret_keys instead
+        String aesKey = props.getProperty("mobilecenta.aes_password");
         if (aesKey != null && aesKey.startsWith("crypt:")) {
             AltEncrypter cypher = new AltEncrypter("cypherkey");
             aesKey = cypher.decrypt(aesKey.substring(6));

@@ -25,11 +25,14 @@ import com.openbravo.data.user.DirtyManager;
 import com.openbravo.pos.forms.AppConfig;
 import com.openbravo.pos.forms.AppLocal;
 import com.openbravo.pos.util.AltEncrypter;
+import com.unicenta.pos.api.AES256Cryptor;
+import com.unicenta.pos.api.AesCbcWithIntegrity;
 import com.unicenta.pos.api.NetworkInfo;
 import com.unicenta.pos.api.QRCodeGenerator;
 
 import javax.swing.*;
 import java.awt.Component;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -42,7 +45,8 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
 
     private final DirtyManager dirty = new DirtyManager();
     private String port;
-    private String aesKey;
+    private String aesPassword;
+    private String secretKeys;
     private String serverIPAddress;
 
     /**
@@ -74,6 +78,16 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
         return this;
     }
 
+    private String loadCryptedProp(AppConfig config, String prop) {
+        String val = config.getProperty(prop);
+        if (val != null && val.startsWith("crypt:")) {
+            AltEncrypter cypher = new AltEncrypter("cipherkey");
+            val = cypher.decrypt(val.substring(6));
+            return val;
+        }
+        return val;
+    }
+
     /**
      * @param config
      */
@@ -88,16 +102,14 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
         }
         jtxtServerPort.setText(port);
 
-        aesKey = config.getProperty("mobilecenta.aes_private_key");
-        if (aesKey != null && aesKey.startsWith("crypt:")) {
-            AltEncrypter cypher = new AltEncrypter("cypherkey");
-            aesKey = cypher.decrypt(aesKey.substring(6));
-        }
-        if (aesKey == null) {
-            aesKey = generateAESKey();
+        aesPassword = loadCryptedProp(config, "mobilecenta.aes_password");
+        if (aesPassword == null) {
+            aesPassword = generateAESKey();
             _dirty = true;
         }
-        jtxtAESKey.setText(aesKey);
+        jtxtAESKey.setText(aesPassword);
+
+        secretKeys = loadCryptedProp(config, "mobilecenta.aes_secret_keys");
 
 
         serverIPAddress = config.getProperty("mobilecenta.server_ip_address");
@@ -131,10 +143,26 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
         }
         config.setProperty("mobilecenta.server_port", port);
 
-        aesKey = jtxtAESKey.getText();
-        AltEncrypter cypher = new AltEncrypter("cypherkey");
-        config.setProperty("mobilecenta.aes_private_key", "crypt:" +
-                cypher.encrypt(new String(aesKey)));
+        aesPassword = jtxtAESKey.getText();
+        AltEncrypter cypher = new AltEncrypter("cipherkey");
+        String prevPass = loadCryptedProp(config, "mobilecenta.aes_password");
+
+        if (prevPass == null || !prevPass.equals(aesPassword)) {
+
+            config.setProperty("mobilecenta.aes_password", "crypt:" +
+                    cypher.encrypt(aesPassword));
+
+            secretKeys = AES256Cryptor.generateKeys(aesPassword);
+            config.setProperty("mobilecenta.aes_secret_keys", "crypt:" +
+                    cypher.encrypt(secretKeys));
+
+            try {
+                config.save();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
 
         serverIPAddress = (String) jComboBoxNetworkIPs.getSelectedItem();
         serverIPAddress = NetworkInfo.parseAddress(serverIPAddress);
@@ -156,7 +184,8 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
     private String getQRJSONString() {
         HashMap d = new HashMap();
 
-        d.put("aesKey", aesKey);
+
+        d.put("secretKeys", secretKeys);
         d.put("baseURL", "http://" + serverIPAddress + ":" + port);
 //        d.put("port", port);
 //        d.put("serverIPAddress", serverIPAddress);
