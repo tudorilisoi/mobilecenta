@@ -310,6 +310,8 @@ public class ApiServer {
         }
     }
 
+    // this is a helper to quickly determine if the keys are current
+    // if the decoded header is null this means there is a keys mismatch
     private void middlewareVerifyAESKey() {
         before((request, response) -> {
             boolean encrypted = isRequestEncrypted(request);
@@ -320,6 +322,7 @@ public class ApiServer {
 
             String decodedPayload = AES256Cryptor.decrypt(verifyHeader, AESKey);
             if (decodedPayload == null) {
+                logger.warning("Invalid X-AES-Verify header: " + verifyHeader);
                 JSONPayload ret = new JSONPayload(false);
                 ret.setErrorMessage("BAD_AES_KEY");
                 halt(401, ret.getString());
@@ -344,11 +347,13 @@ public class ApiServer {
                 DecodedJWT decodedJWT = jwtStore.decodeToken(authHeader);
                 request.attribute("JWT_USER_ID", decodedJWT.getClaim("sub").asString());
                 if (decodedJWT == null) {
+                    logger.warning("Invalid JWT TOKEN " + authHeader);
                     ret.setErrorMessage("TOKEN_INVALID");
                     halt(401, ret.getString());
                 }
 
             } else {
+                logger.warning("Missing JWT TOKEN " + authHeader);
                 ret.setErrorMessage("TOKEN_NOT_FOUND");
                 halt(401, ret.getString());
             }
@@ -422,6 +427,7 @@ public class ApiServer {
         boolean encrypted = isRequestEncrypted(request);
         if (encrypted) {
             String payload = body.get("data").toString();
+            logger.warning("Encrypted data: " + payload);
             String decodedPayload = AES256Cryptor.decrypt(payload, AESKey);
             JsonObject data = new Gson().fromJson(decodedPayload, JsonObject.class);
             return data;
@@ -469,11 +475,13 @@ public class ApiServer {
         AppProperties props = app.getProperties();
 
         //TODO read mobilecenta.aes_secret_keys instead
-        String aesKey = props.getProperty("mobilecenta.aes_password");
+        String aesKey = props.getProperty("mobilecenta.aes_secret_keys");
         if (aesKey != null && aesKey.startsWith("crypt:")) {
-            AltEncrypter cypher = new AltEncrypter("cypherkey");
+            AltEncrypter cypher = new AltEncrypter("cipherkey");
             aesKey = cypher.decrypt(aesKey.substring(6));
         }
+        logger.warning("KEY " + aesKey);
+        AES256Cryptor.setKeysStr(aesKey);
         AESKey = aesKey;
 
         // TODO check if IP address exists!

@@ -94,6 +94,7 @@ public class AES256Cryptor {
                     new AesCbcWithIntegrity.CipherTextIvMac(ciphertext);
 
             String plainText = AesCbcWithIntegrity.decryptString(cipherTextIvMac, keys);
+            return plainText;
         } catch (Exception e) {
             e.printStackTrace();
         }
