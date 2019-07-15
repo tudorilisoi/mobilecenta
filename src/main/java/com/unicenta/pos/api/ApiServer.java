@@ -70,7 +70,7 @@ public class ApiServer {
     // TODO make a barcode generator to easily scan it in the mobile app
 
     private static String AESKey = "a disturbing secret";
-    private static boolean useEncryption = false; //set to false in dev mode for easier debugging
+    private static boolean useEncryption = true; //set to false in dev mode for easier debugging
 
     public ApiServer(JRootApp app) {
         this.running = false;
@@ -223,7 +223,7 @@ public class ApiServer {
 
         HashMap d = new HashMap();
 
-        JSONOrder order = Converter.fromJsonString(params.get("body").toString());
+        JSONOrder order = Converter.fromJsonString(params.get("data").toString());
         String placeID = order.getPlaceID();
         TicketInfo ticketInfo = DSL.getTicketInfo(placeID);
         String userID = (String) params.get("userID");
@@ -629,7 +629,7 @@ public class ApiServer {
             ret.setStatus("OK");
 
             logger.log(Level.INFO, request.body());
-            params.put("body", request.body());
+            params.put("data", getRequestBodyData(request));
             params.put("userID", request.attribute("JWT_USER_ID"));
 
             JsonElement resp = updateTicketRoute(params);
