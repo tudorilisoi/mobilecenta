@@ -319,8 +319,12 @@ public class ApiServer {
                 return;
             }
             String verifyHeader = request.headers("X-AES-Verify");
+            String decodedPayload = null;
+            try {
+                decodedPayload = AES256Cryptor.decrypt(verifyHeader, AESKey);
 
-            String decodedPayload = AES256Cryptor.decrypt(verifyHeader, AESKey);
+            } catch (Exception e) {
+            }
             if (decodedPayload == null) {
                 logger.warning("Invalid X-AES-Verify header: " + verifyHeader);
                 JSONPayload ret = new JSONPayload(false);
@@ -333,9 +337,16 @@ public class ApiServer {
     private void middleWareJWTAuth() {
         before((request, response) -> {
             String whiteList = "^\\/(dbimage|authenticate)\\/(.+)?";
-            if (request.pathInfo().matches(whiteList)) {
+            if (
+                    request.pathInfo().equals("/users") ||
+                            request.pathInfo().matches(whiteList)
+            ) {
                 return;
             }
+//            if(true){
+//
+//            return;
+//            }
 
             JSONPayload ret = new JSONPayload(isRequestEncrypted(request));
 
@@ -345,11 +356,15 @@ public class ApiServer {
             // not really necessary since errorMessage is always unencrypted
             if (authHeader != null) {
                 DecodedJWT decodedJWT = jwtStore.decodeToken(authHeader);
-                request.attribute("JWT_USER_ID", decodedJWT.getClaim("sub").asString());
                 if (decodedJWT == null) {
                     logger.warning("Invalid JWT TOKEN " + authHeader);
                     ret.setErrorMessage("TOKEN_INVALID");
                     halt(401, ret.getString());
+                } else {
+
+                    String userID = decodedJWT.getClaim("sub").asString();
+                    request.attribute("JWT_USER_ID", userID);
+                    logger.warning("JWT AUTH OK, USER ID: " + userID);
                 }
 
             } else {
@@ -401,7 +416,7 @@ public class ApiServer {
 
         if (encrypted) {
             String decodedPayload = AES256Cryptor.decrypt(authHeader, AESKey);
-            logger.warning("Authorization header is " + decodedPayload);
+            logger.warning("Decoded Authorization header is " + decodedPayload);
             return decodedPayload;
         }
         return authHeader;

@@ -406,7 +406,7 @@ public class DSL extends DataLogicSystem {
     }
 
     public final List listUsers() throws BasicException {
-        String[] columnNames = "ID NAME CARD ROLE IMAGE".split(" ");
+        String[] columnNames = "ID NAME ROLE IMAGE".split(" ");
         String sql = "SELECT "
                 + String.join(", ", columnNames)
                 + " FROM people WHERE VISIBLE = " + s.DB.TRUE();
@@ -419,7 +419,10 @@ public class DSL extends DataLogicSystem {
     }
 
     public final List listRoles() throws BasicException {
-        String[] columnNames = "ID NAME PERMISSIONS".split(" ");
+
+        // PERMISSIONS are a huge bunch of XML, don't send them
+        // also, CARD is private and obviously so is the PASSWORD
+        String[] columnNames = "ID NAME".split(" ");
         String sql = "SELECT "
                 + String.join(", ", columnNames)
                 + " FROM roles";
