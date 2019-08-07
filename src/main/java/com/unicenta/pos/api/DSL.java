@@ -31,13 +31,14 @@ public class DSL extends DataLogicSystem {
 
     private Session s;
 
-//    TODO!! make it private after sorting out ticket logic
+    //    TODO!! make it private after sorting out ticket logic
     public DataLogicSales salesLogic;
     public TaxesLogic taxesLogic;
     public DataLogicReceipts receiptsLogic;
 
     private byte[] defaultCategoryBytes = null;
     private byte[] defaultProductBytes = null;
+    private byte[] defaultUserBytes = null;
 
     public DSL() {
     }
@@ -67,6 +68,7 @@ public class DSL extends DataLogicSystem {
 //                    getClass().getResourceAsStream("/com/openbravo/images/mobilecenta/folder-bw-512.png"));
             defaultCategoryBytes = Resources.toByteArray(getClass().getResource("/com/openbravo/images/mobilecenta/folder-bw-512-slim.png"));
             defaultProductBytes = Resources.toByteArray(getClass().getResource("/com/openbravo/images/mobilecenta/cube-512.png"));
+            defaultUserBytes = Resources.toByteArray(getClass().getResource("/com/openbravo/images/mobilecenta/user.png"));
         } catch (IOException e) {
 //            e.printStackTrace();
             logger.warning("DSL: CANNOT INIT DEFAULT IMAGES");
@@ -75,6 +77,7 @@ public class DSL extends DataLogicSystem {
 
     /**
      * greturn shared ticket by place id
+     *
      * @param id
      * @return
      */
@@ -105,6 +108,9 @@ public class DSL extends DataLogicSystem {
     }
 
     public byte[] getImageThumb(byte[] bytes) {
+        if (bytes == null) {
+            return bytes;
+        }
         try {
             Image img = api_thumb.getThumbNail(ImageUtils.readImage(bytes));
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -187,8 +193,11 @@ public class DSL extends DataLogicSystem {
                 bytes = defaultProductBytes;
                 return bytes;
             }
+            if (tableName.equals("users")) {
+                bytes = defaultUserBytes;
+                return bytes;
+            }
         }
-
 
         return getImageThumb((byte[]) bytes);
 
