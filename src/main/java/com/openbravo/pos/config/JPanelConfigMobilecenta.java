@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.logging.Logger;
 
 /**
  * @author JG uniCenta
@@ -48,6 +49,7 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
     private String aesPassword;
     private String secretKeys;
     private String serverIPAddress;
+    private static final Logger logger = Logger.getLogger("com.openbravo.pos.config.JPanelConfigMobilecenta");
 
     /**
      *
@@ -115,6 +117,7 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
         serverIPAddress = config.getProperty("mobilecenta.server_ip_address");
         ArrayList<String> addresses = NetworkInfo.getAllAddresses();
 
+        jComboBoxNetworkIPs.removeAllItems();
         for (int i = 0; i < addresses.size(); i++) {
             String addr = addresses.get(i);
             jComboBoxNetworkIPs.addItem(addr);
@@ -193,7 +196,10 @@ public class JPanelConfigMobilecenta extends javax.swing.JPanel implements Panel
         Gson gson = new GsonBuilder()
                 .serializeNulls()
                 .setPrettyPrinting().create();
-        return gson.toJson(d);
+        String ret = gson.toJson(d);
+        logger.info(ret);
+        logger.info(secretKeys);
+        return ret;
     }
 
     private void setQRCode(String str) {
