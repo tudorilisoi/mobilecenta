@@ -258,6 +258,9 @@ public class ApiServer {
         ticketInfo.setLines(lines);
         try {
             DSL.receiptsLogic.updateSharedTicket(placeID, ticketInfo, 0);
+
+            //NOTE use 2nd arg null to unlock
+            DSL.receiptsLogic.lockSharedTicket(placeID, "locked");
 //            DSL.salesLogic.saveTicket(ticketInfo, app.getInventoryLocation());
         } catch (BasicException e) {
 //            TODO!! return HTTP 500
