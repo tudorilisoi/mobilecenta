@@ -215,8 +215,6 @@ public class ApiServer {
         d.put("places", DSL.listPlaces());
 
         Gson b = new GsonBuilder().serializeNulls().create();
-        logger.info("/products");
-        logger.info(b.toJson(d));
         return b.toJsonTree(d);
     }
 
@@ -525,6 +523,12 @@ public class ApiServer {
 
         running = true;
 
+        before((request, response) -> {
+            String method = request.requestMethod();
+            String url = request.url();
+            logger.info(method + " " + url);
+        });
+
         middlewareEnableCORS("*",
                 "GET,POST,PUT,DELETE,PATCH,OPTIONS",
                 "Content-type,X-Requested-With"
@@ -596,6 +600,7 @@ public class ApiServer {
             // EventHub.post(EventHub.API_ORIGINATED_CHANGE);
             response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
+
             return (String) cacheTickets.get(params);
         });
 
@@ -605,6 +610,7 @@ public class ApiServer {
             HashMap params = new HashMap(); //params, not used here
             ret.setData(routeUsers(params));
             response.header("Content-Encoding", "gzip");
+
             return ret.getString();
         });
 
@@ -618,7 +624,8 @@ public class ApiServer {
         get("/products", (request, response) -> {
             response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
-            return (String) cacheProducts.get(params);
+            Object ret = cacheProducts.get(params);
+            return ret;
         });
 
         //TODO complete this
@@ -661,7 +668,7 @@ public class ApiServer {
         });
 
         //TODO complete this
-        post("/ticket/:placeID", (request, response) -> {
+        /*post("/ticket/:placeID", (request, response) -> {
 
             String placeID = request.params(":placeID");
 //            TicketDSL t = TicketDSL.getInstance();
@@ -681,7 +688,7 @@ public class ApiServer {
             ret.setData(b.toJsonTree(ti));
 
             return ret.getString();
-        });
+        });*/
 
 
         return 0;
