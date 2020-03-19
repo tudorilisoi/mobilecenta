@@ -67,7 +67,7 @@ public class ApiServer {
     // encryption settings
     // since there is no easy way to run HTTPS on a LAN server
     // we use a shared private key
-    // TODO make a barcode generator to easily scan it in the mobile app
+
 
     private static String AESKey = "a disturbing secret";
     private static boolean useEncryption = true; //set to false in dev mode for easier debugging
@@ -98,10 +98,10 @@ public class ApiServer {
         ticketDSL.setApp(app);
 
 
-        cacheProducts = makeCache("productsRoute", 500);
-        cacheFloors = makeCache("floorsRoute", 500);
-        cacheTickets = makeCache("sharedticketsRoute", 0);
-        cacheImages = makeCache("dbimageRoute", 500);
+        cacheProducts = makeCache("routeProducts", 500);
+        cacheFloors = makeCache("routeFloors", 500);
+        cacheTickets = makeCache("routeSharedtickets", 0);
+        cacheImages = makeCache("routeDBImage", 500);
 
         //Spark: log HTTP 500 expceptions
         Spark.exception(Exception.class, (exception, request, response) -> {
@@ -140,17 +140,17 @@ public class ApiServer {
                                 ret.setStatus("OK");
                                 JsonElement data = null;
                                 switch (routeMethod) {
-                                    case "floorsRoute":
-                                        data = floorsRoute(params);
+                                    case "routeFloors":
+                                        data = routeFloors(params);
                                         break;
-                                    case "productsRoute":
-                                        data = productsRoute(params);
+                                    case "routeProducts":
+                                        data = routeProducts(params);
                                         break;
-                                    case "sharedticketsRoute":
-                                        data = sharedticketsRoute(params);
+                                    case "routeSharedtickets":
+                                        data = routeSharedtickets(params);
                                         break;
-                                    case "dbimageRoute":
-                                        return dbimageRoute(params);
+                                    case "routeDBImage":
+                                        return routeDBImage(params);
 
                                 }
                                 ret.setData(data);
@@ -166,7 +166,7 @@ public class ApiServer {
         return root;
     }
 
-    private JsonElement sharedticketsRoute(Map params) throws BasicException {
+    private JsonElement routeSharedtickets(Map params) throws BasicException {
 
         try {
             HashMap d = new HashMap();
@@ -182,7 +182,7 @@ public class ApiServer {
     }
 
 
-    private JsonElement usersRoute(Map params) throws BasicException {
+    private JsonElement routeUsers(Map params) throws BasicException {
 
         HashMap d = new HashMap();
 
@@ -193,7 +193,7 @@ public class ApiServer {
         return b.toJsonTree(d);
     }
 
-    private JsonElement floorsRoute(Map params) throws BasicException {
+    private JsonElement routeFloors(Map params) throws BasicException {
 
         HashMap d = new HashMap();
 
@@ -204,19 +204,23 @@ public class ApiServer {
         return b.toJsonTree(d);
     }
 
-    private JsonElement productsRoute(Map params) throws BasicException {
+    private JsonElement routeProducts(Map params) throws BasicException {
 
         HashMap d = new HashMap();
         d.put("tax_categories", DSL.listTaxCategories());
         d.put("taxes", DSL.listTaxes());
         d.put("categories", DSL.listProductCategories());
         d.put("products", DSL.listProducts());
+        d.put("floors", DSL.listFloors());
+        d.put("places", DSL.listPlaces());
 
         Gson b = new GsonBuilder().serializeNulls().create();
+        logger.info("/products");
+        logger.info(b.toJson(d));
         return b.toJsonTree(d);
     }
 
-    private JsonElement updateTicketRoute(Map params) throws BasicException, IOException {
+    private JsonElement routeUpdateTicket(Map params) throws BasicException, IOException {
 
         //TODO!! parse req body, move this method into DSL,
         // cycle through lines and replace them  in the shared ticket
@@ -272,7 +276,7 @@ public class ApiServer {
         return b.toJsonTree(d);
     }
 
-    HashMap dbimageRoute(Map params) throws BasicException {
+    HashMap routeDBImage(Map params) throws BasicException {
         HashMap ret = new HashMap();
         Object record = null;
         String hash = null;
@@ -543,7 +547,7 @@ public class ApiServer {
             params.put("size", request.params(":size"));
             logger.info(params.toString());
 //            logger.info(request.headers().toString());
-//            Object bytesA = dbimageRoute(params);
+//            Object bytesA = routeDBImage(params);
             HashMap data = (HashMap) cacheImages.get(params);
             Object bytesA = data.get("bytesA");
             String hash = (String) data.get("hash");
@@ -599,7 +603,7 @@ public class ApiServer {
             JSONPayload ret = createJSONPayload();
             ret.setStatus("OK");
             HashMap params = new HashMap(); //params, not used here
-            ret.setData(usersRoute(params));
+            ret.setData(routeUsers(params));
             response.header("Content-Encoding", "gzip");
             return ret.getString();
         });
@@ -650,7 +654,7 @@ public class ApiServer {
             params.put("data", getRequestBodyData(request));
             params.put("userID", request.attribute("JWT_USER_ID"));
 
-            JsonElement resp = updateTicketRoute(params);
+            JsonElement resp = routeUpdateTicket(params);
             ret.setData(resp);
 
             return ret.getString();
