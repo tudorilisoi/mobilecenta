@@ -189,10 +189,21 @@ public class DSL extends DataLogicSystem {
                 bytes = defaultCategoryBytes;
                 return bytes;
             }
+            if (tableName.equals("floors")) {
+                bytes = defaultCategoryBytes;
+                return bytes;
+            }
+            //TODO proper floor and place images
+            if (tableName.equals("places")) {
+                bytes = defaultProductBytes;
+                return bytes;
+            }
+
             if (tableName.equals("products")) {
                 bytes = defaultProductBytes;
                 return bytes;
             }
+
             if (tableName.equals("users")) {
                 bytes = defaultUserBytes;
                 return bytes;
