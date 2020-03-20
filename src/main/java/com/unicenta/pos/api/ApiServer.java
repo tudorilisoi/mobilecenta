@@ -317,6 +317,7 @@ public class ApiServer {
 
     // this is a helper to quickly determine if the keys are current
     // if the decoded header is null this means there is a keys mismatch
+    // TODO prevent replay attacks by rotating the key every request per originating device/host
     private void middlewareVerifyAESKey() {
         before((request, response) -> {
             boolean encrypted = isRequestEncrypted(request);
