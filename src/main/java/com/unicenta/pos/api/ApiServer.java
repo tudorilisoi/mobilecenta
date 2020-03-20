@@ -455,7 +455,7 @@ public class ApiServer {
         return body.get("data").getAsJsonObject();
     }
 
-    private String authenticateRoute(Request request, Response response) {
+    private String routeAuthenticate(Request request, Response response) {
         JsonObject data = getRequestBodyData(request);
         String ID = data.get("id").getAsString();
         //TODO wrap this in try-catch
@@ -542,7 +542,7 @@ public class ApiServer {
 
         //NOTE when changing pass in Unicenta mind the keyb switching from numbers to letters
 
-        post("/authenticate/", this::authenticateRoute);
+        post("/authenticate/", this::routeAuthenticate);
 
         get("/dbimage/:tableName/:pk/:size/", (request, response) -> {
             HashMap params = new HashMap(); //params, not used here
