@@ -62,7 +62,7 @@ public class ApiServer {
     private Cache cacheFloors = null;
     private Cache cacheTickets = null;
     private Cache cacheImages = null;
-    private SessionStore jwtStore = SessionStore.instance("123456");
+    private SessionStore sessionStore = SessionStore.instance("123456");
 
     // encryption settings
     // since there is no easy way to run HTTPS on a LAN server
@@ -329,8 +329,24 @@ public class ApiServer {
             try {
                 decodedPayload = AES256Cryptor.decrypt(verifyHeader, AESKey);
                 logger.info("REQUEST SEQUENCE:" + decodedPayload);
+                JsonObject requestInfo = new Gson().fromJson(decodedPayload, JsonObject.class);
+                String clientID = requestInfo.get("clientID").getAsString();
+                Long sequence = requestInfo.get("sequence").getAsLong();
+
+                boolean success = sessionStore.verifyRequestSequence(
+                        clientID, sequence
+                );
+                logger.info(String.format("SEQ VERIFY: %s", success));
+                if (!success) {
+                    logger.warning("REPLAY_ATTEMPT");
+                    decodedPayload = null;
+                } else {
+                    sessionStore.storeRequestSequence(clientID, sequence);
+                }
 
             } catch (Exception e) {
+                logger.warning(e.getMessage());
+                e.printStackTrace();
             }
             if (decodedPayload == null) {
                 logger.warning("Invalid X-AES-Verify header: " + verifyHeader);
@@ -362,7 +378,7 @@ public class ApiServer {
             // if auth goes wrong do not encrypt the response
             // not really necessary since errorMessage is always unencrypted
             if (authHeader != null) {
-                DecodedJWT decodedJWT = jwtStore.decodeToken(authHeader);
+                DecodedJWT decodedJWT = sessionStore.decodeToken(authHeader);
                 if (decodedJWT == null) {
                     logger.warning("Invalid JWT TOKEN " + authHeader);
                     ret.setErrorMessage("TOKEN_INVALID");
@@ -478,7 +494,7 @@ public class ApiServer {
         }
 
         HashMap retObj = new HashMap();
-        retObj.put("authToken", jwtStore.getToken(ID));
+        retObj.put("authToken", sessionStore.getToken(ID));
         Gson b = new GsonBuilder().serializeNulls().create();
 
         ret.setStatus("OK");

@@ -14,7 +14,7 @@ public class SessionStore {
 
     //TODO implement checking
     //device id-:last request seq
-    private HashMap<String, Integer> requestSeqStore = new HashMap();
+    private HashMap<String, Long> requestSeqStore = new HashMap();
     private Algorithm algorithmHS;
     private JWTVerifier verifier;
     private static SessionStore instance;
@@ -25,6 +25,21 @@ public class SessionStore {
         verifier = JWT.require(algorithmHS)
 //                .withIssuer("auth0")
                 .build();
+    }
+
+    public void storeRequestSequence(String clientID, long seq) {
+        requestSeqStore.put(clientID, seq);
+    }
+
+    public boolean verifyRequestSequence(String clientID, long seq) {
+        Long lastReqTime = requestSeqStore.get(clientID);
+        if (lastReqTime == null) {
+            lastReqTime = System.currentTimeMillis() - 1000;
+        }
+        if (seq > lastReqTime) {
+            return true;
+        }
+        return false;
     }
 
     public static SessionStore instance(String secret) {
