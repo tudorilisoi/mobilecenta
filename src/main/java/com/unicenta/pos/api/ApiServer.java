@@ -62,7 +62,10 @@ public class ApiServer {
     private Cache cacheFloors = null;
     private Cache cacheTickets = null;
     private Cache cacheImages = null;
+
+    //TODO make this use the stored password
     private SessionStore sessionStore = SessionStore.instance("123456");
+
 
     // encryption settings
     // since there is no easy way to run HTTPS on a LAN server

@@ -34,7 +34,8 @@ public class SessionStore {
     public boolean verifyRequestSequence(String clientID, long seq) {
         Long lastReqTime = requestSeqStore.get(clientID);
         if (lastReqTime == null) {
-            lastReqTime = System.currentTimeMillis() - 1000;
+            System.out.println("*** INIT *** " + clientID);
+            lastReqTime = System.currentTimeMillis() - 3000;
         }
         if (seq > lastReqTime) {
             return true;
