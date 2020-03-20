@@ -8,14 +8,18 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 
 import java.util.HashMap;
 
-public class JWTStore {
+public class SessionStore {
     private String secret = null;
-    private HashMap<String, String> store = new HashMap();
+    private HashMap<String, String> tokenStore = new HashMap();
+
+    //TODO implement checking
+    //device id-:last request seq
+    private HashMap<String, Integer> requestSeqStore = new HashMap();
     private Algorithm algorithmHS;
     private JWTVerifier verifier;
-    private static JWTStore instance;
+    private static SessionStore instance;
 
-    private JWTStore(String secret) {
+    private SessionStore(String secret) {
         this.secret = secret;
         algorithmHS = Algorithm.HMAC256(secret);
         verifier = JWT.require(algorithmHS)
@@ -23,9 +27,9 @@ public class JWTStore {
                 .build();
     }
 
-    public static JWTStore instance(String secret) {
+    public static SessionStore instance(String secret) {
         if (instance == null) {
-            instance = new JWTStore(secret);
+            instance = new SessionStore(secret);
         }
         return instance;
     }
@@ -41,12 +45,12 @@ public class JWTStore {
     }
 
     public String getToken(String userID) {
-        String existingToken = store.get(userID);
+        String existingToken = tokenStore.get(userID);
         if (existingToken != null) {
             return existingToken;
         }
         String token = generateToken(userID);
-        store.put(userID, token);
+        tokenStore.put(userID, token);
         return token;
     }
 

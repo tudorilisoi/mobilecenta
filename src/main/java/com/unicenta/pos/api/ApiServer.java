@@ -62,7 +62,7 @@ public class ApiServer {
     private Cache cacheFloors = null;
     private Cache cacheTickets = null;
     private Cache cacheImages = null;
-    private JWTStore jwtStore = JWTStore.instance("123456");
+    private SessionStore jwtStore = SessionStore.instance("123456");
 
     // encryption settings
     // since there is no easy way to run HTTPS on a LAN server
@@ -328,6 +328,7 @@ public class ApiServer {
             String decodedPayload = null;
             try {
                 decodedPayload = AES256Cryptor.decrypt(verifyHeader, AESKey);
+                logger.info("REQUEST SEQUENCE:" + decodedPayload);
 
             } catch (Exception e) {
             }
