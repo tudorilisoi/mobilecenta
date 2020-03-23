@@ -56,6 +56,7 @@ public class ApiServer {
 
     private JRootApp app;
     private boolean running;
+    private String lastError;
     private DSL DSL;
     private TicketDSL ticketDSL;
     private Cache cacheProducts = null;
@@ -111,6 +112,14 @@ public class ApiServer {
             exception.printStackTrace();
         });
 
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    public String lastErrorMessage() {
+        return lastError;
     }
 
     private static JSONPayload createJSONPayload() {
@@ -505,8 +514,14 @@ public class ApiServer {
         return ret.getString();
     }
 
-
+    /*@throws BindException*/
     public int start() {
+        initExceptionHandler((e) -> {
+            logger.warning("Sparkjava exception");
+            logger.warning(e.getMessage());
+            lastError = e.getMessage();
+            running = false;
+        });
 
         //TODO move this to JpanelConfigMobileCenta
         ArrayList<String> s = NetworkInfo.getAllAddresses();
@@ -541,8 +556,6 @@ public class ApiServer {
         }
         logger.warning("API SERVER PORT " + portStr);
         port(Integer.parseInt(portStr));
-
-        running = true;
 
         before((request, response) -> {
             String method = request.requestMethod();
@@ -711,7 +724,8 @@ public class ApiServer {
             return ret.getString();
         });*/
 
-
+        awaitInitialization();
+        running = true;
         return 0;
     }
 

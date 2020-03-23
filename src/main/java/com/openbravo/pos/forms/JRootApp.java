@@ -498,8 +498,16 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
         }
 
 
-        server  = new ApiServer(this);
+        server = new ApiServer(this);
         server.start();
+        if (!server.isRunning()) {
+            MessageInf msg = new MessageInf(MessageInf.SGN_IMPORTANT
+                    , AppLocal.getIntString("label.mobilecenta.incorrect_server_config"),
+                    server.lastErrorMessage()
+            );
+            msg.show(this);
+            return false;
+        }
 
         return true;
     }
