@@ -247,6 +247,8 @@ public class DSL extends DataLogicSystem {
                             break;
                         case "PRICESELL": //products
                         case "RATE": //taxes
+                        case "X": //place position
+                        case "Y": //place position
                             Double dval = dr.getDouble(i + 1);
                             ret.put(columnName, dval);
                             break;
