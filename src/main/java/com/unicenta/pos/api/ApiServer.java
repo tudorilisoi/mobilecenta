@@ -239,11 +239,17 @@ public class ApiServer {
 
         JSONOrder order = Converter.fromJsonString(params.get("data").toString());
         String placeID = order.getPlaceID();
+        boolean isNew = false;
         TicketInfo ticketInfo = DSL.getTicketInfo(placeID);
+        if (ticketInfo == null) {
+            isNew = true;
+            ticketInfo = new TicketInfo();
+        }
+
         String userID = (String) params.get("userID");
         AppUser user = DSL.getAppUserByID(userID);
         logger.info("ORDER: " + Converter.toJsonString(order));
-        logger.info("JWT User: " + userID);
+        logger.info(String.format("JWT User: #%s name: %s", userID, user.getUserInfo().getName()));
         //TODO check locked status and user/role
 
         ticketInfo.setUser(user.getUserInfo());
@@ -271,7 +277,12 @@ public class ApiServer {
 
         ticketInfo.setLines(lines);
         try {
-            DSL.receiptsLogic.updateSharedTicket(placeID, ticketInfo, 0);
+
+            if (isNew) {
+                DSL.receiptsLogic.insertSharedTicket(placeID, ticketInfo, 0);
+            } else {
+                DSL.receiptsLogic.updateSharedTicket(placeID, ticketInfo, 0);
+            }
 
             //NOTE use 2nd arg null to unlock
             DSL.receiptsLogic.lockSharedTicket(placeID, "locked");
@@ -682,7 +693,7 @@ public class ApiServer {
             return ret.getString();
         });
 
-        post("/ticket/:placeID", (request, response) -> {
+        post("/ticket/:placeID", "application/json", (request, response) -> {
             String placeID = request.params(":placeID");
 //            TicketDSL t = TicketDSL.getInstance();
             response.header("Content-Encoding", "gzip");
@@ -701,28 +712,6 @@ public class ApiServer {
             return ret.getString();
         });
 
-        //TODO complete this
-        /*post("/ticket/:placeID", (request, response) -> {
-
-            String placeID = request.params(":placeID");
-//            TicketDSL t = TicketDSL.getInstance();
-            response.header("Content-Encoding", "gzip");
-            HashMap params = new HashMap(); //params, not used here
-
-            JSONPayload ret = createJSONPayload();
-            ret.setStatus("OK");
-
-            TicketInfo ti = ticketDSL.getTicketByPlaceID(placeID);
-//            HashMap d = new HashMap();
-//            d.put("ticket", ti);
-
-            JsonObject ticketLines = new Gson().fromJson(request.body(), JsonObject.class);
-
-            Gson b = new GsonBuilder().serializeNulls().create();
-            ret.setData(b.toJsonTree(ti));
-
-            return ret.getString();
-        });*/
 
         awaitInitialization();
         running = true;
