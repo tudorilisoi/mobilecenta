@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -24,6 +24,7 @@ import com.openbravo.data.loader.*;
 import com.openbravo.data.model.Field;
 import com.openbravo.data.model.Row;
 import com.openbravo.format.Formats;
+import com.openbravo.pos.catalog.CategoryStock;
 import com.openbravo.pos.customers.CustomerInfoExt;
 import com.openbravo.pos.customers.CustomerTransaction;
 import com.openbravo.pos.inventory.*;
@@ -633,7 +634,6 @@ public class DataLogicSales extends BeanFactoryDataSingle {
  
     }    
 
-
     /**
      *
      * @param id
@@ -655,7 +655,28 @@ public class DataLogicSales extends BeanFactoryDataSingle {
         , SerializerWriteString.INSTANCE
         , CategoryInfo.getSerializerRead()).find(id);
     }
-  
+    
+        /**
+     * JG Dec 2017
+     * @param pId
+     * @return
+     * @throws BasicException
+     */
+        @SuppressWarnings("unchecked")
+    public final List<CategoryStock> getCategorysProductList(String pId) throws BasicException {
+        return new PreparedSentence(s,               
+                "SELECT products.ID, " +
+                    "products.NAME AS Name, " +
+                    "products.CODE AS Barcode, " +
+                    "categories.ID AS Category " +                        
+                "FROM products products " +
+                    "INNER JOIN categories categories ON (products.CATEGORY = categories.ID) " +
+                "WHERE products.category = ? " +
+                "ORDER BY products.NAME ASC",
+                    SerializerWriteString.INSTANCE,                
+                        CategoryStock.getSerializerRead()).list(pId);
+    }
+    
     /**
      *
      * @return
@@ -831,7 +852,6 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                     Datas.OBJECT, Datas.STRING})
 		, ProductInfoExt.getSerializerRead());                                      
     }
-    
    
     /**
      *
@@ -1004,6 +1024,7 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                 , null
                 , new SerializerReadClass(ReprintTicketInfo.class)).list();
     }
+ 
      /**
      *
      * @param Id
@@ -1034,8 +1055,6 @@ public class DataLogicSales extends BeanFactoryDataSingle {
             return record == null ? null : (TicketInfo) record[0];
         }
     }
-
-
     
     //Tickets and Receipt list
         public SentenceList getTicketsList() {
@@ -1093,7 +1112,6 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                     dr.getString(1),
                     dr.getString(2)));
     }
-   
 
     /**
      *
@@ -1123,7 +1141,6 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                     dr.getBoolean(7),
                     dr.getInt(8)));
     }
-               
 
     /**
      *
@@ -1198,7 +1215,6 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                     dr.getString(1),
                     dr.getString(2)));
     }
-    
 
         /**
      *
@@ -1272,7 +1288,6 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                         CustomerTransaction.getSerializerRead()).list(cId);
     }
 
-   
     /**
      *
      * @return
@@ -1334,7 +1349,7 @@ public class DataLogicSales extends BeanFactoryDataSingle {
      */
     public final SentenceList getFloorTablesList() {
         return new StaticSentence(s
-            , "SELECT ID, NAME FROM places ORDER BY NAME"
+            , "SELECT ID, NAME, SEATS FROM places ORDER BY NAME"
             , null
             , new SerializerReadClass(FloorsInfo.class));
     }
@@ -1560,8 +1575,7 @@ public class DataLogicSales extends BeanFactoryDataSingle {
 
             ticket.setPayments(new PreparedSentence(s
                 , "SELECT PAYMENT, TOTAL, TRANSID, TENDERED, CARDNAME FROM payments WHERE RECEIPT = ?"                    
-//                , "SELECT PAYMENT, TOTAL, TRANSID, TENDERED, CARDNAME, VOUCHER FROM payments WHERE RECEIPT = ?"
-                    , SerializerWriteString.INSTANCE
+                , SerializerWriteString.INSTANCE
                 , new SerializerReadClass(PaymentInfoTicket.class)).list(ticket.getId()));
         }
         return ticket;
@@ -1679,67 +1693,63 @@ public class DataLogicSales extends BeanFactoryDataSingle {
             }
         }
 
-
         final Payments payments = new Payments();
         SentenceExec paymentinsert = new PreparedSentence(s
             , "INSERT INTO payments (ID, RECEIPT, PAYMENT, TOTAL, TRANSID, RETURNMSG, "
                 + "TENDERED, CARDNAME, VOUCHER) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
                 , SerializerWriteParams.INSTANCE);
                 
-            for (final PaymentInfo p : ticket.getPayments()) {
-//                payments.addPayment(p.getName(),p.getTotal(), p.getPaid(),ticket.getReturnMessage());  
-//                payments.addPayment(p.getName(),p.getTotal(), p.getPaid(),ticket.getReturnMessage(), p.getVoucher()); 
-//            }
-//                while (payments.getSize()>=1){                
+        ticket.getPayments().forEach((p) -> {
+                payments.addPayment(p.getName(),p.getTotal(), p.getPaid(),ticket.getReturnMessage(), p.getVoucher()); 
+        });
+                while (payments.getSize()>=1){                
                     paymentinsert.exec(new DataParams() {
                        @Override
                         public void writeValues() throws BasicException {
-//                            pName = payments.getFirstElement();
-//                            getTotal = payments.getPaidAmount(pName);
-//                            getTendered = payments.getTendered(pName);
-//                            getRetMsg = payments.getRtnMessage(pName);
-//                            getVoucher = payments.getVoucher(pName);    
-//                            payments.removeFirst(pName);                        
+                            pName = payments.getFirstElement();
+                            getTotal = payments.getPaidAmount(pName);
+                            getTendered = payments.getTendered(pName);
+                            getRetMsg = payments.getRtnMessage(pName);
+//                            payments.getVoucher(pName);
+                            getVoucher = payments.getVoucher(pName);
+                            payments.removeFirst(pName);                        
             
                             setString(1, UUID.randomUUID().toString());
                             setString(2, ticket.getId());
-                            setString(3, p.getName());
-                            setDouble(4, p.getTotal());
+                            setString(3, pName);
+                            setDouble(4, getTotal);
                             setString(5, ticket.getTransactionID());
                             setBytes(6, (byte[]) Formats.BYTEA.parseValue(getRetMsg));
-                            setDouble(7, p.getTendered());
+                            setDouble(7, getTendered);
                             setString(8, getCardName);
-                            setString(9, p.getVoucher());
-//                            payments.removeFirst(pName);                           
-                                                                  
-                        }                        
+                            setString(9, getVoucher);
+                            payments.removeFirst(pName);
+                        }
                     });
-
-                    if (p.getVoucher() != null) {
-                        getVoucherNonActive().exec(p.getVoucher());
-                    }                   
         
-                    if ("debt".equals(p.getName()) || "debtpaid".equals(p.getName())) {                                     
-                        ticket.getCustomer().updateCurDebt(p.getTotal(), ticket.getDate());                        
+                    if (payments.getVoucher(pName) !=null) {
+                        getVoucherNonActive().exec(payments.getVoucher(pName));
+                    }
+        
+                    if ("debt".equals(pName) || "debtpaid".equals(pName)) {                                     
+                        ticket.getCustomer().updateCurDebt(getTotal, ticket.getDate());                        
                         getDebtUpdate().exec(new DataParams() {
 
                             @Override
                             public void writeValues() throws BasicException {
-                                setDouble(1, ticket.getCustomer().getAccdebt());
-                                setTimestamp(2, ticket.getCustomer().getCurdate());
-                                setString(3, ticket.getCustomer().getId());
+                            setDouble(1, ticket.getCustomer().getAccdebt());
+                            setTimestamp(2, ticket.getCustomer().getCurdate());
+                            setString(3, ticket.getCustomer().getId());
                             }
                         });
                     }
                 }
-
+ 
                 SentenceExec taxlinesinsert = new PreparedSentence(s
                     , "INSERT INTO taxlines (ID, RECEIPT, TAXID, BASE, AMOUNT)  "
                     + "VALUES (?, ?, ?, ?, ?)"
                     , SerializerWriteParams.INSTANCE);
                 
-                   
-           
                 if (ticket.getTaxes() != null) {
                     for (final TicketTaxInfo tickettax: ticket.getTaxes()) {
                         taxlinesinsert.exec(new DataParams() {
@@ -1754,8 +1764,6 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                         });
                     }
                 }
-//            }               
-
             return null;
         }
     };
@@ -1793,7 +1801,7 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                             ticket.getUser().getName() 
                         });
                     }
-// Add test for productBundle
+// For productBundle
                     List<ProductsBundleInfo> bundle = getProductsBundle((String)ticket.getLine(i).getProductID());
 
                     if (bundle.size() > 0) {
@@ -1813,7 +1821,6 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                             ticket.getUser().getName()});
                         }
                     }
-// End test
                 }
                 
                 // update customer debts
@@ -2180,6 +2187,7 @@ public class DataLogicSales extends BeanFactoryDataSingle {
         return new SentenceExecTransaction(s) {
         @Override
         public int execInTransaction(Object params) throws BasicException {
+        
             int updateresult = ((Object[]) params)[5] == null 
             ? new PreparedSentence(s
                 , "UPDATE stockcurrent SET UNITS = (UNITS + ?) "
@@ -2251,7 +2259,6 @@ public class DataLogicSales extends BeanFactoryDataSingle {
         List<ProductsBundleInfo> bundle = getProductsBundle((String) ((Object[])params)[0]);
 
         if (bundle.size() > 0) {
-//            int as=0;
 
             for (ProductsBundleInfo component : bundle) {
                 Object[] adjustParams = new Object[4];
@@ -2261,7 +2268,6 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                 adjustParams[3] = ((Double)((Object[])params)[3]) * component.getQuantity();
                 adjustStock(adjustParams);
             }
-//            return as;
         } else {
 
             int updateresult = ((Object[]) params)[2] == null
@@ -2290,7 +2296,6 @@ public class DataLogicSales extends BeanFactoryDataSingle {
                             , new int[] {1, 0, 2, 3}))
                         .exec(params);
             }
-//            return 1;
         }
     }
 
@@ -2535,7 +2540,7 @@ public class DataLogicSales extends BeanFactoryDataSingle {
         return new StaticSentence(s,
             "SELECT " +
                 "vouchers.ID,vouchers.VOUCHER_NUMBER,vouchers.CUSTOMER, " +
-                "customers.NAME,AMOUNT " +
+                "customers.NAME,AMOUNT, STATUS " +
               "FROM vouchers   " +
                 "JOIN customers ON customers.id = vouchers.CUSTOMER  " +
               "WHERE STATUS='A' " +

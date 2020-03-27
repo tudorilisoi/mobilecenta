@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -56,14 +56,20 @@ public class JPanelPlaces extends JPanelTable {
         
         tplaces = new TableDefinition(app.getSession(),
             "places"
-            , new String[] {"ID", "NAME", "X", "Y", "FLOOR"}
-            , new String[] {"ID", AppLocal.getIntString("label.name"), "X", "Y", AppLocal.getIntString("label.placefloor")}
-            , new Datas[] {Datas.STRING, Datas.STRING, Datas.INT, Datas.INT, Datas.STRING}
-            , new Formats[] {Formats.STRING, Formats.STRING, Formats.INT, Formats.INT, Formats.NULL}
+            , new String[] {"ID", "NAME", "SEATS", "X", "Y", "FLOOR"}
+            , new String[] {"ID", AppLocal.getIntString("label.name"), 
+                AppLocal.getIntString("label.seats"), 
+                "X", "Y", 
+                AppLocal.getIntString("label.placefloor")}
+            , new Datas[] {Datas.STRING, Datas.STRING, Datas.STRING, 
+                Datas.INT, Datas.INT, 
+                Datas.STRING}
+            , new Formats[] {Formats.STRING, Formats.STRING, Formats.STRING, 
+                Formats.INT, Formats.INT, 
+                Formats.NULL}
             , new int[] {0}
         ); 
         jeditor = new PlacesEditor(dlSales, dirty); 
-
     }
         
     /**
@@ -126,7 +132,7 @@ public class JPanelPlaces extends JPanelTable {
      */
     @Override
     public void activate() throws BasicException {
-        jeditor.activate(); // primero activo el editor 
-        super.activate();   // segundo activo el padre        
+        jeditor.activate();
+        super.activate();        
     }     
 }

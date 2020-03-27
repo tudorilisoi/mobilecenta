@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -47,9 +47,11 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.AbstractTableModel;
 import com.openbravo.beans.JCalendarDialog;
+import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import javax.swing.table.JTableHeader;
 
 /**
  *
@@ -145,6 +147,7 @@ public final class CustomersView extends javax.swing.JPanel implements EditorRec
      */
     @Override
     public void refresh() {
+    jLblTranCount.setText(null);
     }
     
     /**
@@ -219,6 +222,9 @@ public final class CustomersView extends javax.swing.JPanel implements EditorRec
         m_jbtndate.setEnabled(false);
 
         jTableCustomerTransactions.setEnabled(false);
+        
+        repaint();
+        refresh();        
     } 
 
     @Override
@@ -292,7 +298,9 @@ public final class CustomersView extends javax.swing.JPanel implements EditorRec
         
         m_jdate.setEnabled(true);
         m_jbtndate.setEnabled(true);        
-        
+
+        repaint();
+        refresh();        
     }
 
     /**
@@ -371,6 +379,9 @@ public final class CustomersView extends javax.swing.JPanel implements EditorRec
 
         m_jdate.setEnabled(false);
         m_jbtndate.setEnabled(false);        
+
+        repaint();
+        refresh();        
     }
 
     /**
@@ -461,8 +472,15 @@ public void resetTranxTable() {
     jTableCustomerTransactions.getColumnModel().getColumn(2).setPreferredWidth(280);                
     jTableCustomerTransactions.getColumnModel().getColumn(3).setPreferredWidth(30);        
     jTableCustomerTransactions.getColumnModel().getColumn(4).setPreferredWidth(50);
-
-    jTableCustomerTransactions.repaint();
+    
+    // set font for headers
+    Font f = new Font("Arial", Font.BOLD, 14);
+    JTableHeader header = jTableCustomerTransactions.getTableHeader();
+    header.setFont(f);
+      
+    jTableCustomerTransactions.getTableHeader().setReorderingAllowed(true); 
+    jTableCustomerTransactions.setAutoCreateRowSorter(true);    
+    jTableCustomerTransactions.repaint();      
     
     
 }
@@ -587,8 +605,6 @@ public void resetTranxTable() {
         
             jTableCustomerTransactions.setRowHeight(25);
 
-
-//            CustomerTransaction customerTransaction = transactionList.get(row);
             switch (column) {
 
                 case 0:
@@ -678,6 +694,7 @@ public void resetTranxTable() {
         jBtnShowTrans = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTableCustomerTransactions = new javax.swing.JTable();
+        jLblTranCount = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         m_jImage = new com.openbravo.data.gui.JImageEditor();
         jLabel34 = new javax.swing.JLabel();
@@ -1040,7 +1057,7 @@ public void resetTranxTable() {
         jPanel4.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         jPanel4.setPreferredSize(new java.awt.Dimension(535, 0));
 
-        jBtnShowTrans.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jBtnShowTrans.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jBtnShowTrans.setText(bundle.getString("button.CustomerTrans")); // NOI18N
         jBtnShowTrans.setToolTipText("");
         jBtnShowTrans.setPreferredSize(new java.awt.Dimension(140, 30));
@@ -1050,9 +1067,103 @@ public void resetTranxTable() {
             }
         });
 
-        jTableCustomerTransactions.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jScrollPane3.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jScrollPane3.setPreferredSize(new java.awt.Dimension(620, 500));
+
+        jTableCustomerTransactions.setAutoCreateRowSorter(true);
+        jTableCustomerTransactions.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jTableCustomerTransactions.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
                 {null, null, null, null, null},
                 {null, null, null, null, null},
                 {null, null, null, null, null},
@@ -1070,32 +1181,40 @@ public void resetTranxTable() {
         ));
         jTableCustomerTransactions.setGridColor(new java.awt.Color(102, 204, 255));
         jTableCustomerTransactions.setOpaque(false);
-        jTableCustomerTransactions.setPreferredSize(new java.awt.Dimension(375, 200));
-        jTableCustomerTransactions.setRowHeight(20);
+        jTableCustomerTransactions.setPreferredSize(new java.awt.Dimension(375, 500));
+        jTableCustomerTransactions.setRowHeight(25);
         jTableCustomerTransactions.setShowVerticalLines(false);
         jScrollPane3.setViewportView(jTableCustomerTransactions);
+
+        jLblTranCount.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLblTranCount.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLblTranCount.setOpaque(true);
+        jLblTranCount.setPreferredSize(new java.awt.Dimension(50, 30));
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGap(492, 492, 492)
-                        .addComponent(jBtnShowTrans, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jBtnShowTrans, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLblTranCount, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(424, 424, 424))
                     .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 622, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(23, 23, 23))
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addComponent(jBtnShowTrans, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jBtnShowTrans, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLblTranCount, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 217, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab(bundle.getString("label.Transactions"), jPanel4); // NOI18N
@@ -1330,7 +1449,7 @@ public void resetTranxTable() {
                             .addComponent(txtCurdate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(m_jdate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(m_jbtndate, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -1393,6 +1512,8 @@ public void resetTranxTable() {
             jTableCustomerTransactions.setModel(transactionModel);
             if (transactionModel.getRowCount()> 0){
                 jTableCustomerTransactions.setVisible(true);
+                String TranCount = String.valueOf(transactionModel.getRowCount());
+                jLblTranCount.setText(TranCount + " for " + m_jName.getText());                
             }else{
                 jTableCustomerTransactions.setVisible(false);
                 JOptionPane.showMessageDialog(null, "No Transactions for this Customer", "Transactions", JOptionPane.INFORMATION_MESSAGE);
@@ -1471,6 +1592,7 @@ public void resetTranxTable() {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JLabel jLblDiscount;
     private javax.swing.JLabel jLblDiscountpercent;
+    private javax.swing.JLabel jLblTranCount;
     private javax.swing.JLabel jLblVIP;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;

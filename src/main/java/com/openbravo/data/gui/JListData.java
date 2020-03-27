@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -56,7 +56,6 @@ public class JListData extends javax.swing.JDialog {
     public Object showList(javax.swing.ListModel model) {
         
         m_jData.setModel(model);
-        
         m_selected = null;
         
         setVisible(true);

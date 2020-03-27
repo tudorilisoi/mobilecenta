@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -224,66 +224,101 @@ public class TicketParser extends DefaultHandler {
         }
             break;
         case OUTPUT_TICKET:
-            if ("logo".equals(qName)){
-                text = new StringBuilder(); 
-            } else if ("image".equals(qName)){
-                text = new StringBuilder();                  
-            } else if ("barcode".equals(qName)) {
+            if (null != qName)switch (qName) {
+            case "logo":
+                text = new StringBuilder();
+                break;
+            case "image":
+                text = new StringBuilder();
+                break;
+            case "barcode":
                 text = new StringBuilder();
                 bctype = attributes.getValue("type");
                 bcposition = attributes.getValue("position");
-            } else if ("line".equals(qName)) {
+                break;
+            case "line":
                 m_oOutputPrinter.beginLine(parseInt(attributes.getValue("size"), DevicePrinter.SIZE_0));
-            } else if ("text".equals(qName)) {
+                break;
+            case "text":
                 text = new StringBuilder();
                 m_iTextStyle = ("true".equals(attributes.getValue("bold")) 
                         ? DevicePrinter.STYLE_BOLD : DevicePrinter.STYLE_PLAIN)
                         | ("true".equals(attributes.getValue("underline")) 
                         ? DevicePrinter.STYLE_UNDERLINE : DevicePrinter.STYLE_PLAIN);
                 String sAlign = attributes.getValue("align");
-                if ("right".equals(sAlign)) {
-                    m_iTextAlign = DevicePrinter.ALIGN_RIGHT;
-                } else if ("center".equals(sAlign)) {
-                    m_iTextAlign = DevicePrinter.ALIGN_CENTER;
-                } else {
+                if (null == sAlign) {
                     m_iTextAlign = DevicePrinter.ALIGN_LEFT;
-                }
+                } else switch (sAlign) {
+            case "right":
+                m_iTextAlign = DevicePrinter.ALIGN_RIGHT;
+                break;
+            case "center":
+                m_iTextAlign = DevicePrinter.ALIGN_CENTER;
+                break;
+            default:
+                m_iTextAlign = DevicePrinter.ALIGN_LEFT;
+                break;
+        }
                 m_iTextLength = parseInt(attributes.getValue("length"), 0);
-            }
+                break;
+            default:
+                break;
+        }
             break;
         case OUTPUT_DISPLAY:
-            if ("line".equals(qName)) { // line 1 or 2 of the display
+            if (null != qName) switch (qName) {
+            case "line":
+                // line 1 or 2 of the display
                 m_sVisorLine = new StringBuilder();
-            } else if ("line1".equals(qName)) { // linea 1 del visor
+                break;
+            case "line1":
+                // linea 1 del visor
                 m_sVisorLine = new StringBuilder();
-            } else if ("line2".equals(qName)) { // linea 2 del visor
+                break;
+            case "line2":
+                // linea 2 del visor
                 m_sVisorLine = new StringBuilder();
-            } else if ("text".equals(qName)) {
+                break;
+            case "text":
                 text = new StringBuilder();
                 String sAlign = attributes.getValue("align");
-                if ("right".equals(sAlign)) {
-                    m_iTextAlign = DevicePrinter.ALIGN_RIGHT;
-                } else if ("center".equals(sAlign)) {
-                    m_iTextAlign = DevicePrinter.ALIGN_CENTER;
-                } else {
+                if (null == sAlign) {
                     m_iTextAlign = DevicePrinter.ALIGN_LEFT;
-                }
+                } else switch (sAlign) {
+            case "right":
+                m_iTextAlign = DevicePrinter.ALIGN_RIGHT;
+                break;
+            case "center":
+                m_iTextAlign = DevicePrinter.ALIGN_CENTER;
+                break;
+            default:
+                m_iTextAlign = DevicePrinter.ALIGN_LEFT;
+                break;
+        }
                 m_iTextLength = parseInt(attributes.getValue("length"));
-            }
+                break;
+            default:
+                break;
+        }
             break;
         case OUTPUT_FISCAL:
-            if ("line".equals(qName)) {
-                text = new StringBuilder();   
+            if (null != qName) switch (qName) {
+            case "line":   
+                text = new StringBuilder();
                 m_dValue1 = parseDouble(attributes.getValue("price"));
                 m_dValue2 = parseDouble(attributes.getValue("units"), 1.0);
                 attribute3 = parseInt(attributes.getValue("tax"));
-                
-            } else if ("message".equals(qName)) {
-                text = new StringBuilder();               
-            } else if ("total".equals(qName)) {
-                text = new StringBuilder();    
+                break;
+            case "message":
+                text = new StringBuilder();
+                break;
+            case "total":    
+                text = new StringBuilder();
                 m_dValue1 = parseDouble(attributes.getValue("paid"));
-            }
+                break;
+            default:
+                break;
+        }
             break;
         }
     } 
@@ -311,7 +346,7 @@ public class TicketParser extends DefaultHandler {
                   // }        
             }else if ("image".equals(qName)){
                 try {
-                    // BufferedImage image = ImageIO.read(getClass().getClassLoader().getResourceAsStream(m_sText.toString()));
+//                    BufferedImage image = ImageIO.read(getClass().getClassLoader().getResourceAsStream(m_sText.toString()));
                     BufferedImage image = m_system.getResourceAsImage(text.toString());
                     if (image != null) {
                         m_oOutputPrinter.printImage(image);

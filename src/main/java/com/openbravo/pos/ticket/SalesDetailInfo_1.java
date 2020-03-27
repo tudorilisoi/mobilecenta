@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-20162009-2010 uniCenta
+//    Copyright (c) 2009-2017
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS

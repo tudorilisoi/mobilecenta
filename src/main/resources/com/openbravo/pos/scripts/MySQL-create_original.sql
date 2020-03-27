@@ -633,7 +633,7 @@ CREATE TABLE `sharedtickets` (
   `name` varchar(255) NOT NULL,
   `content` mediumblob,
   `appuser` varchar(255) DEFAULT NULL,
-  `pickupid` smallint(6) NOT NULL DEFAULT '0',
+  `pickupid` int(11) NOT NULL DEFAULT '0',
   `locked` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=innodb DEFAULT CHARSET=utf8;

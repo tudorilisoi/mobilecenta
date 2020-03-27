@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta - joint with Jacinto Rodriguez
+//    Copyright (c) 2009-2018 uniCenta - joint with Jacinto Rodriguez
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS

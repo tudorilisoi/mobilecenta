@@ -53,8 +53,8 @@ report.setSentence("SELECT products.REFERENCE, " +
     "GROUP BY ticketlines.PRODUCT " +
     "ORDER BY products.REFERENCE ASC");
 
-report.addParameter("RECEIPTS.DATENEW");
-report.addParameter("RECEIPTS.DATENEW");
+report.addParameter("receipts.DATENEW");
+report.addParameter("receipts.DATENEW");
 paramdates = new com.openbravo.pos.reports.JParamsDatesInterval();
 paramdates.setStartDate(com.openbravo.beans.DateUtils.getToday());
 // JG - 8 Jan 14 paramdates.setEndDate(com.openbravo.beans.DateUtils.getToday());

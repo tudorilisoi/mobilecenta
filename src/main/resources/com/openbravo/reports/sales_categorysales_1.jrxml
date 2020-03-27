@@ -12,50 +12,55 @@
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
+	<field name="DATENEW" class="java.util.Date"/>
+	<field name="CATID" class="java.lang.String"/>
+	<field name="CATNAME" class="java.lang.String"/>
 	<field name="PARENTCAT" class="java.lang.String"/>
-	<field name="SUBCAT" class="java.lang.String"/>
-	<field name="PRODREF" class="java.lang.String"/>
 	<field name="PRODNAME" class="java.lang.String"/>
+	<field name="BASE" class="java.lang.Double"/>
+	<field name="AMOUNT" class="java.lang.Double"/>
+	<field name="TOTAL" class="java.lang.Double"/>
 	<field name="UNITS" class="java.lang.Double"/>
-	<field name="SALES" class="java.lang.Double"/>
-	<variable name="PARTIALUNITS" class="java.lang.Double" resetType="Group" resetGroup="Category" calculation="Sum">
-		<variableExpression><![CDATA[$F{UNITS}]]></variableExpression>
-		<initialValueExpression><![CDATA[new Double(0.0)]]></initialValueExpression>
-	</variable>
-	<variable name="PARTIALSALES" class="java.lang.Double" resetType="Group" resetGroup="Category" calculation="Sum">
-		<variableExpression><![CDATA[$F{SALES}]]></variableExpression>
-		<initialValueExpression><![CDATA[new Double(0.0)]]></initialValueExpression>
-	</variable>
-	<variable name="BIGUNITS" class="java.lang.Double" resetType="Page" calculation="Sum">
-		<variableExpression><![CDATA[$F{UNITS}]]></variableExpression>
-		<initialValueExpression><![CDATA[new Double(0.0)]]></initialValueExpression>
-	</variable>
-	<variable name="BIGSALES" class="java.lang.Double" resetType="Page" calculation="Sum">
-		<variableExpression><![CDATA[$F{SALES}]]></variableExpression>
-		<initialValueExpression><![CDATA[new Double(0.0)]]></initialValueExpression>
-	</variable>
-	<variable name="UNITS_CAT" class="java.lang.Double" resetType="Group" resetGroup="Category" calculation="Sum">
+	<variable name="UNITS_1" class="java.lang.Double" calculation="Sum">
 		<variableExpression><![CDATA[$F{UNITS}]]></variableExpression>
 	</variable>
-	<variable name="SALES_CAT" class="java.lang.Double" resetType="Group" resetGroup="Category" calculation="Sum">
-		<variableExpression><![CDATA[$F{SALES}]]></variableExpression>
+	<variable name="AMOUNT_1" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{AMOUNT}]]></variableExpression>
 	</variable>
-	<variable name="UNITS_TOTAL" class="java.lang.Double" calculation="Sum">
+	<variable name="TOTAL_1" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTAL}]]></variableExpression>
+	</variable>
+	<variable name="BASE_1" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{BASE}]]></variableExpression>
+	</variable>
+	<variable name="BASE_2" class="java.lang.Double" resetType="Group" resetGroup="Category" calculation="Sum">
+		<variableExpression><![CDATA[$F{BASE}]]></variableExpression>
+	</variable>
+	<variable name="BASE_3" class="java.lang.Double" resetType="Group" resetGroup="CATNAME" calculation="Sum">
+		<variableExpression><![CDATA[$F{BASE}]]></variableExpression>
+	</variable>
+	<variable name="UNITS_2" class="java.lang.Double" resetType="Group" resetGroup="Category" calculation="Sum">
 		<variableExpression><![CDATA[$F{UNITS}]]></variableExpression>
 	</variable>
-	<variable name="SALES_TOTAL" class="java.lang.Double" calculation="Sum">
-		<variableExpression><![CDATA[$F{SALES}]]></variableExpression>
-	</variable>
-	<variable name="UNITS_1" class="java.lang.Double" resetType="Group" resetGroup="SUBCAT" calculation="Sum">
+	<variable name="UNITS_3" class="java.lang.Double" resetType="Group" resetGroup="CATNAME" calculation="Sum">
 		<variableExpression><![CDATA[$F{UNITS}]]></variableExpression>
 	</variable>
-	<variable name="SALES_1" class="java.lang.Double" resetType="Group" resetGroup="SUBCAT" calculation="Sum">
-		<variableExpression><![CDATA[$F{SALES}]]></variableExpression>
+	<variable name="AMOUNT_2" class="java.lang.Double" resetType="Group" resetGroup="Category" calculation="Sum">
+		<variableExpression><![CDATA[$F{AMOUNT}]]></variableExpression>
+	</variable>
+	<variable name="AMOUNT_3" class="java.lang.Double" resetType="Group" resetGroup="CATNAME" calculation="Sum">
+		<variableExpression><![CDATA[$F{AMOUNT}]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_2" class="java.lang.Double" resetType="Group" resetGroup="Category" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTAL}]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_3" class="java.lang.Double" resetType="Group" resetGroup="CATNAME" calculation="Sum">
+		<variableExpression><![CDATA[$F{TOTAL}]]></variableExpression>
 	</variable>
 	<group name="Category" keepTogether="true">
 		<groupExpression><![CDATA[$F{PARENTCAT}]]></groupExpression>
 		<groupHeader>
-			<band height="15">
+			<band height="16">
 				<rectangle>
 					<reportElement x="0" y="0" width="534" height="15" forecolor="#FFFFFF" backcolor="#33CCFF" uuid="45a3469f-fa7b-4c48-9539-6e58c572a00f"/>
 				</rectangle>
@@ -71,51 +76,62 @@
 						<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{PARENTCAT} == null ? $F{SUBCAT} : $F{PARENTCAT}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{PARENTCAT} == null ? $F{CATNAME} : $F{PARENTCAT}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="23">
+			<band height="30">
+				<line>
+					<reportElement x="240" y="5" width="292" height="1" uuid="628907d9-9ed1-4a26-a0ff-b0c039eb72e8"/>
+				</line>
+				<textField>
+					<reportElement x="290" y="6" width="80" height="15" uuid="afd721a9-6d53-4de6-99a6-87ef7b358bf5"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($V{BASE_2})]]></textFieldExpression>
+				</textField>
+				<textField pattern="###0.00">
+					<reportElement x="240" y="6" width="50" height="15" uuid="e3fb8bf4-9143-40e1-b374-6ce797e1704a"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[com.openbravo.format.Formats.DOUBLE.formatValue($V{UNITS_2})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="370" y="6" width="80" height="15" uuid="cf7c507a-bf34-41a8-809d-41d312106a7b"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($V{AMOUNT_2})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="450" y="6" width="82" height="15" uuid="cbd68058-c73e-4235-b30a-70aa961a6c17"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($V{TOTAL_2})]]></textFieldExpression>
+				</textField>
 				<textField pattern="" isBlankWhenNull="false">
-					<reportElement key="textField-16" mode="Opaque" x="172" y="6" width="122" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="a2c5aefd-ec31-4ae0-b896-df67d65bddef"/>
+					<reportElement key="textField-16" mode="Opaque" x="93" y="6" width="122" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="6ce1b18c-e561-4fe2-b758-d85a82eb899b"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<bottomPen lineWidth="0.0" lineColor="#000000"/>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 					</box>
-					<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+					<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
 						<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{label.ptotal}]]></textFieldExpression>
-				</textField>
-				<line>
-					<reportElement x="318" y="5" width="100" height="1" uuid="628907d9-9ed1-4a26-a0ff-b0c039eb72e8"/>
-				</line>
-				<line>
-					<reportElement x="434" y="5" width="100" height="1" uuid="d3463532-4b2d-4c50-ad8c-9b4b88691cbc"/>
-				</line>
-				<textField pattern="###0">
-					<reportElement x="319" y="6" width="100" height="15" uuid="29517ab4-ffcf-4e1e-b6ce-afccab013ec3"/>
-					<textElement textAlignment="Right">
-						<font isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[com.openbravo.format.Formats.DOUBLE.formatValue($V{UNITS_CAT})]]></textFieldExpression>
-				</textField>
-				<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
-					<reportElement x="434" y="6" width="100" height="15" uuid="dac66e65-26a9-4d46-b1c7-495aad9e8d4f"/>
-					<textElement textAlignment="Right">
-						<font isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($V{SALES_CAT})]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{label.ctotal}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
 	</group>
-	<group name="SUBCAT">
-		<groupExpression><![CDATA[$F{SUBCAT}]]></groupExpression>
+	<group name="CATNAME">
+		<groupExpression><![CDATA[$F{CATNAME}]]></groupExpression>
 		<groupHeader>
 			<band height="15">
 				<textField>
@@ -123,27 +139,56 @@
 					<textElement>
 						<font isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{SUBCAT}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{CATNAME}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
 			<band height="23">
 				<line>
-					<reportElement x="318" y="5" width="100" height="1" forecolor="#999999" uuid="97af36d7-88ec-450d-a62f-6779296a948d"/>
+					<reportElement x="240" y="5" width="292" height="1" forecolor="#999999" uuid="97af36d7-88ec-450d-a62f-6779296a948d"/>
 				</line>
-				<line>
-					<reportElement x="434" y="5" width="100" height="1" forecolor="#999999" uuid="ad01256e-4afa-438a-a95e-30ee0462c5ee"/>
-				</line>
-				<textField pattern="###0">
-					<reportElement x="319" y="5" width="100" height="15" uuid="9abe767a-fc1b-4446-9063-c846d5158217"/>
-					<textElement textAlignment="Right"/>
-					<textFieldExpression><![CDATA[com.openbravo.format.Formats.DOUBLE.formatValue($V{UNITS_1})]]></textFieldExpression>
+				<textField>
+					<reportElement x="290" y="6" width="80" height="15" uuid="b8cc351c-4e4d-4f2a-8ee6-b609aee63239"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($V{BASE_3})]]></textFieldExpression>
 				</textField>
-				<textField pattern="¤ #,##0.00">
-					<reportElement x="435" y="5" width="100" height="15" uuid="3f78c9d0-98c9-4a5f-bd0b-cec2348fb5b2"/>
-					<textElement textAlignment="Right"/>
-					<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($V{SALES_1})]]></textFieldExpression>
+				<textField pattern="###0.00">
+					<reportElement x="240" y="6" width="50" height="15" uuid="9a2cbb89-a704-4263-a65f-6325b5e8cf72"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[com.openbravo.format.Formats.DOUBLE.formatValue($V{UNITS_3})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="370" y="6" width="80" height="15" uuid="9ecd5415-a0f8-4746-8506-6f90c0c10bf9"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($V{AMOUNT_3})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="452" y="6" width="80" height="15" uuid="e1da2c0e-d402-42fb-a034-87a21657ebe7"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($V{TOTAL_3})]]></textFieldExpression>
+				</textField>
+				<textField pattern="" isBlankWhenNull="false">
+					<reportElement key="textField-16" mode="Opaque" x="93" y="6" width="122" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="a2c5aefd-ec31-4ae0-b896-df67d65bddef"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+						<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{label.ptotal}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -273,7 +318,7 @@
 				<textFieldExpression><![CDATA[$R{label.name}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-12" mode="Opaque" x="318" y="2" width="100" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="627e71c8-332a-42c4-be6b-d46e0f991916"/>
+				<reportElement key="textField-12" mode="Opaque" x="240" y="2" width="50" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="627e71c8-332a-42c4-be6b-d46e0f991916"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -287,7 +332,7 @@
 				<textFieldExpression><![CDATA[$R{label.units}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-14" mode="Opaque" x="435" y="2" width="100" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="61e5936f-174f-4c5c-aef4-327b0e53fddb"/>
+				<reportElement key="textField-14" mode="Opaque" x="452" y="2" width="80" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="61e5936f-174f-4c5c-aef4-327b0e53fddb"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -298,7 +343,7 @@
 					<font fontName="SansSerif" size="11" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label.sales}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{label.total}]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement key="line-4" mode="Opaque" x="0" y="18" width="535" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="fafe6482-c9ad-4c0b-8254-11cfbe7852e6"/>
@@ -306,20 +351,44 @@
 					<pen lineWidth="0.25" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField-12" mode="Opaque" x="290" y="2" width="80" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="2ff95459-f28e-4b67-927c-e1f0f4c5fb4d"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="SansSerif" size="11" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label.base}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField-12" mode="Opaque" x="375" y="2" width="75" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="dc979dc5-655d-4c22-845c-7db33f53a958"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
+					<font fontName="SansSerif" size="11" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label.amount}]]></textFieldExpression>
+			</textField>
 		</band>
 	</columnHeader>
 	<detail>
 		<band height="15" splitType="Stretch">
 			<textField>
-				<reportElement key="prodref" x="50" y="0" width="75" height="15" uuid="9d907c92-38aa-48a8-8d51-7e744494fc25"/>
-				<textFieldExpression><![CDATA[$F{PRODREF}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="prodname" x="125" y="0" width="193" height="15" uuid="32632867-1f00-488a-a23a-613f2401643a"/>
+				<reportElement key="prodname" x="50" y="0" width="193" height="15" uuid="32632867-1f00-488a-a23a-613f2401643a"/>
 				<textFieldExpression><![CDATA[$F{PRODNAME}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="units" mode="Opaque" x="319" y="0" width="100" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="dc0c5498-6e53-4613-8ee4-c2bff51a18d6"/>
+				<reportElement key="units" mode="Opaque" x="240" y="0" width="50" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="dc0c5498-6e53-4613-8ee4-c2bff51a18d6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -333,7 +402,7 @@
 				<textFieldExpression><![CDATA[com.openbravo.format.Formats.DOUBLE.formatValue($F{UNITS})]]></textFieldExpression>
 			</textField>
 			<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
-				<reportElement key="sales" mode="Opaque" x="434" y="0" width="100" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="1a7e2ed7-5c58-447a-8799-695131546514"/>
+				<reportElement key="sales" mode="Opaque" x="452" y="0" width="80" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="1a7e2ed7-5c58-447a-8799-695131546514"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -344,7 +413,17 @@
 					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($F{SALES})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($F{TOTAL})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="290" y="0" width="80" height="15" uuid="40ec1e87-3170-42d2-bedf-2f0899f8d622"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($F{BASE})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="370" y="1" width="80" height="14" uuid="80313a2d-c422-4597-925a-24cd4184b4a9"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($F{AMOUNT})]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
@@ -413,38 +492,49 @@
 	<summary>
 		<band height="26" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-16" mode="Opaque" x="162" y="6" width="132" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="24a2974c-f47c-417a-8265-fff6583f86c7"/>
+				<reportElement key="textField-16" mode="Opaque" x="93" y="6" width="122" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="24a2974c-f47c-417a-8265-fff6583f86c7"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
 				</box>
-				<textElement textAlignment="Right" verticalAlignment="Top" rotation="None">
+				<textElement textAlignment="Right" verticalAlignment="Bottom" rotation="None">
 					<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{label.btotal}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{label.gtotal}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="319" y="3" width="100" height="1" uuid="33f63c6c-ae06-4609-a5c7-83d296bdd1f6"/>
+				<reportElement x="240" y="3" width="292" height="1" uuid="33f63c6c-ae06-4609-a5c7-83d296bdd1f6"/>
 			</line>
-			<line>
-				<reportElement x="435" y="3" width="100" height="1" uuid="7e6f4ae5-7f5f-4423-95ed-628e07585363"/>
-			</line>
-			<textField pattern="###0">
-				<reportElement x="319" y="6" width="100" height="18" uuid="4dd39cf6-6033-4644-9235-0acfe5f6f747"/>
-				<textElement textAlignment="Right">
-					<font isBold="true"/>
+			<textField pattern="###0.00">
+				<reportElement x="240" y="6" width="50" height="15" uuid="cdfa8b85-ce30-4c7b-a877-1f91d5263f22"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font size="11" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[com.openbravo.format.Formats.DOUBLE.formatValue($V{UNITS_TOTAL})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[com.openbravo.format.Formats.DOUBLE.formatValue($V{UNITS_1})]]></textFieldExpression>
 			</textField>
-			<textField pattern="¤ #,##0.00">
-				<reportElement x="434" y="6" width="100" height="18" uuid="c237a44f-a3bb-4892-b84b-a9686386578b"/>
-				<textElement textAlignment="Right">
-					<font isBold="true"/>
+			<textField>
+				<reportElement x="370" y="6" width="80" height="15" uuid="44953c6e-266f-4dfd-a052-4b45395faa96"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font size="11" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($V{SALES_TOTAL})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($V{AMOUNT_1})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="452" y="6" width="80" height="15" uuid="d49e2f99-eff7-4132-9d8e-e45b7838d138"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($V{TOTAL_1})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="290" y="6" width="80" height="15" uuid="c8d0f1c2-f3b6-4382-93f0-74ec484f4fca"/>
+				<textElement textAlignment="Right" verticalAlignment="Bottom">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($V{BASE_1})]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>

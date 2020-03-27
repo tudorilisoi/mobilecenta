@@ -115,7 +115,7 @@ public class FXWeb extends JPanel
             FXWeb.this.stage.setScene(scene);
             FXWeb.this.browser = new WebView();
             FXWeb.this.webEngine = FXWeb.this.browser.getEngine();
-            FXWeb.this.webEngine.load("http://unicenta.org/splasher.html");
+            FXWeb.this.webEngine.load("https://unicenta.com/pages/configure-unicenta-opos/");
             final ObservableList<Node> children = root.getChildren();
             children.add(FXWeb.this.browser);
             FXWeb.this.jfxPanel.setScene(scene);

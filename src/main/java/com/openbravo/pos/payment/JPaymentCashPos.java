@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta
+//    Copyright (c) 2009-2018 uniCenta
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -189,10 +189,10 @@ public class JPaymentCashPos extends javax.swing.JPanel implements JPaymentInter
             JButton btn = new JButton();
 //added 19.04.13 JDL removal of text on payment buttons if required.   
             try {
-            if ((m_config.getProperty("payments.textoverlay")).equals("true")){
-                     btn.setIcon(new ImageIcon(tnbbutton.getThumbNailText(dlSystem.getResourceAsImage(image),"")));  
+            if ((m_config.getProperty("payments.textoverlay")).equals("false")){
+                btn.setIcon(new ImageIcon(tnbbutton.getThumbNailText(dlSystem.getResourceAsImage(image),"")));  
             } else {
-                     btn.setIcon(new ImageIcon(tnbbutton.getThumbNailText(dlSystem.getResourceAsImage(image), Formats.CURRENCY.formatValue(amount)))); 
+                btn.setIcon(new ImageIcon(tnbbutton.getThumbNailText(dlSystem.getResourceAsImage(image), Formats.CURRENCY.formatValue(amount)))); 
             }
             } catch (Exception e){
                     btn.setIcon(new ImageIcon(tnbbutton.getThumbNailText(dlSystem.getResourceAsImage(image), Formats.CURRENCY.formatValue(amount))));        

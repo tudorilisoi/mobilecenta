@@ -1,5 +1,5 @@
 //    uniCenta oPOS - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta
+//    Copyright (c) 2009-2018 uniCenta
 //    http://sourceforge.net/projects/unicentaopos
 //
 //    This file is part of uniCenta oPOS.
@@ -18,15 +18,15 @@
 //    along with uniCenta oPOS.  If not, see <http://www.gnu.org/licenses/>.
 // *************************************************************************
 
-payment.addButton("note.50", 50.0);
-payment.addButton("note.20", 20.0);
-payment.addButton("note.10", 10.0);
-payment.addButton("note.5", 5.0);
-payment.addButton("coin.2", 2.0);
-payment.addButton("coin.1", 1.0);
-payment.addButton("coin.50", 0.50);
-payment.addButton("coin.20", 0.20);
-payment.addButton("coin.10", 0.10);
-payment.addButton("coin.05", 0.05);
-payment.addButton("coin.02", 0.02);
-payment.addButton("coin.01", 0.01);
+payment.addButton("img.50", 50.0);
+payment.addButton("img.20", 20.0);
+payment.addButton("img.10", 10.0);
+payment.addButton("img.5", 5.0);
+payment.addButton("img.2", 2.0);
+payment.addButton("img.1", 1.00);
+payment.addButton("img.050", 0.50);
+payment.addButton("img.020", 0.20);
+payment.addButton("img.010", 0.10);
+payment.addButton("img.005", 0.05);
+payment.addButton("img.002", 0.02);
+payment.addButton("img.001", 0.01);

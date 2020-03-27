@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
     uniCenta oPOS - Touch friendly Point Of Sale
-    Copyright (c) 2009-2017 uniCenta.
+    Copyright (c) 2009-2018 uniCenta.
     http://sourceforge.net/projects/unicentaopos
 
     This file is part of uniCenta oPOS.
@@ -36,8 +36,8 @@
 	<!-- <button key="button.note" image="img.refundit" code="script.addlinenote"/> -->        
                 
 	<!-- SET Line or Total Discount (Default=TotalDiscount= ENABLED) -->
-	<button key="button.totaldiscount" image="img.discount" code="script.totaldiscount"/>
-	<!-- <button key="button.linediscount" image="img.discount_b" code="script.linediscount"/>  -->
+	<button key="button.Totaldiscount" image="img.discount" code="script.Totaldiscount"/>
+	<button key="button.Linediscount" image="img.discount_b" code="script.Linediscount"/>
 
 	<!-- SET Waiter's name (Default=DISABLED) -->
 	<!-- <button key="button.setperson" image="img.user" code="script.SetPerson"/>  -->
@@ -54,15 +54,15 @@
 	<!-- Open posapps settings / configuration screen (Default=ENABLED) -->
 	<button key="button.posapps" image="img.posapps" code="script.posapps" />
 
-	<!-- SET Virtual Keyboard (Default=DISABLED) -->
-	<!-- <button key="button.keyboard" image="img.keyboard_32" code="script.Keyboard"/> -->
+	<!-- SET Virtual Keyboard (Default=ENABLED) -->
+	<button key="button.keyboard" image="img.keyboard_48" code="script.Keyboard"/>
 
 <!-- END Sales Ticket Button Bar - Show icons -->
 
 <!-- SET Ticket Button Bar - Text Only ****************************************************************** -->
 	<!-- <button key="button.refundit" name="button.refundit" code="script.Refundit"/> -->
-    	<!-- <button key="button.linediscount" name="button.linediscount" code="script.linediscount"/> -->
-    	<!-- <button key="button.discount" name="button.totaldiscount" code="script.totaldiscount"/> -->
+    	<!-- <button key="button.Linediscount" name="button.Linediscount" code="script.Linediscount"/> -->
+    	<!-- <button key="button.Totaldiscount" name="button.Totaldiscount" code="script.Totaldiscount"/> -->
     	<!-- <button key="button.setperson" name="button.setperson" code="script.SetPerson"/> -->
     	<!-- <button key="button.sendorder" name="button.sendorder" code="script.SendOrder"/> -->
     	<!-- <button key="button.print" titlekey="button.print" template="Printer.TicketPreview"/> -->
@@ -101,30 +101,28 @@
 <!-- Print Receipt (Default=ENABLED) -->
         <printselected value="true"/>
 
-<!-- ADDITIONAL FEATURES ************************************************* -->
+    <!-- ADDITIONAL FEATURES ************************************************* -->
     <!-- SET Show Change in Cash Sale (Default=ENABLED -->
         <event key="ticket.close" code="Ticket.Close"/>
-		<event key="cash.close" code="Cash.Close"/>
+	<event key="cash.close" code="Cash.Close"/>
 
-    <!-- SET Consolidate Receipt - Multiple ProductID's (Default=DISABLED) -->
-        <!-- <event  key="ticket.total" code="script.ReceiptConsolidate"/> -->
+<!-- Execute your own scripts by EVENTS triggered by Sales Screen -->
+    <!--    <event key="ticket.change" code="script.YourChangeScript"/> after a ticketline is changed -->
+    <!--    <event key="ticket.addline" code="script.YourAddLineScript"/> before a ticketline is added -->
+    <!--    <event key="ticket.setline" code="script.YourSetLineScript"/> before an exisitng ticketline is changed -->
+    <!--    <event key="ticket.removeline" code="script.YourRemoveLineScript"/> before a ticketline is deleted -->
+    <!--    <event key="ticket.show" code="script.YourShowScript"/> before the receipt is shown -->
+    <!--    <event key="ticket.total" code="script.YourTotalScript"/> after the equals button -->
+    <!--    <event key="ticket.save" code="script.YourSaveScript"/> after payment OK button -->
+    <!--    <event key="ticket.close" code="script.YourCloseScript"/> after ticket is stored in database and ticket number assigned -->
 
-    <!-- SET Stock Level Checking (Default=DISABLED) --> 
-        <!-- <event key="ticket.addline" code="script.StockCurrentAdd"/> -->
-        <!-- <event key="ticket.setline" code="script.StockCurrentSet"/> -->
-
-        <!-- <event key="ticket.change" code="event.change"/> -->
-        <!-- <event key="ticket.addline" code="event.addline"/> -->
-        <!-- <event key="ticket.removeline" code="event.removeline"/> -->
-        <!-- <event key="ticket.setline" code="event.setline"/> -->
-        <!-- <event key="ticket.show" code="event.show"/> -->
-        <!-- <event key="ticket.total" code="script.Event.Total"/> -->
-        <!-- <event key="ticket.total" code="event.total"/> -->
-        <!-- <event key="ticket.close" code="event.close"/> -->
-        <!-- <event key="ticket.close" code="script.printreport"/> -->
+    <!-- posApps REST Customer Events -->
+    <event key="customer.created" code="Customer.Created"/>
+    <event key="customer.updated" code="Customer.Updated"/>
+    <event key="customer.deleted" code="Customer.Deleted"/>
 
          <taxesincluded value="true"/>
-         <!-- <taxcategoryid value="001"/> -->
-         <!-- <pricevisible value="true" /> -->
+         <taxcategoryid value="001"/>
+         <pricevisible value="true" />
          
 </configuration>

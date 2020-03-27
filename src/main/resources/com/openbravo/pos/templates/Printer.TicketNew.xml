@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
     uniCenta oPOS - Touch friendly Point Of Sale
-    Copyright (c) 2009-2017 uniCenta.
+    Copyright (c) 2009-2018 uniCenta.
     http://sourceforge.net/projects/unicentaopos
 
     This file is part of uniCenta oPOS.
@@ -170,7 +170,7 @@
               <text align ="right" length="42">${paymentline.printTotal()}</text>
             </line>
           #end
-          #if ($paymentline.name == "magcard")
+          #if ($paymentline.name == "ccard")
             <line>
               <text bold="true">Card</text>
           </line>
@@ -194,7 +194,7 @@
             <text>${paymentline.printAuthorization()}</text>
          </line>
         #end
-        #if ($paymentline.name == "magcardrefund")
+        #if ($paymentline.name == "ccardrefund")
             <line>
                 <text bold="true">Card Refund</text>
             </line>

@@ -1,15 +1,15 @@
-Project: uniCenta oPOS v4.4.2
+Project: uniCenta oPOS v4.5.4
 Topic:	README installer
 Author:	Jack Gerrard
-Date: 	16 September 2017
+Date: 	15 May 2018
 
 
 ************  Important Notice ******************
-This version is 4.4.2
+This version is 4.5.4
 
-uniCenta oPOS v4.4.2 includes bug-fixes.
+uniCenta oPOS v4.5.4 includes bug-fixes.
 
-Please read the unicentaopos_4.4.2_readme in the Release Notes folder.
+Please read the unicentaopos_4.5.4_readme in the Release Notes folder.
 
 Java JRE 8 runtime is required.
 The uniCenta oPOS installer now attempts to validate that Java JRE runtime is 

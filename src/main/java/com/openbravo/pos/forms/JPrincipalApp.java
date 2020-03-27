@@ -1,5 +1,5 @@
 //    uniCenta oPOS Touch Friendly Point of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com/product
 //
 //    This file is part of uniCenta oPOS.
@@ -39,8 +39,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
-
-import com.unicenta.pos.api.UIHelpers;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 // import org.jdesktop.swingx.painter.MattePainter;
@@ -95,16 +93,13 @@ public class JPrincipalApp extends javax.swing.JPanel implements AppUserView {
         jPanel2.add(Box.createVerticalStrut(50), 0);
         m_jPanelLeft.getVerticalScrollBar().setPreferredSize(new Dimension(35, 35));
         
- //       m_jPanelLeft.setBackground(Color.black);
-        
         applyComponentOrientation(appview.getComponentOrientation());
        
         m_principalnotificator = new JLabel();
         m_principalnotificator.applyComponentOrientation(getComponentOrientation());
         m_principalnotificator.setText(m_appuser.getName());
         m_principalnotificator.setIcon(m_appuser.getIcon());
-        // NOTE @tudorilisoi here you can set API server status
-
+        
         if (jButton1.getComponentOrientation().isLeftToRight()) {
             menu_open = new javax.swing.ImageIcon(getClass().getResource(
                 "/com/openbravo/images/menu-right.png"));
@@ -118,8 +113,7 @@ public class JPrincipalApp extends javax.swing.JPanel implements AppUserView {
         }
         assignMenuButtonIcon();        
                 
-        m_jPanelTitle.setVisible(false);
-        
+        m_jPanelTitle.setVisible(false);       
         m_jPanelContainer.add(new JPanel(), "<NULL>");
 
         showView("<NULL>");
@@ -173,18 +167,16 @@ public class JPrincipalApp extends javax.swing.JPanel implements AppUserView {
          * @return
          */
         public ScriptGroup addGroup(String key) {
-            
             ScriptGroup group = new ScriptGroup(key);
             taskPane.add(group.getTaskGroup());
             return group;
         }
-        
             
         /**
          *
          * @return
         */
-        public JXTaskPaneContainer getTaskPane() {            
+        public JXTaskPaneContainer getTaskPane() {  
             return taskPane;
         }
     }
@@ -203,7 +195,8 @@ public class JPrincipalApp extends javax.swing.JPanel implements AppUserView {
             taskGroup.setRequestFocusEnabled(false);
             taskGroup.setTitle(AppLocal.getIntString(key));
             taskGroup.setVisible(false);
-//            taskGroup.setFont(new java.awt.Font("Arial",0,16));
+            taskGroup.setFont(new java.awt.Font("Arial",0,16));
+                       
         }
         
         /**

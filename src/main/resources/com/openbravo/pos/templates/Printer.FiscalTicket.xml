@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
     uniCenta oPOS - Touch friendly Point Of Sale
-    Copyright (c) 2009-2017 uniCenta.
+    Copyright (c) 2009-2018 uniCenta.
     http://sourceforge.net/projects/unicentaopos
 
     This file is part of uniCenta oPOS.
@@ -45,10 +45,10 @@
          #if ($paymentline.name == "cashrefund")
             <total paid="${paymentline.getTotal()}">Refund</total>  
          #end
-         #if ($paymentline.name == "magcard")
+         #if ($paymentline.name == "ccard")
             <total paid="${paymentline.getTotal()}">Mag card</total>  
          #end  
-         #if ($paymentline.name == "magcardrefund")
+         #if ($paymentline.name == "ccardrefund")
             <total paid="${paymentline.getTotal()}">Mag card refund</total>     
          #end
          #if ($paymentline.name == "cheque")

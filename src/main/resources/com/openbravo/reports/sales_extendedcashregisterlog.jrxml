@@ -383,14 +383,10 @@ ORDER BY TICKETS.TICKETID]]>
 			<textField>
 				<reportElement x="600" y="5" width="72" height="15" uuid="d440bfea-97c5-4667-9c53-88f1e4842cc9"/>
 				<textElement textAlignment="Right">
-					<font isBold="true"/>
+					<font size="11" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{TICKET_COUNT}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement x="675" y="5" width="100" height="15" uuid="423addfb-48b4-42a2-9465-d15cf0920708"/>
-				<text><![CDATA[Tickets]]></text>
-			</staticText>
 		</band>
 	</summary>
 </jasperReport>

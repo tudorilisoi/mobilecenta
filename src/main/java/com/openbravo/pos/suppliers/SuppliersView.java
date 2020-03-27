@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta
+//    Copyright (c) 2009-2018 uniCenta
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -31,6 +31,7 @@ import com.openbravo.pos.forms.DataLogicSales;
 import com.openbravo.pos.inventory.MovementReason;
 import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -47,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.JTableHeader;
 
 /**
  *
@@ -126,6 +128,7 @@ public final class SuppliersView extends javax.swing.JPanel implements EditorRec
      */
     @Override
     public void refresh() {
+        jLblTranCount.setText(null);         
     }
     
     /**
@@ -182,6 +185,9 @@ public final class SuppliersView extends javax.swing.JPanel implements EditorRec
         txtCountry.setEnabled(false);
         
         jTableSupplierTransactions.setEnabled(false);
+        
+        repaint();
+        refresh();        
     } 
 
     @Override
@@ -238,6 +244,9 @@ public final class SuppliersView extends javax.swing.JPanel implements EditorRec
         txtCurdate.setEnabled(true);
         m_jVisible.setEnabled(true);        
         jTableSupplierTransactions.setEnabled(false);
+        
+        repaint();
+        refresh();        
     }
 
     /**
@@ -304,6 +313,9 @@ public final class SuppliersView extends javax.swing.JPanel implements EditorRec
         transactionModel = new TransactionTableModel(getTransactionOfName((String) m_oId));        
         jTableSupplierTransactions.setModel(transactionModel);
         jTableSupplierTransactions.setEnabled(false);
+        
+        repaint();
+        refresh();        
 
     }
 
@@ -384,6 +396,14 @@ public void resetTranxTable() {
     jTableSupplierTransactions.getColumnModel().getColumn(2).setPreferredWidth(30);
     jTableSupplierTransactions.getColumnModel().getColumn(3).setPreferredWidth(50);
     jTableSupplierTransactions.getColumnModel().getColumn(4).setPreferredWidth(55);
+    
+    // set font for headers
+    Font f = new Font("Arial", Font.BOLD, 14);
+    JTableHeader header = jTableSupplierTransactions.getTableHeader();
+    header.setFont(f);
+      
+    jTableSupplierTransactions.getTableHeader().setReorderingAllowed(true); 
+    jTableSupplierTransactions.setAutoCreateRowSorter(true);        
 
     jTableSupplierTransactions.repaint();
     
@@ -423,6 +443,9 @@ public void resetTranxTable() {
         supplier[21] = m_jVATID.getText();        
 
         supplier[22] = (Object)getAppView();
+        
+        repaint();
+        refresh();        
         
         return supplier;
     }
@@ -621,6 +644,7 @@ String rsn = AppLocal.getIntString("label.suptblHeaderCol5");
         jBtnShowTrans = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTableSupplierTransactions = new javax.swing.JTable();
+        jLblTranCount = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         m_jNotes = new javax.swing.JTextArea();
@@ -924,10 +948,10 @@ String rsn = AppLocal.getIntString("label.suptblHeaderCol5");
         jPanel4.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         jPanel4.setPreferredSize(new java.awt.Dimension(535, 0));
 
-        jBtnShowTrans.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jBtnShowTrans.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jBtnShowTrans.setText(bundle.getString("button.SupplierTrans")); // NOI18N
         jBtnShowTrans.setToolTipText("");
-        jBtnShowTrans.setPreferredSize(new java.awt.Dimension(140, 25));
+        jBtnShowTrans.setPreferredSize(new java.awt.Dimension(140, 30));
         jBtnShowTrans.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBtnShowTransActionPerformed(evt);
@@ -936,9 +960,100 @@ String rsn = AppLocal.getIntString("label.suptblHeaderCol5");
 
         jScrollPane3.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
 
-        jTableSupplierTransactions.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jTableSupplierTransactions.setAutoCreateRowSorter(true);
+        jTableSupplierTransactions.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jTableSupplierTransactions.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
                 {null, null, null, null, null},
                 {null, null, null, null, null},
                 {null, null, null, null, null},
@@ -957,28 +1072,39 @@ String rsn = AppLocal.getIntString("label.suptblHeaderCol5");
         jTableSupplierTransactions.setGridColor(new java.awt.Color(102, 204, 255));
         jTableSupplierTransactions.setOpaque(false);
         jTableSupplierTransactions.setPreferredSize(new java.awt.Dimension(375, 200));
-        jTableSupplierTransactions.setRowHeight(20);
+        jTableSupplierTransactions.setRowHeight(25);
         jTableSupplierTransactions.setShowVerticalLines(false);
         jScrollPane3.setViewportView(jTableSupplierTransactions);
+
+        jLblTranCount.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLblTranCount.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLblTranCount.setOpaque(true);
+        jLblTranCount.setPreferredSize(new java.awt.Dimension(50, 30));
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGap(10, 10, 10)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 622, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jBtnShowTrans, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(23, 23, 23))
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 622, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jBtnShowTrans, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLblTranCount, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap(13, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jBtnShowTrans, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 217, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jBtnShowTrans, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLblTranCount, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1131,6 +1257,8 @@ String rsn = AppLocal.getIntString("label.suptblHeaderCol5");
             jTableSupplierTransactions.setModel(transactionModel);
             if (transactionModel.getRowCount()> 0){
                 jTableSupplierTransactions.setVisible(true);
+                String TranCount = String.valueOf(transactionModel.getRowCount());
+                jLblTranCount.setText(TranCount + " for " + m_jName.getText());                 
             }else{
                 jTableSupplierTransactions.setVisible(false);
                 JOptionPane.showMessageDialog(null, 
@@ -1176,6 +1304,7 @@ String rsn = AppLocal.getIntString("label.suptblHeaderCol5");
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JLabel jLblTranCount;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

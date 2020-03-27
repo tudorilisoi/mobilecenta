@@ -1,5 +1,5 @@
 //    uniCenta oPOS - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -35,28 +35,24 @@ report.setSentence("SELECT products.ID, "
         + "categories.NAME AS CATEGORYNAME, "
         + "stockcurrent.UNITS "
     + "FROM ((products products "
-        + "INNER JOIN stockcurrent stockcurrent "
-            + "ON (products.ID = stockcurrent.PRODUCT)) "
-        + "LEFT OUTER JOIN categories categories "
-           + "ON (products.CATEGORY = categories.ID)) "
-        + "LEFT OUTER JOIN taxes T "
-           + "ON (products.TAXCAT = T.ID) "
+        + "INNER JOIN taxes T "
+            + "ON (products.taxcat = T.id)) "
+        + "INNER JOIN categories categories "
+            + "ON (products.category = categories.id)) "
+        + "LEFT OUTER JOIN stockcurrent stockcurrent "
+            + "ON (stockcurrent.product = products.id) "
     + "WHERE ?(QBF_FILTER) "
     + "GROUP BY products.ID "
     + "ORDER BY CATEGORYNAME ASC, products.NAME ASC");
+
+report.addParameter("stockcurrent.LOCATION");
+report.addQBFFilter(new com.openbravo.pos.reports.JParamsLocationWithFirst());
 
 report.addParameter("products.NAME");
 report.addParameter("products.CATEGORY");
 report.addParameter("products.CODE");
 report.addParameter("stockcurrent.UNITS");
 report.addQBFFilter(new com.openbravo.pos.ticket.ProductFilter1());
-
-// report.addParameter("suppliers.ID");
-// report.addParameter("suppliers.NAME");
-// report.addQBFFilter(new com.openbravo.pos.reports.JParamsSuppliers());
-
-report.addParameter("stockcurrent.LOCATION");
-report.addQBFFilter(new com.openbravo.pos.reports.JParamsLocationWithFirst());
 
 report.addField("ID", com.openbravo.data.loader.Datas.STRING);
 report.addField("REFERENCE", com.openbravo.data.loader.Datas.STRING);

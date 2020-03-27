@@ -71,13 +71,15 @@ ALTER TABLE `payments` ADD CONSTRAINT `payments_fk_receipt`
 ALTER TABLE `people` ADD CONSTRAINT `people_fk_1`
 	FOREIGN KEY ( `role` ) REFERENCES `roles` ( `id` );
 
+-- Update Indeces of products
+ALTER TABLE `products` ADD UNIQUE INDEX `products_inx_0` ( `reference` );
+ALTER TABLE `products` ADD UNIQUE INDEX `products_inx_1` ( `code` );
+ALTER TABLE `products` ADD INDEX `products_name_inx` ( `name` );
 -- Update foreign keys of products
 ALTER TABLE `products` ADD CONSTRAINT `products_attrset_fk`
 	FOREIGN KEY ( `attributeset_id` ) REFERENCES `attributeset` ( `id` );
-
 ALTER TABLE `products` ADD CONSTRAINT `products_fk_1`
 	FOREIGN KEY ( `category` ) REFERENCES `categories` ( `id` );
-
 ALTER TABLE `products` ADD CONSTRAINT `products_taxcat_fk`
 	FOREIGN KEY ( `taxcat` ) REFERENCES `taxcategories` ( `id` );
 

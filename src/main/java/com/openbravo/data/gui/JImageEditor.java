@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -328,8 +328,14 @@ public class JImageEditor extends javax.swing.JPanel {
         m_jPercent = new javax.swing.JLabel();
         m_jbtnzoomout = new javax.swing.JButton();
 
+        setBackground(new java.awt.Color(255, 255, 255));
+        setOpaque(false);
         setLayout(new java.awt.BorderLayout());
 
+        m_jScr.setBackground(new java.awt.Color(255, 255, 255));
+        m_jScr.setOpaque(false);
+
+        m_jImage.setBackground(new java.awt.Color(255, 255, 255));
         m_jImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         m_jImage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/no_photo.png"))); // NOI18N
         m_jImage.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -337,10 +343,14 @@ public class JImageEditor extends javax.swing.JPanel {
 
         add(m_jScr, java.awt.BorderLayout.CENTER);
 
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setOpaque(false);
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
         jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 5, 0, 5));
         jPanel2.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jPanel2.setOpaque(false);
         jPanel2.setLayout(new java.awt.GridLayout(0, 1, 0, 2));
 
         m_jbtnopen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/camera.png"))); // NOI18N

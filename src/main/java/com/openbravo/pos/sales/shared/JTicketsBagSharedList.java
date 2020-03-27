@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -138,7 +138,9 @@ public class JTicketsBagSharedList extends javax.swing.JDialog {
                 total = "";
         }
 
-            setText(ticket.getName() + total);            
+            setText(ticket.getPickupId() + " - "
+                    + ticket.getName() 
+                    + total);            
         }
 
         private class ActionListenerImpl implements ActionListener {
@@ -211,7 +213,7 @@ public class JTicketsBagSharedList extends javax.swing.JDialog {
 
         getContentPane().add(jPanel3, java.awt.BorderLayout.SOUTH);
 
-        setSize(new java.awt.Dimension(458, 334));
+        setSize(new java.awt.Dimension(518, 533));
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 

@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta
+//    Copyright (c) 2009-2018 uniCenta
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -84,7 +84,12 @@ public class Payments {
             paymentPaid.put(pName, pAmountPaid);
             paymentTendered.put(pName,pTendered);
             rtnMessage.put(pName, rtnMsg);
-            paymentVoucher.put(pName, pVoucher);            
+            if (pVoucher !=null) {
+                paymentVoucher.put(pName, pVoucher);                            
+            } else {
+                pVoucher = "0";
+                paymentVoucher.put(pName, pVoucher);                
+            }
         }        
     }
     
@@ -141,7 +146,6 @@ public class Payments {
         paymentPaid.remove(pName);
         paymentTendered.remove(pName);
         rtnMessage.remove(pName);
-//        paymentVoucher.remove(pName);
     }
 
 }

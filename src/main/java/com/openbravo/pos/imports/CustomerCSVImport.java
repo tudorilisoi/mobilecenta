@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta
+//    Copyright (c) 2009-2018 uniCenta
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -94,6 +94,8 @@ public class CustomerCSVImport extends JPanel implements JPanelView {
     private int bad = 0;
     
     private Integer progress = 0;    
+    
+    private String iso="ISO-8859-1";    
 
     /**
      * Constructs a new CustomerCSVImport object
@@ -174,7 +176,8 @@ public class CustomerCSVImport extends JPanel implements JPanelView {
 
         File f = new File(CSVFileName);
         if (f.exists()) {
-            customers = new CsvReader(CSVFileName, ',' ,Charset.forName("UTF-8"));
+//            customers = new CsvReader(CSVFileName, ',' ,Charset.forName("UTF-8"));
+            customers = new CsvReader(CSVFileName, ',' ,Charset.forName(jCBiso.getSelectedItem().toString()));
             customers.setDelimiter(((String) jComboSeparator.getSelectedItem()).charAt(0));
             customers.readHeaders();
                           
@@ -321,7 +324,7 @@ public class CustomerCSVImport extends JPanel implements JPanelView {
     }
     
     /**
-     * Imports the CVS File using specifications from the form.
+     * Imports the CSV File using specifications from the form.
      *
      * @param CSVFileName Name of the file (including path) to import.
      * @throws IOException If there are file reading issues.
@@ -335,7 +338,8 @@ public class CustomerCSVImport extends JPanel implements JPanelView {
             jbtnImport.setEnabled(false);
             
 // Read file
-            customers = new CsvReader(CSVFileName, ',' ,Charset.forName("UTF-8"));
+//            customers = new CsvReader(CSVFileName, ',' ,Charset.forName("UTF-8"));
+            customers = new CsvReader(CSVFileName, ',' ,Charset.forName(jCBiso.getSelectedItem().toString()));
             customers.setDelimiter(((String) jComboSeparator.getSelectedItem()).charAt(0));
             customers.readHeaders();
 
@@ -375,7 +379,7 @@ public class CustomerCSVImport extends JPanel implements JPanelView {
                         case "name error":
                         case "searchkey error":
                         case "Duplicate searchkey found.":
-                        case "Duplicate name found.":                        
+                        case "Duplicate name found.":             
                         case "Exception":
                             invalid++;
                             createCustomerCSVEntry(recordType, null, null);
@@ -727,6 +731,7 @@ public class CustomerCSVImport extends JPanel implements JPanelView {
         jLabel23 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
+        jCBiso = new javax.swing.JComboBox<>();
 
         setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         setOpaque(false);
@@ -942,7 +947,7 @@ public class CustomerCSVImport extends JPanel implements JPanelView {
                 .addContainerGap())
         );
 
-        jComboSeparator.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jComboSeparator.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jComboSeparator.setPreferredSize(new java.awt.Dimension(50, 30));
 
         webPBar.setFont(new java.awt.Font("Arial", 0, 13)); // NOI18N
@@ -1379,6 +1384,11 @@ public class CustomerCSVImport extends JPanel implements JPanelView {
 
         jScrollPane1.setViewportView(jPanel1);
 
+        jCBiso.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jCBiso.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ISO-8859-1", "ISO-8859-2", "ISO-8859-3", "ISO-8859-4", "ISO-8859-5", "ISO-8859-6", "ISO-8859-7", "ISO-8859-8", "ISO-8859-9", "ISO-8859-10", "UTF-8", "UTF-16", " " }));
+        jCBiso.setToolTipText(bundle.getString("tooltip.import.cbiso")); // NOI18N
+        jCBiso.setPreferredSize(new java.awt.Dimension(125, 30));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -1393,7 +1403,9 @@ public class CustomerCSVImport extends JPanel implements JPanelView {
                                 .addComponent(jLabel18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jComboSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(138, 138, 138)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jCBiso, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(7, 7, 7)
                                 .addComponent(jbtnRead, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1412,13 +1424,14 @@ public class CustomerCSVImport extends JPanel implements JPanelView {
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jComboSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jbtnRead, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jbtnRead, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jCBiso, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(webPBar, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
+                        .addContainerGap(99, Short.MAX_VALUE))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -1946,6 +1959,7 @@ public class CustomerCSVImport extends JPanel implements JPanelView {
     }//GEN-LAST:event_jComboPhone2FocusGained
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> jCBiso;
     private javax.swing.JCheckBox jCheckVisible;
     private javax.swing.JComboBox jComboAccountID;
     private javax.swing.JComboBox jComboAddress1;

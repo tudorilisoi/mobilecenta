@@ -1,3 +1,21 @@
+//    uniCenta oPOS  - Touch Friendly Point Of Sale
+//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    https://unicenta.com
+//
+//    This file is part of uniCenta oPOS
+//
+//    uniCenta oPOS is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//   uniCenta oPOS is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with uniCenta oPOS.  If not, see <http://www.gnu.org/licenses/>.
 
 package com.openbravo.pos.voucher;
 
@@ -13,20 +31,26 @@ public class VoucherInfo implements IKeyed {
     private String customerId;
     private String customerName;
     private double amount;
+    private String status;
 
     public VoucherInfo() {
     }
 
-    public VoucherInfo(String id, String voucherNumber, String customerId, String customerName, double amount) {
+    public VoucherInfo(String id, 
+        String voucherNumber, 
+        String customerId, 
+        String customerName,
+        double amount, 
+        String status) 
+    {
         this.id = id;
         this.voucherNumber = voucherNumber;
         this.customerId = customerId;
         this.customerName = customerName;
         this.amount = amount;
+        this.status = status;
     }
-    
-    
-    
+      
 
     @Override
     public Object getKey() {
@@ -108,13 +132,32 @@ public class VoucherInfo implements IKeyed {
     public String toString() {
         return voucherNumber;
     }
-
-    public static SerializerRead getSerializerRead() {
-        return new SerializerRead() {@Override
- public Object readValues(DataRead dr) throws BasicException {
-            return new VoucherInfo(dr.getString(1), dr.getString(2), dr.getString(3),dr.getString(4),dr.getDouble(5));
-        }};
+    
+    /**
+     * @return the status
+     */
+    public String getStatus() {
+        return status;
     }
 
-    
+    /**
+     * @param status the status to set
+     */
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public static SerializerRead getSerializerRead() {
+        return new SerializerRead() 
+        {
+            @Override
+        public Object readValues(DataRead dr) throws BasicException {
+            return new VoucherInfo(dr.getString(1), 
+                    dr.getString(2), 
+                    dr.getString(3),
+                    dr.getString(4),
+                    dr.getDouble(5),
+                    dr.getString(6));
+        }};
+    }    
 }

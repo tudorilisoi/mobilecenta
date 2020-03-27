@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -30,6 +30,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -41,7 +43,11 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableRowSorter;
+import javax.swing.event.RowSorterListener;
+import javax.swing.event.RowSorterEvent;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -91,9 +97,8 @@ public class JTicketLines extends javax.swing.JPanel {
         }
                
         m_jTableModel = new TicketTableModel(acolumns);    
-        m_jTicketTable.setModel(m_jTableModel);        
+        m_jTicketTable.setModel(m_jTableModel);
         
-        //m_jTicketTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         TableColumnModel jColumns = m_jTicketTable.getColumnModel();
         for (int i = 0; i < acolumns.length; i++) {
             jColumns.getColumn(i).setPreferredWidth(acolumns[i].width);
@@ -102,7 +107,30 @@ public class JTicketLines extends javax.swing.JPanel {
         
         m_jScrollTableTicket.getVerticalScrollBar().setPreferredSize(new Dimension(35, 35));
        
-        m_jTicketTable.getTableHeader().setReorderingAllowed(false);         
+      // set font for headers
+        Font f = new Font("Arial", Font.BOLD, 14);
+        JTableHeader header = m_jTicketTable.getTableHeader();
+        header.setFont(f);
+      
+/*
+ * Starting point for SORTING the current table model & view
+ * m_aLines + TicketLineInfo also has to be considered BECAUSE....
+ * where ticket is open on another terminal it won't reflect change from 
+ * other session once placed and opened from sharedticket table       
+ *       
+ *        m_jTicketTable.setRowSorter(new TableRowSorter(m_jTableModel));
+ *        m_jTicketTable.getTableHeader().setReorderingAllowed(true); 
+ *        m_jTicketTable.setAutoCreateRowSorter(true);
+ *       m_jTicketTable.getTableHeader().addMouseListener(new MouseAdapter() {
+ *   @Override
+ *       public void mouseClicked(MouseEvent e) {
+ *           int col = m_jTicketTable.columnAtPoint(e.getPoint());
+ *           String name = m_jTicketTable.getColumnName(col);
+ *           System.out.println("Column index selected " + col + " " + name);
+ *       }
+ *      });
+*/
+
         m_jTicketTable.setDefaultRenderer(Object.class, new TicketCellRenderer(acolumns));
         
         m_jTicketTable.setRowHeight(40);
@@ -148,9 +176,7 @@ public class JTicketLines extends javax.swing.JPanel {
      * @param oLine
      */
     public void addTicketLine(TicketLineInfo oLine) {
-
         m_jTableModel.addRow(oLine);
-        
         setSelectedIndex(m_jTableModel.getRowCount() - 1);   
     }
 
@@ -160,9 +186,7 @@ public class JTicketLines extends javax.swing.JPanel {
      * @param oLine
      */
     public void insertTicketLine(int index, TicketLineInfo oLine) {
-
         m_jTableModel.insertRow(index, oLine);
-        
         setSelectedIndex(index);   
     }     
 
@@ -171,7 +195,6 @@ public class JTicketLines extends javax.swing.JPanel {
      * @param i
      */
     public void removeTicketLine(int i){
-
         m_jTableModel.removeRow(i);
 
         if (i >= m_jTableModel.getRowCount()) {
@@ -188,11 +211,10 @@ public class JTicketLines extends javax.swing.JPanel {
      * @param i
      */
     public void setSelectedIndex(int i){
-        
         m_jTicketTable.getSelectionModel().setSelectionInterval(i, i);
-
         Rectangle oRect = m_jTicketTable.getCellRect(i, 0, true);
         m_jTicketTable.scrollRectToVisible(oRect);
+       
     }
     
     /**
@@ -203,11 +225,18 @@ public class JTicketLines extends javax.swing.JPanel {
         return m_jTicketTable.getSelectionModel().getMinSelectionIndex(); // solo sera uno, luego no importa...
     }
     
+    public int sortIndex(int i) {
+        int[] selection = m_jTicketTable.getSelectedRows();
+        for (i = 0; i < selection.length; i++) {
+            selection[i] = m_jTicketTable.convertRowIndexToModel(selection[i]);
+        }         
+        return m_jTicketTable.getRowSorter().convertRowIndexToView(i);
+    }
+    
     /**
      *
      */
     public void selectionDown() {
-        
         int i = m_jTicketTable.getSelectionModel().getMaxSelectionIndex();
         if (i < 0){
             i =  0;
@@ -227,7 +256,6 @@ public class JTicketLines extends javax.swing.JPanel {
      *
      */
     public void selectionUp() {
-        
         int i = m_jTicketTable.getSelectionModel().getMinSelectionIndex();
         if (i < 0){
             i = m_jTableModel.getRowCount() - 1; // No hay ninguna seleccionada
@@ -242,6 +270,7 @@ public class JTicketLines extends javax.swing.JPanel {
             setSelectedIndex(i);
         }
     }
+    
     
     private static class TicketCellRenderer extends DefaultTableCellRenderer {
         
@@ -369,7 +398,7 @@ public class JTicketLines extends javax.swing.JPanel {
         public void removeRow(int row) {
             m_rows.remove(row);
             fireTableRowsDeleted(row, row);
-        }        
+        } 
     }
     
     private static class ColumnsHandler extends DefaultHandler {

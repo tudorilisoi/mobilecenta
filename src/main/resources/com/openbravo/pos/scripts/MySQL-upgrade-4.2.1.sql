@@ -19,6 +19,7 @@
 
 -- Database upgrade script for MySQL
 -- v4.2.1 - v4.3.0 25JAN2017
+-- v4.2.1 - v4.5.0 8OCT2017
 
 --
 -- CLEAR THE DECKS
@@ -44,13 +45,13 @@ CREATE TABLE IF NOT EXISTS `orders` (
 -- 
 -- UPDATE PRODUCTS
 --
-ALTER TABLE `products`
-ALTER TABLE `products` ADD COLUMN `memodate` datetime default '1900-01-01 00:00:01' after `uom` ;
+ALTER TABLE `products` 
+    ADD COLUMN `memodate` datetime default '1900-01-01 00:00:01' after `uom` ;
 
 -- UPDATE customers
 --
 ALTER TABLE `customers`
-        ADD COLUMN `memodate` datetime default '1900-01-01 00:00:01' after `discount` ;
+    ADD COLUMN `memodate` datetime default '1900-01-01 00:00:01' after `discount` ;
 
 -- RESOURCE
 UPDATE `resources` SET `content` = $FILE{/com/openbravo/pos/templates/Printer.Inventory.xml} WHERE `id` = '31';

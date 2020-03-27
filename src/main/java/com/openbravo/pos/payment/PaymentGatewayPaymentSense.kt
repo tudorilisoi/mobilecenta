@@ -11,7 +11,7 @@ class PaymentGatewayPaymentSense :PaymentGateway {
 
         AppContext.paymentComplete = false
         AppContext.paymentResult = null
-        AppContext.P_S_PDQ_STATUS = "Initializing ..."
+        AppContext.P_S_PDQ_STATUS = "Initializing..."
 
         var timer = 0
         val timeout = 180
@@ -25,7 +25,7 @@ class PaymentGatewayPaymentSense :PaymentGateway {
         }
 
         if (AppContext.paymentResult == null) {
-            payinfo?.paymentError("Transaction Error ... Please try again", "No Response")
+            payinfo?.paymentError("Transaction Error! Please try again", "No Response")
         }
         if (AppContext.paymentResult.transactionResult == "SUCCESSFUL"){
             payinfo?.cardName = AppContext.paymentResult.cardSchemeName
@@ -34,7 +34,7 @@ class PaymentGatewayPaymentSense :PaymentGateway {
             payinfo?.paymentOK(AppContext.paymentResult.authCode, AppContext.paymentResult.transactionId, AppContext.paymentResult.transactionResult)
         }
         else {
-            payinfo?.paymentError("Transaction Error ... Please try again", AppContext.paymentResult.transactionResult)
+            payinfo?.paymentError("Transaction Error! Please try again", AppContext.paymentResult.transactionResult)
         }
     }
 }

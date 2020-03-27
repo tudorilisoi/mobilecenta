@@ -1,5 +1,5 @@
 //    uniCenta oPOS is a point of sales application designed for touch screens.
-//    Copyright (C) 2009-2017 uniCenta
+//    Copyright (C) 2009-2018 uniCenta
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS.

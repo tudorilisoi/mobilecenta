@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -33,7 +33,7 @@ public class JPanelMenu extends JPanel implements JPanelView {
     private final MenuDefinition m_menu;
     private boolean created = false;
     
-    /** Creates new form JStockMenu
+    /** Creates new form JPanelMenu
      * @param menu */
     public JPanelMenu(MenuDefinition menu) {
         

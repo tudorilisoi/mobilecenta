@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -100,7 +100,7 @@ public class ParametersPrinter extends javax.swing.JPanel implements ParametersC
         jPrinters = new javax.swing.JComboBox();
         jReceiptPrinter = new javax.swing.JCheckBox();
 
-        setBackground(new java.awt.Color(255, 255, 255));
+        setOpaque(false);
 
         jPrinters.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jPrinters.setPreferredSize(new java.awt.Dimension(200, 30));
@@ -110,10 +110,10 @@ public class ParametersPrinter extends javax.swing.JPanel implements ParametersC
             }
         });
 
-        jReceiptPrinter.setBackground(new java.awt.Color(255, 255, 255));
         jReceiptPrinter.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         jReceiptPrinter.setSelected(true);
         jReceiptPrinter.setText(AppLocal.getIntString("label.receiptprinter")); // NOI18N
+        jReceiptPrinter.setOpaque(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

@@ -2,7 +2,7 @@
 // This script launches uniCenta Virtual Keyboard
 //
 //    uniCenta oPOS - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta
+//    Copyright (c) 2009-2018 uniCenta
 //    http://sourceforge.net/projects/unicentaopos
 //
 //    This file is part of uniCenta oPOS.
@@ -22,4 +22,4 @@
 // **************************************************************************
 
 Runtime runtime = Runtime.getRuntime();
-Process proc = runtime.getRuntime() .exec("cmd /C start plugins/uni_scrn_kb.jar");
+Process proc = runtime.getRuntime() .exec("cmd /C start osk.exe");

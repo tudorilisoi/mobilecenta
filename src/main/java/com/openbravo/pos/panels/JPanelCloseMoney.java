@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta
+//    Copyright (c) 2009-2018 uniCenta
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -80,9 +80,8 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
 
         m_ReasonModel = new ComboBoxValModel();
         m_ReasonModel.add(AppLocal.getIntString("cboption.preview"));
-        m_ReasonModel.add(AppLocal.getIntString("cboption.reprint"));              
-        webCBCloseCash.setModel(m_ReasonModel); 
-                
+        m_ReasonModel.add(AppLocal.getIntString("cboption.reprint"));               
+        jCBCloseCash.setModel(m_ReasonModel);                
     }
     
     /**
@@ -257,12 +256,10 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
             if ("PostgreSQL".equals(sdbmanager)) {
                 SQL = "SELECT * " +
                         "FROM lineremoved " +
-//                        "WHERE TICKETID = 'Void' AND REMOVEDDATE > " + "'" + m_PaymentsToClose.printDateStart() + "'";
                         "WHERE REMOVEDDATE > " + "'" + m_PaymentsToClose.printDateStart() + "'";                        
             } else {
                 SQL = "SELECT * " +
                         "FROM lineremoved " +
-//                        "WHERE TICKETID = 'Void' AND REMOVEDDATE > {fn TIMESTAMP('" + m_PaymentsToClose.getDateStartDerby() + "')}";
                         "WHERE REMOVEDDATE > {fn TIMESTAMP('" + m_PaymentsToClose.getDateStartDerby() + "')}";                        
             }
 
@@ -274,15 +271,11 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
                 rs=null;
                 con=null;
                 s=null;                
-            }
-       
-//        catch (SQLException e){System.out.println("error = " + e);}  
+            }  
         catch (SQLException e){}         
 
         m_jLinesRemoved.setText(dresult.toString());
-        m_jNoCashSales.setText(result.toString());
-        
-              
+        m_jNoCashSales.setText(result.toString());              
     }   
     
     private void CloseCash() {
@@ -317,11 +310,11 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
             }
 
             try {
-                // Creamos una nueva caja
+                // Create NEW CloshCash Sequence
                 m_App.setActiveCash(UUID.randomUUID().toString(), 
                         m_App.getActiveCashSequence() + 1, dNow, null);
 
-                // creamos la caja activa
+                // Create CURRENT CloseCash Sequence
                 m_dlSystem.execInsertCash(
                     new Object[] {m_App.getActiveCashIndex(), 
                         m_App.getProperties().getHost(), 
@@ -332,13 +325,13 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
                 m_dlSystem.execDrawerOpened(
                     new Object[] {m_App.getAppUserView().getUser().getName(),"Close Cash"});
 
-                // ponemos la fecha de fin
+                // Set ENDDATE CloseCash Date
                 m_PaymentsToClose.setDateEnd(dNow);
 
                 // print report
                 printPayments("Printer.CloseCash");
 
-                // Mostramos el mensaje
+                // Close Cash Message
                 JOptionPane.showMessageDialog(this, 
                         AppLocal.getIntString("message.closecashok"), 
                         AppLocal.getIntString("message.title"), 
@@ -411,7 +404,6 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
         m_jMinDate = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         m_jMaxDate = new javax.swing.JTextField();
-        webCBCloseCash = new com.alee.laf.combobox.WebComboBox();
         jLabel5 = new javax.swing.JLabel();
         m_jCash = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
@@ -435,6 +427,7 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
         jLabel6 = new javax.swing.JLabel();
         m_jCloseCash = new javax.swing.JButton();
         m_jPrintCash = new javax.swing.JButton();
+        jCBCloseCash = new javax.swing.JComboBox<>();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -475,19 +468,6 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
         m_jMaxDate.setEnabled(false);
         m_jMaxDate.setPreferredSize(new java.awt.Dimension(150, 30));
         jPanel1.add(m_jMaxDate, new org.netbeans.lib.awtextra.AbsoluteConstraints(515, 50, -1, -1));
-
-        webCBCloseCash.setToolTipText(AppLocal.getIntString("tooltip.closecashactions")); // NOI18N
-        webCBCloseCash.setExpandIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/calculator.png")));
-        webCBCloseCash.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        webCBCloseCash.setPreferredSize(new java.awt.Dimension(150, 45));
-        webCBCloseCash.setRound(3);
-        webCBCloseCash.setShadeWidth(3);
-        webCBCloseCash.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                webCBCloseCashActionPerformed(evt);
-            }
-        });
-        jPanel1.add(webCBCloseCash, new org.netbeans.lib.awtextra.AbsoluteConstraints(515, 450, -1, -1));
 
         jLabel5.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel5.setText(AppLocal.getIntString("label.sales")); // NOI18N
@@ -651,6 +631,16 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
         });
         jPanel1.add(m_jPrintCash, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 450, -1, -1));
 
+        jCBCloseCash.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jCBCloseCash.setToolTipText(AppLocal.getIntString("tooltip.closecashactions")); // NOI18N
+        jCBCloseCash.setPreferredSize(new java.awt.Dimension(150, 45));
+        jCBCloseCash.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCBCloseCashActionPerformed(evt);
+            }
+        });
+        jPanel1.add(jCBCloseCash, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 450, -1, -1));
+
         add(jPanel1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -746,18 +736,18 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
 
     }//GEN-LAST:event_m_jPrintCashActionPerformed
 
-    private void webCBCloseCashActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webCBCloseCashActionPerformed
-
-        if(webCBCloseCash.getSelectedIndex() == 0){
+    private void jCBCloseCashActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCBCloseCashActionPerformed
+        if(jCBCloseCash.getSelectedIndex() == 0){
             printPayments("Printer.CloseCash.Preview");  
         }
-        if(webCBCloseCash.getSelectedIndex() == 1) {
+        if(jCBCloseCash.getSelectedIndex() == 1) {
             m_App.getAppUserView().showTask("com.openbravo.pos.panels.JPanelCloseMoneyReprint");
-        }      
-    }//GEN-LAST:event_webCBCloseCashActionPerformed
+        }  
+    }//GEN-LAST:event_jCBCloseCashActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> jCBCloseCash;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
@@ -788,7 +778,6 @@ public class JPanelCloseMoney extends JPanel implements JPanelView, BeanFactoryA
     private javax.swing.JTextField m_jSequence;
     private javax.swing.JTable m_jTicketTable;
     private javax.swing.JTable m_jsalestable;
-    private com.alee.laf.combobox.WebComboBox webCBCloseCash;
     // End of variables declaration//GEN-END:variables
     
 }

@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -18,7 +18,7 @@
 //    along with uniCenta oPOS.  If not, see <http://www.gnu.org/licenses/>
 
 package com.openbravo.pos.forms;
-import com.unicenta.pos.api.ApiServer;
+
 import com.openbravo.basic.BasicException;
 import com.openbravo.beans.JFlowPanel;
 import com.openbravo.beans.JPasswordDialog;
@@ -40,12 +40,10 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
-import static java.net.InetAddress.getByName;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -60,9 +58,10 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
-import javax.swing.*;     
-import org.joda.time.DateTime;
+import javax.swing.*;
 
+import com.unicenta.pos.api.ApiServer;
+import org.joda.time.DateTime;
 import com.dalsemi.onewire.OneWireAccessProvider;
 import com.dalsemi.onewire.adapter.DSPortAdapter;
 import com.dalsemi.onewire.OneWireException;
@@ -70,6 +69,13 @@ import com.dalsemi.onewire.container.OneWireContainer;
 import com.dalsemi.onewire.utils.*;
 import com.dalsemi.onewire.application.monitor.*;
 import com.openbravo.pos.util.uOWWatch;
+import com.unicenta.pos.util.FtpUpload;
+import org.joda.time.Instant;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+
 
 /**
  *
@@ -79,8 +85,7 @@ import com.openbravo.pos.util.uOWWatch;
 public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListener  {
 
     private AppProperties m_props;
-    private ApiServer server;
-    private Session session;
+    private Session session;     
     private DataLogicSystem m_dlSystem;
     
     private Properties m_propsdb = null;
@@ -131,7 +136,11 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
     static {        
         initOldClasses();
     }
-                
+
+    private String sLaunch;
+    private String sMachine;
+    private ApiServer server;
+
     private class PrintTimeAction implements ActionListener {
 
         @Override
@@ -337,7 +346,14 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
         }
 
         m_dlSystem = (DataLogicSystem) getBean("com.openbravo.pos.forms.DataLogicSystem");
-        
+/**
+ * CONDITIONS;
+ * if dbversion is null then new createDatabase
+ * if dbversion is not null then check the version
+ * if appversion equals dbversion then check for updates
+ * IF APP_VERSION = existing db version
+ * 
+ */
         String sDBVersion = readDataBaseVersion();        
         if (!AppLocal.APP_VERSION.equals(sDBVersion)) {
             String sScript = sDBVersion == null 
@@ -354,29 +370,32 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
                 if (JOptionPane.showConfirmDialog(this
                         , AppLocal.getIntString(sDBVersion == null 
                                 ? "message.createdatabase" 
-                                : "message.updatedatabase", session.DB.getName() + " " + sDBVersion)
+                                : "message.eolupdate", session.DB.getName() + " " + sDBVersion)
                         , AppLocal.getIntString("message.title")
-                        , JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {  
+                        , JOptionPane.OK_OPTION
+                        , JOptionPane.WARNING_MESSAGE) == JOptionPane.OK_OPTION) {
+                    
+                        try {
+                            BatchSentence bsentence = new BatchSentenceResource(session, sScript);
+                            bsentence.putParameter("APP_ID", Matcher.quoteReplacement(AppLocal.APP_ID));
+                            bsentence.putParameter("APP_NAME", Matcher.quoteReplacement(AppLocal.APP_NAME));
+                            bsentence.putParameter("APP_VERSION", Matcher.quoteReplacement(AppLocal.APP_VERSION));
 
-                    try {
-                        BatchSentence bsentence = new BatchSentenceResource(session, sScript);
-                        bsentence.putParameter("APP_ID", Matcher.quoteReplacement(AppLocal.APP_ID));
-                        bsentence.putParameter("APP_NAME", Matcher.quoteReplacement(AppLocal.APP_NAME));
-                        bsentence.putParameter("APP_VERSION", Matcher.quoteReplacement(AppLocal.APP_VERSION));
+                            java.util.List l = bsentence.list();
 
-                        java.util.List l = bsentence.list();
-                        if (l.size() > 0) {
-                            JMessageDialog.showMessage(this, new MessageInf(MessageInf.SGN_WARNING
-                                , AppLocal.getIntString("database.scriptwarning")
-                                , l.toArray(new Throwable[l.size()])));
-                        }
-                   } catch (BasicException e) {
-                        JMessageDialog.showMessage(this
-                            , new MessageInf(MessageInf.SGN_DANGER
-                            , AppLocal.getIntString("database.scripterror"), e));
-                        session.close();
-                        return false;
-                    }     
+                            if (l.size() > 0) { 
+                                JMessageDialog.showMessage(this, new MessageInf(MessageInf.SGN_WARNING
+                                    , AppLocal.getIntString("database.scriptwarning")
+                                    , l.toArray(new Throwable[l.size()])));
+                            }
+                        } catch (BasicException e) {
+                            JMessageDialog.showMessage(this
+                                , new MessageInf(MessageInf.SGN_DANGER
+                                , AppLocal.getIntString("database.scripterror"), e));
+                            session.close();
+                            return false;
+                        } 
+//                    }
                 } else {
                     session.close();
                     return false;
@@ -384,9 +403,50 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
             }   
         }
 
-        m_propsdb = m_dlSystem.getResourceAsProperties(m_props.getHost() + "/properties");
+        /*
+        * JG 10 Dec 2018
+        * Test rig in prep' to track user install/launch success/fails
+        * We only need core info' to identify for POC
+        * For testing; code and declares are deliberately verbose
+        * 
+        * FUTURE : 
+        * App' error logging 
+        * Also auto-Notify users of available app' updates. 
+        * To be replaced with our REST API
+        */        
+        
+        try {
+            sMachine = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException ex) {
+            Logger.getLogger(JRootApp.class.getName()).log(Level.SEVERE, null, ex);
+        }
+// create the filename
+        String sUserPath = System.getProperty("user.home"); 
+        String filePath = sUserPath + "/" + sMachine + ".lau";
+        
+        Instant machineTimestamp = Instant.now();
+        String sContent = sUserPath + "," 
+                + machineTimestamp + "," 
+                + AppLocal.APP_ID + "," 
+                + AppLocal.APP_NAME + "," 
+                + AppLocal.APP_VERSION + "\n";
+        
+        try {
+            Files.write(Paths.get(filePath), sContent.getBytes(), 
+                    StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+        } catch (IOException ex) {
+            Logger.getLogger(JRootApp.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        try {
+            filePath = sUserPath + "/open.db";
+            Files.write(Paths.get(filePath), sContent.getBytes(), 
+                    StandardOpenOption.CREATE);
+        } catch (IOException ex) {
+            Logger.getLogger(JRootApp.class.getName()).log(Level.SEVERE, null, ex);
+        }        
 
-//        System.out.println(m_propsdb);
+        m_propsdb = m_dlSystem.getResourceAsProperties(m_props.getHost() + "/properties");
 
         try {
             String sActiveCashIndex = m_propsdb.getProperty("activecash");
@@ -457,7 +517,8 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
                 jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/logo.png")));
            }else{
                 jLabel1.setIcon(new javax.swing.ImageIcon (newLogo));
-       }}
+            }
+        }
 
         String newText = m_props.getProperty("start.text");
         if (newText != null) {
@@ -479,7 +540,7 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
                         , "UTF-8").useDelimiter("\\A").next();
                     jLabel1.setText(newTextCode);
                 }
-                    catch (Exception e) {
+                    catch (FileNotFoundException e) {
                 }
             
                     jLabel1.setAlignmentX(0.5F);
@@ -497,7 +558,6 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
             uOWWatch.iButtonOn();
         }
 
-
         server = new ApiServer(this);
         server.start();
         if (!server.isRunning()) {
@@ -508,6 +568,7 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
             msg.show(this);
             return false;
         }
+
 
         return true;
     }
@@ -523,10 +584,21 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
     public void tryToClose() {   
         
         if (closeAppView()) {
-            m_TP.getDeviceDisplay().clearVisor();
-            shutdownIButtonMonitor();            
+                m_TP.getDeviceDisplay().clearVisor();
+                shutdownIButtonMonitor();
+
+// delete the open.db tracking file
+                String sUserPath = System.getProperty("user.home");
+//                String filePath = sUserPath + "\\open.db";
+                String filePath = sUserPath + "/open.db";
+            try {
+                Files.deleteIfExists(Paths.get(filePath));
+            } catch (IOException ex) {
+                Logger.getLogger(JRootApp.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
             session.close();
-            SwingUtilities.getWindowAncestor(this).dispose();
+            SwingUtilities.getWindowAncestor(this).dispose();            
         }
     }
     
@@ -901,9 +973,7 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
             Logger.getLogger(JRootApp.class.getName()).log(Level.SEVERE, null, ex);
             return false;
         }
-    }    
-    
-
+    }
         
     /** This method is called from within the constructor to
      * initialize the form.
@@ -975,7 +1045,7 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/unicenta.png"))); // NOI18N
         jLabel1.setText("<html><center>uniCenta oPOS - Touch Friendly Point of Sale<br>" +
-            "Copyright \u00A9 2009-2017 uniCenta <br>" +
+            "Copyright \u00A9 2009-2018 uniCenta <br>" +
             "https://unicenta.com<br>" +
             "<br>" +
             "uniCenta oPOS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.<br>" +

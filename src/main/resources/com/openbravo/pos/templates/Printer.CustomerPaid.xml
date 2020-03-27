@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
     uniCenta oPOS - Touch friendly Point Of Sale
-    Copyright (c) 2009-2017 uniCenta.
+    Copyright (c) 2009-2018 uniCenta.
     http://sourceforge.net/projects/unicentaopos
 
     This file is part of uniCenta oPOS.
@@ -91,7 +91,7 @@
             </line>
         #end
 
-        #if ($paymentline.name == "magcard")
+        #if ($paymentline.name == "ccard")
             <line></line>
             <line>
                 <text bold="true">Mag card</text>

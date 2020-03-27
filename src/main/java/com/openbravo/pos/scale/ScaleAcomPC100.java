@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2018 uniCenta & previous Openbravo POS works
 //    Contribution by  Hajinder Singh
 //    https://unicenta.com
 //

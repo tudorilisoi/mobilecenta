@@ -81,7 +81,7 @@ public class UniBrowser extends JFrame {
         getContentPane().add(panel);
         
         setPreferredSize(new Dimension(1024, 600));
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         pack();
 
     }
@@ -158,11 +158,16 @@ public class UniBrowser extends JFrame {
 
    
 
-    public static void main(String[] args) {
+    public static void main(String args[]) {
         SwingUtilities.invokeLater(() -> {
             UniBrowser browser = new UniBrowser();
             browser.setVisible(true);
-            browser.loadURL("http://unicenta.org/splasher.html");
+//            browser.loadURL("https://unicenta.com/pages/configure-unicenta-opos/");
+            String[] s = args;
+            System.out.println(s);
+            String strURL ="https://unicenta.com/pages/configure-unicenta-opos/";
+            System.out.println("s");
+            UniBrowser.toURL(strURL);
         });
     }
 }

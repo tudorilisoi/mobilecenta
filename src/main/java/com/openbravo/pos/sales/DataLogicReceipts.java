@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -72,6 +72,26 @@ public class DataLogicReceipts extends BeanFactoryDataSingle {
             return record == null ? null : (TicketInfo) record[0];
         }
     }
+    
+        /**
+     *
+     * @param pickupId
+     * @return
+     * @throws BasicException
+     */
+    public final TicketInfo getSharedTicketPickupId(String pickupId) throws BasicException {
+        
+        if (pickupId == null) {
+            return null; 
+        } else {
+            Object[]record = (Object[]) new StaticSentence(s
+                    , "SELECT CONTENT, LOCKED FROM sharedtickets WHERE PICKUPID = ?"
+                    , SerializerWriteString.INSTANCE
+                    , new SerializerReadBasic(new Datas[] {
+                        Datas.SERIALIZABLE})).find(pickupId);
+            return record == null ? null : (TicketInfo) record[0];
+        }
+    } 
 
     /**
      * JG Dec 14 Administrator and Manager Roles always have access to ALL SHAREDtickets
@@ -81,7 +101,9 @@ public class DataLogicReceipts extends BeanFactoryDataSingle {
     public final List<SharedTicketInfo> getSharedTicketList() throws BasicException {
         
         return (List<SharedTicketInfo>) new StaticSentence(s
-                , "SELECT ID, NAME, CONTENT, APPUSER, PICKUPID, LOCKED FROM sharedtickets ORDER BY ID"
+//                , "SELECT ID, NAME, CONTENT, APPUSER, PICKUPID, LOCKED FROM sharedtickets ORDER BY ID"
+                , "SELECT ID, NAME, CONTENT, APPUSER, PICKUPID, LOCKED "
+                        + "FROM sharedtickets ORDER BY PICKUPID" 
                 , null
                 , new SerializerReadClass(SharedTicketInfo.class)).list();
     }
@@ -93,8 +115,10 @@ public class DataLogicReceipts extends BeanFactoryDataSingle {
      * @throws BasicException
      */
     public final List<SharedTicketInfo> getUserSharedTicketList(String appuser) throws BasicException {
-        String sql = "SELECT ID, NAME, CONTENT, APPUSER, PICKUPID, LOCKED FROM sharedtickets WHERE APPUSER =\""+ appuser +"\" ORDER BY ID";
-  
+        String sql = "SELECT ID, NAME, CONTENT, APPUSER, PICKUPID, LOCKED " 
+                + "FROM sharedtickets "
+                + "WHERE APPUSER =\""+ appuser +"\" ORDER BY PICKUPID";
+        
             return (List<SharedTicketInfo>) new StaticSentence(s
             , sql
             , null
@@ -169,7 +193,6 @@ public class DataLogicReceipts extends BeanFactoryDataSingle {
                 + "PICKUPID = ? "
                 + "WHERE ID = ?"
                 , new SerializerWriteBasicExt(datas, new int[] {1, 2, 3, 4, 0})).exec(values);
-//                , new SerializerWriteBasicExt(datas, new int[] {1, 2, 3, 0})).exec(values);                
     }
 
     /**
@@ -179,33 +202,31 @@ public class DataLogicReceipts extends BeanFactoryDataSingle {
      * @param pickupid
      * @throws BasicException
      */
-    public final void updateRSharedTicket(final String id, final TicketInfo ticket, int pickupid) throws BasicException {
+    public final void updateRSharedTicket(
+            final String id, 
+            final TicketInfo ticket, 
+            int pickupid) throws BasicException {
             
         Object[] values = new Object[] {
             id, 
             ticket.getName(), 
             ticket, 
-//            ticket.getUser().getId(),
             pickupid
         };
         Datas[] datas = new Datas[] {
             Datas.STRING, 
             Datas.STRING, 
             Datas.SERIALIZABLE, 
-//            Datas.STRING,
             Datas.INT
         };
         new PreparedSentence(s
                 , "UPDATE sharedtickets SET "
                 + "NAME = ?, "
                 + "CONTENT = ?, "
-//                + "APPUSER = ?, "                        
                 + "PICKUPID = ? "
                 + "WHERE ID = ?"
-//                , new SerializerWriteBasicExt(datas, new int[] {1, 2, 3, 4, 0})).exec(values);
                 , new SerializerWriteBasicExt(datas, new int[] {1, 2, 3, 0})).exec(values);                
     }
-    
     
      /**
      * In place for multi-purposing like containing data from elsewhere and/or
@@ -255,7 +276,6 @@ public class DataLogicReceipts extends BeanFactoryDataSingle {
                 , new SerializerWriteBasicExt(datas, new int[] {1, 0})).exec(values);
     }    
     
-
     /**
      * For Restaurant View
      * @param id
@@ -263,7 +283,10 @@ public class DataLogicReceipts extends BeanFactoryDataSingle {
      * @param pickupid
      * @throws BasicException
      */
-    public final void insertRSharedTicket(final String id, final TicketInfo ticket, int pickupid) throws BasicException {
+    public final void insertRSharedTicket(
+            final String id, 
+            final TicketInfo ticket, 
+            int pickupid) throws BasicException {
         
         Object[] values = new Object[] {
             id, 
@@ -271,8 +294,7 @@ public class DataLogicReceipts extends BeanFactoryDataSingle {
             ticket,
             ticket.getUser(),
             ticket.getPickupId(),
-            ticket.getHost(),                            
-
+            ticket.getHost()                          
         };
         Datas[] datas;
         datas = new Datas[] {
@@ -291,9 +313,7 @@ public class DataLogicReceipts extends BeanFactoryDataSingle {
                 + "APPUSER, "                    
                 + "PICKUPID) "
                 + "VALUES (?, ?, ?, ?, ?)"                
-//                + "VALUES (?, ?, ?, ?)"                                
             , new SerializerWriteBasicExt(datas, new int[] {0, 1, 2, 3, 4})).exec(values);                
-//                , new SerializerWriteBasicExt(datas, new int[] {0, 1, 2, 3})).exec(values);                
     }    
 
     /**
@@ -349,4 +369,14 @@ public class DataLogicReceipts extends BeanFactoryDataSingle {
             })).find(id);
                 return (String) state[0];
     }
+
+    public final String getServer(final String id, String user) throws BasicException {
+        Object[] server = (Object[]) new StaticSentence(s
+            , "SELECT appuser FROM sharedtickets WHERE ID = ?"
+            , SerializerWriteString.INSTANCE
+            , new SerializerReadBasic(new Datas[] {
+                Datas.STRING
+            })).find(id);
+                return (String) server[0];
+    }    
 }

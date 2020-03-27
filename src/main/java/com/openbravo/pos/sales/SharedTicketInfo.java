@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -32,6 +32,13 @@ public class SharedTicketInfo implements SerializableRead, SerializableWrite {
     private String name;
     private String UserName;
     private String status;    
+/*
+  * For     : RickyO - display Customer Name | Phone | PickupId
+  * Change  : JG uniCenta
+  * Date    : May 2017          
+*/            
+    private String phone;
+    private String pickupid;
     
     /** Creates a new instance of SharedTicketInfo */
     public SharedTicketInfo() {
@@ -48,6 +55,13 @@ public class SharedTicketInfo implements SerializableRead, SerializableWrite {
         name = dr.getString(2);
         UserName = dr.getString(3);
         status = dr.getString(4);  
+/*
+  * For     : RickyO - display Customer Name | Phone | PickupId
+  * Change  : JG uniCenta
+  * Date    : May 2017          
+*/            
+        pickupid = dr.getString(5);        
+        phone = dr.getString(6);
 
     }   
 
@@ -64,10 +78,6 @@ public class SharedTicketInfo implements SerializableRead, SerializableWrite {
         dp.setString(4, status);        
     }
     
-    /**
-     *
-     * @return
-     */
     public String getId() {
         return id;
     }
@@ -82,5 +92,22 @@ public class SharedTicketInfo implements SerializableRead, SerializableWrite {
     
     public String getStatus() {
         return status;  
+    }
+
+/*
+  * For     : RickyO - display Customer Name | Phone | PickupId
+  * Change  : JG uniCenta
+  * Date    : May 2017          
+*/            
+    public String getPhone() {
+        return phone;
+    }
+/*
+  * For     : RickyO - display Customer Name | Phone | PickupId
+  * Change  : JG uniCenta
+  * Date    : May 2017          
+*/                
+    public String getPickupId() {
+        return pickupid;
     }
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
     uniCenta oPOS - Touch friendly Point Of Sale
-    Copyright (c) 2009-2017 uniCenta.
+    Copyright (c) 2009-2018 uniCenta.
     http://sourceforge.net/projects/unicentaopos
 
     This file is part of uniCenta oPOS.
@@ -34,7 +34,7 @@
     <ticket printer="5">
         <line></line>
         <line></line>
-        <line size = "1"><text bold = "true" align="center" length="42">Printer 1</text></line>
+        <line size = "1"><text bold = "true" align="center" length="42">Printer 5</text></line>
         <line></line>
         <line size = "1"><text>Order : </text><text bold = "true">${ticket.getPickupId()}</text></line>
 
@@ -57,7 +57,7 @@
 
         #foreach ($ticketline in $ticket.getLines())
             #if($ticketline.printPrinter().equals("5"))
-                #if($ticketline.getProperty("updated").equals("true"))
+                #if($ticketline.getProperty("ticket.updated").equals("true"))
                     #if ($ticketline.isProductCom())
                         <line size="1"><text align ="left" length="37">--${ticketline.printName()}</text></line>
                     #else
@@ -78,7 +78,7 @@
                         <line><text align ="left" length="42">${ticketline.productAttSetInstDesc}</text></line>
                         <line></line>
                     #end
-                    ${ticketline.setProperty("updated", "false")}
+                    ${ticketline.setProperty("ticket.updated", "false")}
                 #end
             #end
         #end

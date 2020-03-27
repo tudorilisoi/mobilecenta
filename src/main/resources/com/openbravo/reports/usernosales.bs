@@ -34,12 +34,9 @@ report.setSentence("SELECT " +
 
 report.addParameter("draweropened.OPENDATE");
 report.addParameter("draweropened.OPENDATE");
-
 paramdates = new com.openbravo.pos.reports.JParamsDatesInterval();
-
 paramdates.setStartDate(com.openbravo.beans.DateUtils.getToday());
 paramdates.setEndDate(com.openbravo.beans.DateUtils.getTodayMinutes());
-
 report.addQBFFilter(paramdates);
 
 report.addParameter("people.ID");

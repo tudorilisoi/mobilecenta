@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta
+//    Copyright (c) 2009-2018 uniCenta
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -33,6 +33,10 @@ import javax.swing.UnsupportedLookAndFeelException;
 import com.openbravo.pos.ticket.TicketInfo;
 import java.io.IOException;
 import javax.swing.SwingUtilities;
+
+import org.pushingpixels.substance.api.SubstanceLookAndFeel;
+import org.pushingpixels.substance.api.SubstanceSkin;
+import org.pushingpixels.trident.*;
 
 
 public class StartPOS {
@@ -90,20 +94,17 @@ public class StartPOS {
                 // Set the look and feel.
                 try {             
                     
-                    Object laf = Class.forName(config.getProperty("swing.defaultlaf")).newInstance();                   
-                    
+                    Object laf = Class.forName(config.getProperty("swing.defaultlaf")).newInstance();                    
                     if (laf instanceof LookAndFeel){
                         UIManager.setLookAndFeel((LookAndFeel) laf);
-                                            logger.log(Level.WARNING, "Look and Feel is set");
-                    } else {                      
-                        WebLookAndFeel.install ();
-                                            logger.log(Level.WARNING, "Cannot set Look and Feel");
+                    } else if (laf instanceof SubstanceSkin) {                      
+                        SubstanceLookAndFeel.setSkin((SubstanceSkin) laf);
                     }
 // JG 6 May 2013 to multicatch
-                } catch (ClassNotFoundException | InstantiationException 
-                        | IllegalAccessException | UnsupportedLookAndFeelException e) {                
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {                
                     logger.log(Level.WARNING, "Cannot set Look and Feel", e);
                 }
+                
 // JG July 2014 Hostname for Tickets
                 String hostname = config.getProperty("machine.hostname");
                 TicketInfo.setHostname(hostname);
@@ -121,7 +122,7 @@ public class StartPOS {
                     JRootFrame rootframe = new JRootFrame(); 
                     try {
                         rootframe.initFrame(config);
-                    } catch (IOException ex) {
+                    } catch (Exception ex) {
                         Logger.getLogger(StartPOS.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }

@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -89,6 +89,8 @@ public class DataLogicSystem extends BeanFactoryDataSingle {
     protected SentenceExec m_addOrder;
     protected SentenceExec m_updateOrder;
     protected SentenceExec m_deleteOrder;
+    
+    private SentenceExec m_updatePlaces;    
     
     /** Creates a new instance of DataLogicSystem */
     public DataLogicSystem() {            
@@ -305,14 +307,14 @@ public class DataLogicSystem extends BeanFactoryDataSingle {
                 , SerializerReadString.INSTANCE);   
         
         m_permissionlist = new StaticSentence(s
-                , "SELECT PERMISSIONS FROM PERMISSIONS WHERE ID = ?"
+                , "SELECT PERMISSIONS FROM permissions WHERE ID = ?"
                 , SerializerWriteString.INSTANCE
                 , new SerializerReadBasic(new Datas[] {
                     Datas.STRING
                 }));         
          
         m_updatepermissions = new StaticSentence(s
-                , "INSERT INTO PERMISSIONS (ID, PERMISSIONS) " +
+                , "INSERT INTO permissions (ID, PERMISSIONS) " +
                   "VALUES (?, ?)"
                 , new SerializerWriteBasic(new Datas[] {
                     Datas.STRING, 
@@ -417,6 +419,13 @@ public class DataLogicSystem extends BeanFactoryDataSingle {
         m_deleteOrder =  new StaticSentence(s
                     , "DELETE FROM orders WHERE ORDERID = ?"
                     , SerializerWriteString.INSTANCE);
+        
+        m_updatePlaces = new StaticSentence(s, "UPDATE PLACES SET X = ?, Y = ? "
+                + "WHERE ID = ?   ", new SerializerWriteBasic(new Datas[]{
+            Datas.INT,
+            Datas.INT,
+            Datas.STRING
+        }));        
 
 	resetResourcesCache();      
     }
@@ -834,7 +843,10 @@ public class DataLogicSystem extends BeanFactoryDataSingle {
        
         return "new";
     } 
-        
+
+    public final void updatePlaces(int x, int y, String id) throws BasicException {
+        m_updatePlaces.exec(x, y, id);
+    }
         
     public final SentenceList getVouchersActiveList() {
         return m_voucherlist;

@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -54,7 +54,7 @@ public class JPanelConfigPayment extends javax.swing.JPanel implements PanelConf
         initPayments("external", new ConfigPaymentPanelEmpty());
         initPayments("PaymentSense",  new ConfigPaymentPanelEmpty());
         initPayments("Dejavoo",  new ConfigPaymentPanelEmpty());
-
+        initPayments("Vantiv",  new ConfigPaymentPanelEmpty());
 
         // Lector de tarjetas.
         jcboCardReader.addItem("Not defined");
@@ -136,8 +136,8 @@ public class JPanelConfigPayment extends javax.swing.JPanel implements PanelConf
         jLabel11 = new javax.swing.JLabel();
         jcboCardReader = new javax.swing.JComboBox();
 
-        setBackground(new java.awt.Color(255, 255, 255));
         setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        setOpaque(false);
         setPreferredSize(new java.awt.Dimension(590, 450));
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));

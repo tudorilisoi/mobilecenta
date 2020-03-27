@@ -1,5 +1,5 @@
 //    uniCenta oPOS - touch friendly EPoS
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -34,12 +34,13 @@ report.addParameter("REMOVEDDATE");
 report.addParameter("REMOVEDDATE");
 
 paramdates = new com.openbravo.pos.reports.JParamsDatesInterval();
-
 paramdates.setStartDate(com.openbravo.beans.DateUtils.getToday());
-// JG - 8 Jan 14 paramdates.setEndDate(com.openbravo.beans.DateUtils.getToday());
 paramdates.setEndDate(com.openbravo.beans.DateUtils.getTodayMinutes());
-
 report.addQBFFilter(paramdates);
+
+report.addParameter("lineremoved.ID");
+report.addParameter("lineremoved.NAME");
+report.addQBFFilter(new com.openbravo.pos.reports.JParamsUser());
 
 report.addField("NAME", com.openbravo.data.loader.Datas.STRING);
 report.addField("PRODUCTNAME", com.openbravo.data.loader.Datas.STRING);

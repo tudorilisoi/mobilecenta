@@ -178,11 +178,11 @@ ORDER BY CATEGORIES.NAME, PRODUCTS.NAME]]>
 			</line>
 			<image scaleImage="RetainShape" hAlign="Center" vAlign="Bottom">
 				<reportElement key="image-1" x="13" y="146" width="150" height="24" uuid="02dfb33e-d2d1-40f1-89d3-5292b23f0f62"/>
-				<imageExpression><![CDATA[($F{CODETYPE}.equals("EAN-13") ? com.openbravo.pos.util.BarcodeImage.getBarcodeEAN13($F{CODE}) :
-    ($F{CODETYPE}.equals("EAN-8") ? com.openbravo.pos.util.BarcodeImage.getBarcodeEAN8($F{CODE}) :
-        ($F{CODETYPE}.equals("UPC-A") ? com.openbravo.pos.util.BarcodeImage.getBarcodeUPCA($F{CODE}) :
-            ($F{CODETYPE}.equals("UPC-A") ? com.openbravo.pos.util.BarcodeImage.getBarcodeUPCE($F{CODE}) :
-                ($F{CODETYPE}.equals("CODE128") ? com.openbravo.pos.util.BarcodeImage.getBarcode128($F{CODE}) :
+				<imageExpression><![CDATA[($F{CODETYPE}.equalsIgnoreCase("EAN-13") ? com.openbravo.pos.util.BarcodeImage.getBarcodeEAN13($F{CODE}) :
+    ($F{CODETYPE}.equalsIgnoreCase("EAN-8") ? com.openbravo.pos.util.BarcodeImage.getBarcodeEAN8($F{CODE}) :
+        ($F{CODETYPE}.equalsIgnoreCase("UPC-A") ? com.openbravo.pos.util.BarcodeImage.getBarcodeUPCA($F{CODE}) :
+            ($F{CODETYPE}.equalsIgnoreCase("UPC-A") ? com.openbravo.pos.util.BarcodeImage.getBarcodeUPCE($F{CODE}) :
+                ($F{CODETYPE}.equalsIgnoreCase("CODE128") ? com.openbravo.pos.util.BarcodeImage.getBarcode128($F{CODE}) :
                     com.openbravo.pos.util.BarcodeImage.getBarcodeUPCE($F{CODE})
                 )
             )

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
     uniCenta oPOS - Touch friendly Point Of Sale
-    Copyright (c) 2009-2017 uniCenta.
+    Copyright (c) 2009-2018 uniCenta.
     https://unicenta.com
 
     This file is part of uniCenta oPOS.
@@ -74,7 +74,7 @@
         <line></line>
         <line>
             <text align ="left" bold="true" length="27">Totals :</text>
-            <text align ="right" bold="true" length="5">${inventoryrecord.printArticles()}</text>
+            <text align ="right" bold="true" length="5">${inventoryrecord.printTotalArticles()}</text>
             <text align ="right" bold="true" length="10">${inventoryrecord.printSubTotal()}</text>
         </line>
         <line></line>            

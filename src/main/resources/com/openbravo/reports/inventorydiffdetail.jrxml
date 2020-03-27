@@ -1,37 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="inventorydiffdetail" pageWidth="595" pageHeight="842" columnWidth="536" leftMargin="29" rightMargin="30" topMargin="20" bottomMargin="20" uuid="19c9d807-efc9-4f32-8618-c35d8cfcacb3">
-	<property name="ireport.scriptlethandling" value="0"/>
-	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="ARG" class="java.lang.Object" isForPrompting="false"/>
 	<queryString>
-		<![CDATA[SELECT 
-LOCATIONS.ID AS LOCATIONID, LOCATIONS.NAME AS LOCATIONNAME, 
-PRODUCTS.REFERENCE, PRODUCTS.NAME,
-STOCKDIARY.ATTRIBUTESETINSTANCE_ID, ATTRIBUTESETINSTANCE.DESCRIPTION,
-PRODUCTS.CATEGORY, CATEGORIES.NAME AS CATEGORYNAME,
-SUM(CASE WHEN STOCKDIARY.UNITS <0 THEN STOCKDIARY.UNITS ELSE 0 END) AS UNITSOUT, 
-SUM(CASE WHEN STOCKDIARY.UNITS <0 THEN STOCKDIARY.UNITS * STOCKDIARY.PRICE ELSE 0 END) AS TOTALOUT,
-SUM(CASE WHEN STOCKDIARY.UNITS >=0 THEN STOCKDIARY.UNITS ELSE 0 END) AS UNITSIN,
-SUM(CASE WHEN STOCKDIARY.UNITS >=0 THEN STOCKDIARY.UNITS * STOCKDIARY.PRICE ELSE 0 END) AS TOTALIN,
-SUM(STOCKDIARY.UNITS) AS UNITSDIFF,
-SUM(STOCKDIARY.UNITS * STOCKDIARY.PRICE) AS TOTALDIFF
-FROM STOCKDIARY
-JOIN LOCATIONS ON STOCKDIARY.LOCATION = LOCATIONS.ID
-JOIN PRODUCTS ON PRODUCTS.ID = STOCKDIARY.PRODUCT
-LEFT OUTER JOIN CATEGORIES ON PRODUCTS.CATEGORY = CATEGORIES.ID
-LEFT OUTER JOIN ATTRIBUTESETINSTANCE ON STOCKDIARY.ATTRIBUTESETINSTANCE_ID = ATTRIBUTESETINSTANCE.ID
-
-GROUP BY LOCATIONS.ID, LOCATIONS.NAME, PRODUCTS.REFERENCE, PRODUCTS.NAME, PRODUCTS.CATEGORY, CATEGORIES.NAME, STOCKDIARY.ATTRIBUTESETINSTANCE_ID, ATTRIBUTESETINSTANCE.DESCRIPTION
-ORDER BY LOCATIONS.ID, CATEGORIES.NAME, PRODUCTS.NAME]]>
+		<![CDATA[]]>
 	</queryString>
+	<field name="LOCATIONID" class="java.lang.String"/>
+	<field name="LOCATIONNAME" class="java.lang.String"/>
 	<field name="REFERENCE" class="java.lang.String"/>
 	<field name="NAME" class="java.lang.String"/>
+	<field name="ATTINSTANCEID" class="java.lang.String"/>
+	<field name="ATTINSTANCEDESC" class="java.lang.String"/>
 	<field name="CATEGORY" class="java.lang.String"/>
 	<field name="CATEGORYNAME" class="java.lang.String"/>
 	<field name="UNITSOUT" class="java.lang.Double"/>
@@ -40,10 +26,6 @@ ORDER BY LOCATIONS.ID, CATEGORIES.NAME, PRODUCTS.NAME]]>
 	<field name="TOTALIN" class="java.lang.Double"/>
 	<field name="UNITSDIFF" class="java.lang.Double"/>
 	<field name="TOTALDIFF" class="java.lang.Double"/>
-	<field name="LOCATIONID" class="java.lang.String"/>
-	<field name="LOCATIONNAME" class="java.lang.String"/>
-	<field name="ATTINSTANCEID" class="java.lang.String"/>
-	<field name="ATTINSTANCEDESC" class="java.lang.String"/>
 	<variable name="PARTIALIN" class="java.lang.Double" resetType="Group" resetGroup="CATEGORY" calculation="Sum">
 		<variableExpression><![CDATA[$F{TOTALIN}]]></variableExpression>
 		<initialValueExpression><![CDATA[new Double(0.0)]]></initialValueExpression>
@@ -170,8 +152,7 @@ ORDER BY LOCATIONS.ID, CATEGORIES.NAME, PRODUCTS.NAME]]>
 						<font fontName="SansSerif" size="11" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue(
-new Double(-1.0 * ((Double)$V{SUMOUT}).doubleValue()))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue(new Double(-1.0 * ((Double)$V{SUMOUT}).doubleValue()))]]></textFieldExpression>
 				</textField>
 				<textField pattern="" isBlankWhenNull="false">
 					<reportElement key="textField-5" mode="Opaque" x="436" y="17" width="100" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="373025f4-37dd-49c4-ad11-4e2bc3fa7146"/>
@@ -340,8 +321,7 @@ new Double(-1.0 * ((Double)$V{SUMOUT}).doubleValue()))]]></textFieldExpression>
 						<font fontName="SansSerif" size="11" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue(
-new Double(-1.0 * ((Double)$V{PARTIALOUT}).doubleValue()))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue(new Double(-1.0 * ((Double)$V{PARTIALOUT}).doubleValue()))]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -404,8 +384,7 @@ new Double(-1.0 * ((Double)$V{PARTIALOUT}).doubleValue()))]]></textFieldExpressi
 						<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 						<paragraph lineSpacing="Single"/>
 					</textElement>
-					<textFieldExpression><![CDATA[com.openbravo.format.Formats.DOUBLE.formatValue(
-new Double(-1.0 * ((Double)$V{PRODUCTOUT}).doubleValue()))]]></textFieldExpression>
+					<textFieldExpression><![CDATA[com.openbravo.format.Formats.DOUBLE.formatValue(new Double(-1.0 * ((Double)$V{PRODUCTOUT}).doubleValue()))]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="PRODUCTS" pattern="" isBlankWhenNull="true">
 					<reportElement key="textField-21" mode="Transparent" x="436" y="0" width="100" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="aabf9ec4-201f-4655-9867-8f9892098c4a"/>
@@ -447,7 +426,7 @@ new Double(-1.0 * ((Double)$V{PRODUCTOUT}).doubleValue()))]]></textFieldExpressi
 					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[com.openbravo.format.Formats.DATE.formatValue((java.util.Date)  ((Object[])((Object[])$P{ARG})[0])[1])]]></textFieldExpression>
+				<textFieldExpression><![CDATA[com.openbravo.format.Formats.TIMESTAMP.formatValue((java.util.Date)((Object[])((Object[])$P{ARG})[0])[1])]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-9" mode="Transparent" x="170" y="33" width="110" height="15" uuid="94f5dce2-f444-42fe-b91a-67147ba3bd61"/>
@@ -461,7 +440,7 @@ new Double(-1.0 * ((Double)$V{PRODUCTOUT}).doubleValue()))]]></textFieldExpressi
 					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[com.openbravo.format.Formats.DATE.formatValue((java.util.Date)((Object[])((Object[])$P{ARG})[0])[3])]]></textFieldExpression>
+				<textFieldExpression><![CDATA[com.openbravo.format.Formats.TIMESTAMP.formatValue((java.util.Date)((Object[])((Object[])$P{ARG})[0])[3])]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement key="staticText-6" mode="Transparent" x="160" y="33" width="10" height="15" uuid="fdff5040-30e1-4dd8-ad79-f8390ac89ad9"/>
@@ -475,8 +454,7 @@ new Double(-1.0 * ((Double)$V{PRODUCTOUT}).doubleValue()))]]></textFieldExpressi
 					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<text><![CDATA[-
-]]></text>
+				<text><![CDATA[-]]></text>
 			</staticText>
 			<rectangle radius="5">
 				<reportElement key="rectangle-4" mode="Opaque" x="0" y="50" width="535" height="2" forecolor="#33CCFF" backcolor="#33CCFF" uuid="64c3a4bd-c72a-45c4-a7fb-c601deaa03ea"/>
@@ -566,8 +544,7 @@ new Double(-1.0 * ((Double)$V{PRODUCTOUT}).doubleValue()))]]></textFieldExpressi
 					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[com.openbravo.format.Formats.DOUBLE.formatValue(
-new Double(-1.0 * ((Double)$F{UNITSOUT}).doubleValue()))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[com.openbravo.format.Formats.DOUBLE.formatValue(new Double(-1.0 * ((Double)$F{UNITSOUT}).doubleValue()))]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-5" mode="Transparent" x="436" y="0" width="100" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="5f3af202-5d94-4a9d-8c50-a31e2cae5f1a"/>

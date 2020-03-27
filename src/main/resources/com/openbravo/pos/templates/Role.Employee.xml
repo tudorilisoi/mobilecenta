@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
     uniCenta oPOS - Touch friendly Point Of Sale
-    Copyright (c) 2009-2017 uniCenta.
+    Copyright (c) 2009-2018 uniCenta.
     http://sourceforge.net/projects/unicentaopos
 
     This file is part of uniCenta oPOS.
@@ -34,10 +34,12 @@
     <class name="com.openbravo.pos.customers.CustomersPayment"/>
     <class name="com.openbravo.pos.panels.JPanelPayments"/>  
 
-<!--    <class name="sales.EditLines"/> -->
+    <class name="sales.EditLines"/>
     <class name="sales.EditTicket"/>
     <class name="sales.PrintTicket"/>
+    <class name="sales.DeleteLines"/>
     <class name="sales.Total"/>
+    <class name="sales.ViewSharedTicket"/>
     
     <class name="payment.cash"/>
     <class name="payment.cheque"/>
@@ -46,18 +48,19 @@
     <class name="payment.slip"/>    
     <class name="payment.free"/>
     <class name="payment.debt"/>
-    <class name="sales.PrintKitchen"/>
+    <class name="sales.PrintRemote"/>
 
 <!-- EPM -->
     <class name="com.openbravo.pos.epm.JPanelEmployeePresence" />
 
 <!-- Standard button scripts -->
-    <class name="button.totaldiscount"/>
+    <class name="button.Totaldiscount"/>
     <class name="button.print"/>
     
 <!-- Additional button scripts -->
-    <class name="button.linediscount"/>
+    <class name="button.Linediscount"/>
     <class name="button.sendorder"/>
+    <class name="button.keyboard"/>    
 
 <class name="Menu.ChangePassword"/>
 <class name="com.openbravo.pos.panels.JPanelPrinter"/>

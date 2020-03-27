@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta
+//    Copyright (c) 2009-2018 uniCenta
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -94,7 +94,7 @@ public class CategoryInfo implements IKeyed {
     public void setName(String sName) {
         m_sName = sName;
     }
-// ADDED JDL 13.04.13 *************
+
 
     /**
      *

@@ -124,7 +124,7 @@ public class RestaurantDBUtils {
      */
     public String getCustomerNameInTable(String tableName){
         try{
-            SQL = "SELECT CUSTOMER FROM places WHERE NAME='"+ tableName + "'";   
+            SQL = "SELECT customer FROM places WHERE NAME='"+ tableName + "'";   
             stmt = (Statement) con.createStatement();  
             rs = stmt.executeQuery(SQL);
 
@@ -145,7 +145,7 @@ public class RestaurantDBUtils {
      */
     public String getCustomerNameInTableById(String tableId){
         try{
-            SQL = "SELECT CUSTOMER FROM places WHERE ID='"+ tableId + "'";   
+            SQL = "SELECT customer FROM places WHERE ID='"+ tableId + "'";   
             stmt = (Statement) con.createStatement();  
             rs = stmt.executeQuery(SQL);
             if (rs.next()){
@@ -224,7 +224,7 @@ public class RestaurantDBUtils {
      */
     public String getWaiterNameInTable(String tableName){
         try{
-            SQL = "SELECT WAITER FROM places WHERE NAME='"+ tableName + "'";   
+            SQL = "SELECT waiter FROM places WHERE NAME='"+ tableName + "'";   
             stmt = (Statement) con.createStatement();  
             rs = stmt.executeQuery(SQL);
 
@@ -245,7 +245,7 @@ public class RestaurantDBUtils {
      */
     public String getWaiterNameInTableById(String tableID){
         try{
-            SQL = "SELECT WAITER FROM places WHERE ID='"+ tableID + "'";   
+            SQL = "SELECT waiter FROM places WHERE ID='"+ tableID + "'";   
             stmt = (Statement) con.createStatement();  
             rs = stmt.executeQuery(SQL);
 

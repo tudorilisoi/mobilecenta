@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -17,7 +17,7 @@
 //    You should have received a copy of the GNU General Public License
 //    along with uniCenta oPOS.  If not, see <http://www.gnu.org/licenses/>.
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 
@@ -31,6 +31,7 @@ import com.alee.managers.notification.NotificationIcon;
 import com.alee.managers.notification.NotificationManager;
 import com.alee.managers.notification.WebNotification;
 import com.openbravo.basic.BasicException;
+import com.openbravo.beans.JNumberPop;
 import com.openbravo.data.gui.JMessageDialog;
 import com.openbravo.data.gui.ListKeyed;
 import com.openbravo.data.gui.MessageInf;
@@ -107,7 +108,8 @@ public class JTicketsBagRestaurant extends javax.swing.JPanel {
         m_TP = new DeviceTicket();
         m_TTP2 = new TicketParser(m_App.getDeviceTicket(), m_dlSystem);     
         
-        j_btnKitchen.setVisible(false);
+//        j_btnKitchen.setVisible(false);
+        j_btnKitchen.setVisible(true);        
 
         m_TablePlan.setVisible(m_App.getAppUserView().getUser().
                 hasPermission("sales.TablePlan"));        
@@ -293,27 +295,53 @@ public class JTicketsBagRestaurant extends javax.swing.JPanel {
 
     @SuppressWarnings("empty-statement")
     private void m_DelTicketActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_DelTicketActionPerformed
+       boolean pinOK = false;
 
-        int res = JOptionPane.showConfirmDialog(this, 
-                AppLocal.getIntString("message.wannadelete"), 
-                AppLocal.getIntString("title.editor"), 
-                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+//        if (ticket != null) {
+
+            if (m_App.getProperties().getProperty("override.check").equals("true")) {
+                Integer secret = Integer.parseInt(m_App.getProperties().getProperty("override.pin"));
+                Integer iValue = JNumberPop.showEditNumber(this, AppLocal.getIntString("title.override.enterpin")); 
+
+                if (iValue == null ? secret == null : iValue.equals(secret)) {
+                    pinOK = true;
+                    int res = JOptionPane.showConfirmDialog(this
+                        , AppLocal.getIntString("message.wannadelete")
+                        , AppLocal.getIntString("title.editor")
+                        , JOptionPane.YES_NO_OPTION
+                        , JOptionPane.QUESTION_MESSAGE);
         
-        if (res == JOptionPane.YES_OPTION) {
-  
-            restDB.clearCustomerNameInTableById(m_restaurant.getTable());
-            restDB.clearWaiterNameInTableById(m_restaurant.getTable());
-            restDB.clearTicketIdInTableById(m_restaurant.getTable());
-            m_restaurant.deleteTicket();
-        }
+                    if (res == JOptionPane.YES_OPTION) {
+                        restDB.clearCustomerNameInTableById(m_restaurant.getTable());
+                        restDB.clearWaiterNameInTableById(m_restaurant.getTable());
+                        restDB.clearTicketIdInTableById(m_restaurant.getTable());
+                        m_restaurant.deleteTicket();
+                    }
+                } else {
+                    pinOK = false;
+                    JOptionPane.showMessageDialog(this, AppLocal.getIntString("message.override.badpin"));                                        
+                }
+            }
+
+            int res = JOptionPane.showConfirmDialog(this
+                , AppLocal.getIntString("message.wannadelete")
+                , AppLocal.getIntString("title.editor")
+                , JOptionPane.YES_NO_OPTION
+                , JOptionPane.QUESTION_MESSAGE);
         
+            if (res == JOptionPane.YES_OPTION) {
+                restDB.clearCustomerNameInTableById(m_restaurant.getTable());
+                restDB.clearWaiterNameInTableById(m_restaurant.getTable());
+                restDB.clearTicketIdInTableById(m_restaurant.getTable());
+                m_restaurant.deleteTicket();
+            }          
     }//GEN-LAST:event_m_DelTicketActionPerformed
 
     private void m_TablePlanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_TablePlanActionPerformed
-       
+    // outta here back to TableMap   
         m_restaurant.newTicket();            
     }//GEN-LAST:event_m_TablePlanActionPerformed
-
+    
     @SuppressWarnings("empty-statement")
     private void j_btnKitchenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_j_btnKitchenActionPerformed
         ticket = m_restaurant.getActiveTicket();

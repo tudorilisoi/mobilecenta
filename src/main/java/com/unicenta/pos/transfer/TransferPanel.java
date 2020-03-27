@@ -86,8 +86,9 @@ public class TransferPanel extends javax.swing.JFrame {
     private void initComponents() {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+        setPreferredSize(new java.awt.Dimension(900, 450));
 
-        setSize(new java.awt.Dimension(930, 442));
+        setSize(new java.awt.Dimension(916, 539));
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
     

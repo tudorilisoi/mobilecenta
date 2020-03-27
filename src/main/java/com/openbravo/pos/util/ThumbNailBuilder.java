@@ -126,11 +126,11 @@ public class ThumbNailBuilder {
         g2d.drawImage(img, 0, 0, null);
         g2d.translate(0, imgtext.getHeight() - label.getHeight());
         g2d.setPaint(gpaint);            
-        g2d.fillRect(0 , 0, imgtext.getWidth(), label.getHeight());    
+//        g2d.fillRect(0 , 0, imgtext.getWidth(), label.getHeight());    
         label.paint(g2d);
             
         g2d.dispose();
-        
+       
         return imgtext;    
     }
     

@@ -59,6 +59,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 
+import com.alee.extended.statusbar.WebMemoryBar;
+import com.openbravo.pos.config.JPanelConfigDatabase;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -129,7 +132,7 @@ public final class Transfer extends JPanel implements JPanelView {
 
         jtxtDbDriverLib.getDocument().addDocumentListener(dirty);
         jtxtDbDriver.getDocument().addDocumentListener(dirty);
-        jtxtDbURL.getDocument().addDocumentListener(dirty);
+        jtxtDbType.getDocument().addDocumentListener(dirty);
         txtDbPass.getDocument().addDocumentListener(dirty);
         txtDbUser.getDocument().addDocumentListener(dirty);
         txtOut.getDocument().addDocumentListener(dirty);
@@ -138,9 +141,9 @@ public final class Transfer extends JPanel implements JPanelView {
 
         cbSource.addActionListener(dirty);
         
-        cbSource.addItem("Derby");
         cbSource.addItem("MySQL");
         cbSource.addItem("PostgreSQL");
+        cbSource.addItem("Derby");        
         
         stringList.add("Transfer Ready..." + "\n");
         txtOut.setText(stringList.get(0));
@@ -150,9 +153,10 @@ public final class Transfer extends JPanel implements JPanelView {
         webPBar.setString ( "Waiting..." );
         webPBar.setVisible(false);
         
+        jTransferPanel.setVisible(false);
         jbtnTransfer.setEnabled(false);
-        jbtnExit.setVisible(false);
-       
+        jbtnReset.setEnabled(true);
+        
     }
 
     /**
@@ -179,8 +183,11 @@ public final class Transfer extends JPanel implements JPanelView {
      */
     public Boolean getSource() {
 
+        String db_url2 = jtxtDbType.getText() 
+                + jtxtDbServerPort.getText()
+                + jtxtDbName.getText()
+                + jtxtDbParams.getText();
         String db_user2 = txtDbUser.getText();
-        String db_url2 = jtxtDbURL.getText();
         char[] pass = txtDbPass.getPassword();
         String db_password2 = new String(pass);
 
@@ -319,11 +326,14 @@ public final class Transfer extends JPanel implements JPanelView {
     @Override
     public void activate() throws BasicException {
 
-    
-        String db_user = (m_props.getProperty("db.user"));
         String db_url = (m_props.getProperty("db.URL"));
+        String db_schema = (m_props.getProperty("db.schema"));
+        String db_options = (m_props.getProperty("db.options"));        
+        String db_user = (m_props.getProperty("db.user"));
         String db_password = (m_props.getProperty("db.password"));
 
+        String url = db_url + db_schema + db_options;
+                
         if (db_user != null 
                 && db_password != null 
                 && db_password.startsWith("crypt:")) {
@@ -334,7 +344,7 @@ public final class Transfer extends JPanel implements JPanelView {
 
         try {
             session_target = AppViewConnection.createSession(m_props);            
-            con_target  = DriverManager.getConnection(db_url, db_user, db_password);
+            con_target  = DriverManager.getConnection(url, db_user, db_password);
             sDB_target = con_target.getMetaData().getDatabaseProductName();
             jlblSource.setText(con_target.getCatalog());            
             
@@ -399,7 +409,11 @@ public final class Transfer extends JPanel implements JPanelView {
             stmt.addBatch("DELETE FROM stocklevel;");
             stmt.addBatch("DELETE FROM suppliers;");
             stmt.addBatch("DELETE FROM uom;");
-            stmt.addBatch("DELETE FROM vouchers;");        
+            stmt.addBatch("DELETE FROM vouchers;");  
+            
+            stmt.addBatch("SET autocommit=0;");
+            stmt.addBatch("SET unique_checks=0;");
+            stmt.addBatch("SET foreign_key_checks=0;");
         
             int [] updateCounts = stmt.executeBatch();
             this.con_target.commit();
@@ -416,16 +430,24 @@ public final class Transfer extends JPanel implements JPanelView {
         }
     }
     
-    public void doTransfer() {
+    public void doTransfer() throws SQLException {
 
         webPBar.setString ( "Starting..." );
         webPBar.setVisible(true);
          
         String Dbtname = "";
-        
+        long lStartTime = 0;
+        long lEndTime = 0;
+        long lElapsedTime = 0;
+       
+        Double Dbtversion = Double.parseDouble(jlblVersion.getText().substring(0, 3));
+
         if (getSource()) {          
                     txtOut.setVisible(true);
                     txtOut.append("Transfer Started..." + "\n");
+//                    lStartTime = System.nanoTime();
+//                    System.out.println("Start : " + lStartTime);
+//                    jLblStartTime.setText(Long.toString(lStartTime));                    
                     
             if (createTargetDB()) {
                     jbtnTransfer.setEnabled(false);
@@ -436,129 +458,140 @@ public final class Transfer extends JPanel implements JPanelView {
 
                     clearData();        
 
-                    this.con_target.setAutoCommit(false);      
+                    this.con_target.setAutoCommit(false);
 
                     webPBar.setString ( "Running..." );
                     
                     Dbtname="attribute";
                     ResultSet rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Attribute" + "\n");                  
-                        SQL = "SELECT ID, NAME FROM attribute";
-                        rs = stmt_source.executeQuery(SQL); 
+                    
+                    txtOut.append("Attribute" + "\n");                  
+                    SQL = "SELECT ID, NAME FROM attribute";
+                    rs = stmt_source.executeQuery(SQL); 
                         
-                        while (rs.next()) {
-                            SQL = "INSERT INTO attribute ("
-                                + "ID, NAME) "
-                                + "VALUES (?, ?)";
+                    while (rs.next()) {
+                        SQL = "INSERT INTO attribute ("
+                            + "ID, NAME) "
+                            + "VALUES (?, ?)";
                 
-                            pstmt = con_target.prepareStatement(SQL);
-                            pstmt.setString(1, rs.getString("ID"));
-                            pstmt.setString(2, rs.getString("NAME"));
+                        pstmt = con_target.prepareStatement(SQL);
+                        pstmt.setString(1, rs.getString("ID"));
+                        pstmt.setString(2, rs.getString("NAME"));
                 
-                            pstmt.executeUpdate();                 
-                        }
+                        pstmt.executeUpdate();                 
+                    }
+                    rs.close();
 
                     Dbtname="attributevalue";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Attributevalue" + "\n");
-                        SQL = "SELECT ID, ATTRIBUTE_ID, VALUE FROM attributevalue";
-                        rs = stmt_source.executeQuery(SQL);
                     
-                        while (rs.next()) {
-                            SQL = "INSERT INTO attributevalue ("
-                                + "ID, ATTRIBUTE_ID, VALUE) "
-                                + "VALUES (?, ?, ?)";
-            
-                            pstmt = con_target.prepareStatement(SQL);
-                            pstmt.setString(1, rs.getString("ID"));
-                            pstmt.setString(2, rs.getString("ATTRIBUTE_ID"));
-                            pstmt.setString(3, rs.getString("VALUE"));
+                    txtOut.append("Attributevalue" + "\n");
+                    SQL = "SELECT ID, ATTRIBUTE_ID, VALUE FROM attributevalue";
+                    rs = stmt_source.executeQuery(SQL);
+                    
+                    while (rs.next()) {
+                        SQL = "INSERT INTO attributevalue ("
+                            + "ID, ATTRIBUTE_ID, VALUE) "
+                            + "VALUES (?, ?, ?)";
+                        pstmt = con_target.prepareStatement(SQL);
+                        pstmt.setString(1, rs.getString("ID"));
+                        pstmt.setString(2, rs.getString("ATTRIBUTE_ID"));
+                        pstmt.setString(3, rs.getString("VALUE"));
                         
-                            pstmt.executeUpdate();
-                        }                         
+                        pstmt.executeUpdate();
+                    }
+                    rs.close();                        
 
                     Dbtname="attributeinstance";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Attributeinstance" + "\n");                  
-                        SQL = "SELECT ID, ATTRIBUTESETINSTANCE_ID, ATTRIBUTE_ID, VALUE FROM attributeinstance";
-                        rs = stmt_source.executeQuery(SQL);
+
+                    txtOut.append("Attributeinstance" + "\n");                  
+                    SQL = "SELECT ID, ATTRIBUTESETINSTANCE_ID, ATTRIBUTE_ID, VALUE FROM attributeinstance";
+                    rs = stmt_source.executeQuery(SQL);
                     
-                        while (rs.next()) {
-                            SQL = "INSERT INTO attributeinstance ("
-                                + "ID, ATTRIBUTESETINSTANCE_ID, ATTRIBUTE_ID, VALUE) "
-                                + "VALUES (?, ?, ?, ?)";
+                    while (rs.next()) {
+                        SQL = "INSERT INTO attributeinstance ("
+                            + "ID, ATTRIBUTESETINSTANCE_ID, ATTRIBUTE_ID, VALUE) "
+                            + "VALUES (?, ?, ?, ?)";
 
-                            pstmt = con_target.prepareStatement(SQL);
-                            pstmt.setString(1, rs.getString("ID"));
-                            pstmt.setString(2, rs.getString("ATTRIBUTESETINSTANCE_ID"));
-                            pstmt.setString(3, rs.getString("ATTRIBUTE_ID"));
-                            pstmt.setString(4, rs.getString("VALUE"));
+                        pstmt = con_target.prepareStatement(SQL);
+                        pstmt.setString(1, rs.getString("ID"));
+                        pstmt.setString(2, rs.getString("ATTRIBUTESETINSTANCE_ID"));
+                        pstmt.setString(3, rs.getString("ATTRIBUTE_ID"));
+                        pstmt.setString(4, rs.getString("VALUE"));
 
-                            pstmt.executeUpdate();
-                        }
+                        pstmt.executeUpdate();
+                    }
+                    rs.close();                        
 
                     Dbtname="attributesetinstance";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Attributesetinstance" + "\n");                  
-                        SQL = "SELECT ID, ATTRIBUTESET_ID, DESCRIPTION FROM attributesetinstance";
-                        rs = stmt_source.executeQuery(SQL);
 
-                        while (rs.next()) {
-                            SQL = "INSERT INTO attributesetinstance ("
-                                + "ID, ATTRIBUTESET_ID, DESCRIPTION) "
-                                + "VALUES (?, ?, ?)";
+                    txtOut.append("Attributesetinstance" + "\n");                  
+                    SQL = "SELECT ID, ATTRIBUTESET_ID, DESCRIPTION FROM attributesetinstance";
+                    rs = stmt_source.executeQuery(SQL);
+
+                    while (rs.next()) {
+                        SQL = "INSERT INTO attributesetinstance ("
+                            + "ID, ATTRIBUTESET_ID, DESCRIPTION) "
+                            + "VALUES (?, ?, ?)";
             
-                            pstmt = con_target.prepareStatement(SQL);
-                            pstmt.setString(1, rs.getString("ID"));
-                            pstmt.setString(2, rs.getString("ATTRIBUTESET_ID"));
-                            pstmt.setString(3, rs.getString("DESCRIPTION"));
-                        
-                            pstmt.executeUpdate();
-                        }
+                        pstmt = con_target.prepareStatement(SQL);
+                        pstmt.setString(1, rs.getString("ID"));
+                        pstmt.setString(2, rs.getString("ATTRIBUTESET_ID"));
+                        pstmt.setString(3, rs.getString("DESCRIPTION"));
+                       
+                        pstmt.executeUpdate();
+                    }
+                    rs.close();                        
 
                     Dbtname="attributeuse";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Attributeuse" + "\n");
-                        SQL = "SELECT ID, ATTRIBUTESET_ID, ATTRIBUTE_ID FROM attributeuse";
-                        rs = stmt_source.executeQuery(SQL);
+
+                    txtOut.append("Attributeuse" + "\n");
+                    SQL = "SELECT ID, ATTRIBUTESET_ID, ATTRIBUTE_ID FROM attributeuse";
+                    rs = stmt_source.executeQuery(SQL);
 
 // removed LINENO as for some weird bug in MySQL causes Lock Timeout
 // only happens to this table, no other affected
 
-                        while (rs.next()) {
-                            SQL = "INSERT INTO attributeuse("
-                                + "ID, ATTRIBUTESET_ID, ATTRIBUTE_ID) "
-                                + "VALUES (?, ?, ?)";
+                    while (rs.next()) {
+                        SQL = "INSERT INTO attributeuse("
+                            + "ID, ATTRIBUTESET_ID, ATTRIBUTE_ID) "
+                            + "VALUES (?, ?, ?)";
             
-                            pstmt = con_target.prepareStatement(SQL);
-                            pstmt.setString(1, rs.getString("ID"));
-                            pstmt.setString(2, rs.getString("ATTRIBUTESET_ID"));
-                            pstmt.setString(3, rs.getString("ATTRIBUTE_ID"));
+                        pstmt = con_target.prepareStatement(SQL);
+                        pstmt.setString(1, rs.getString("ID"));
+                        pstmt.setString(2, rs.getString("ATTRIBUTESET_ID"));
+                        pstmt.setString(3, rs.getString("ATTRIBUTE_ID"));
                         
-                            pstmt.executeUpdate();
-                        }                         
-                    
+                        pstmt.executeUpdate();
+                    }
+                    rs.close();                        
+
                     Dbtname="attributeset";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Attributeset" + "\n");                  
-                        SQL = "SELECT ID, NAME FROM attributeset";
-                        rs = stmt_source.executeQuery(SQL);
 
-                        while (rs.next()) {
-                            SQL = "INSERT INTO attributeset ("
-                                + "ID, NAME) "
-                                + "VALUES (?, ?)";
+                    txtOut.append("Attributeset" + "\n");                  
+                    SQL = "SELECT ID, NAME FROM attributeset";
+                    rs = stmt_source.executeQuery(SQL);
+
+                    while (rs.next()) {
+                        SQL = "INSERT INTO attributeset ("
+                            + "ID, NAME) "
+                            + "VALUES (?, ?)";
                         
-                            pstmt = con_target.prepareStatement(SQL);
-                            pstmt.setString(1, rs.getString("ID"));
-                            pstmt.setString(2, rs.getString("NAME"));
+                        pstmt = con_target.prepareStatement(SQL);
+                        pstmt.setString(1, rs.getString("ID"));
+                        pstmt.setString(2, rs.getString("NAME"));
                         
-                            pstmt.executeUpdate();
-                        }    
-                    
-                if (!jlblVersion.getText().startsWith("2")) {
+                        pstmt.executeUpdate();
+                    } 
+                    rs.close();                        
+// introduced in 3.00
+                    if (Dbtversion >= 3.00) {
                         Dbtname="breaks";
-                    rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+                        rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Breaks" + "\n");
                         SQL = "SELECT * FROM breaks";
                         rs = stmt_source.executeQuery(SQL);
@@ -578,17 +611,18 @@ public final class Transfer extends JPanel implements JPanelView {
                         }
                     } else {
                         txtOut.append("Breaks... skipped" + "\n");                            
-                    }                        
-                    
+                    }              
+                    rs.close();                
+
                     Dbtname="categories";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Categories" + "\n");
-                        SQL = "SELECT * FROM categories";
-                        rs = stmt_source.executeQuery(SQL);
+
+                    txtOut.append("Categories" + "\n");
+                    SQL = "SELECT * FROM categories";
+                    rs = stmt_source.executeQuery(SQL);
 
                     if (rs.getMetaData().getColumnCount() == 6) {
                         while (rs.next()) {
-
                             SQL = "INSERT INTO categories("
                                 + "ID, NAME, PARENTID, IMAGE, "
                                 + "TEXTTIP, CATSHOWNAME) "
@@ -607,7 +641,6 @@ public final class Transfer extends JPanel implements JPanelView {
                         }
                     } else {
                         while (rs.next()) {
-
                             SQL = "INSERT INTO categories("
                                 + "ID, NAME, PARENTID, IMAGE) "
                                 + "VALUES (?, ?, ?, ?)";
@@ -620,17 +653,20 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }
-                    }    
-                    
+                    }
+                    rs.close();                                    
+
                     Dbtname="closedcash";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("ClosedCash" + "\n");
-                        SQL = "DELETE FROM closedcash";
-                        pstmt = con_target.prepareStatement(SQL);
-                        pstmt.executeUpdate();
                         
-                        SQL = "SELECT * FROM closedcash";
-                        rs = stmt_source.executeQuery(SQL);
+                    txtOut.append("ClosedCash" + "\n");
+                    SQL = "DELETE FROM closedcash";
+                    pstmt = con_target.prepareStatement(SQL);
+                    pstmt.executeUpdate();
+
+                    SQL = "SELECT * FROM closedcash";
+                    rs = stmt_source.executeQuery(SQL);
+
                     if (rs.getMetaData().getColumnCount() == 6) {
                         while (rs.next()) {
                             SQL = "INSERT INTO closedcash("
@@ -667,12 +703,14 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.executeUpdate();
                         }                        
                     }
+                    rs.close();                                    
 
                     Dbtname="customers";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Customers" + "\n");
-                        SQL = "SELECT * FROM customers";
-                        rs = stmt_source.executeQuery(SQL);
+
+                    txtOut.append("Customers" + "\n");
+                    SQL = "SELECT * FROM customers";
+                    rs = stmt_source.executeQuery(SQL);
 
                     if (rs.getMetaData().getColumnCount() == 27) {
                         while (rs.next()) {
@@ -724,20 +762,20 @@ public final class Transfer extends JPanel implements JPanelView {
                         }
                     } else {
                         while (rs.next()) {                        
-                           SQL = "INSERT INTO customers("
+                            SQL = "INSERT INTO customers("
                                 + "ID, SEARCHKEY, TAXID, NAME, "
                                 + "TAXCATEGORY, CARD, MAXDEBT,"
                                 + "ADDRESS, ADDRESS2, POSTAL, CITY, "
                                 + "REGION, COUNTRY, FIRSTNAME, LASTNAME, "
                                 + "EMAIL, PHONE, PHONE2, FAX, "
-                                + "NOTES, VISIBLE, CURDATE, CURDEBT, IMAGE )"
+                                + "NOTES, VISIBLE, CURDATE, CURDEBT)"                                   
                                 + " VALUES ("
                                 + "?, ?, ?, ?, "
                                 + "?, ?, ?, "
                                 + "?, ?, ?, ?, "
                                 + "?, ?, ?, ?, "
                                 + "?, ?, ?, ?, "
-                                + "?, ?, ?, ?, ?)";
+                                + "?, ?, ?, ?)";
 
                             pstmt = con_target.prepareStatement(SQL);
                             pstmt.setString(1, rs.getString("ID"));
@@ -763,15 +801,17 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.setBoolean(21, rs.getBoolean("VISIBLE"));
                             pstmt.setTimestamp(22, rs.getTimestamp("CURDATE"));
                             pstmt.setDouble(23, rs.getDouble("CURDEBT"));
-                            pstmt.setBytes(24, rs.getBytes("IMAGE"));  
                          
                             pstmt.executeUpdate();
                         }
                     }
-                    
-                if (!jlblVersion.getText().startsWith("2")) {
-                    Dbtname="draweropened";
-                    rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+                    rs.close();                                    
+
+// introduced 3.50
+                    if (Dbtversion >= 3.50) {
+                        Dbtname="draweropened";
+                        rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+
                         txtOut.append("DrawerOpened" + "\n");
                         SQL = "SELECT * FROM draweropened";
                         rs = stmt_source.executeQuery(SQL);
@@ -788,13 +828,14 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }
-                }        
+                    }        
                     
                     Dbtname="floors";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Floors" + "\n");
-                        SQL = "SELECT * FROM floors";
-                        rs = stmt_source.executeQuery(SQL);
+
+                    txtOut.append("Floors" + "\n");
+                    SQL = "SELECT * FROM floors";
+                    rs = stmt_source.executeQuery(SQL);
                     
                         while (rs.next()) {
                             SQL = "INSERT INTO floors ("
@@ -807,11 +848,14 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.setBytes(3, rs.getBytes("IMAGE"));
                         
                             pstmt.executeUpdate();
-                        }    
-                    
-                if (!jlblVersion.getText().startsWith("2")) {
-                    Dbtname="leaves";
-                    rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+                        }
+                    rs.close();                                        
+
+// introduced in 3.00
+                    if (Dbtversion >= 3.00) {
+                        Dbtname="leaves";
+                        rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+                        
                         txtOut.append("Leaves" + "\n");
                         SQL = "SELECT * FROM leaves";
                         rs = stmt_source.executeQuery(SQL);
@@ -835,11 +879,14 @@ public final class Transfer extends JPanel implements JPanelView {
                         }
                     } else {
                         txtOut.append("Leaves... skipped" + "\n");                            
-                    }                
+                    }               
+                    rs.close();                
                     
-                if (!jlblVersion.getText().startsWith("2")) {
-                    Dbtname="lineremoved";
-                    rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+// introduced in 3.70                    
+                    if (Dbtversion >= 3.70) {
+                        Dbtname="lineremoved";
+                        rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+                        
                         txtOut.append("LineRemoved" + "\n");
                         SQL = "SELECT * FROM lineremoved";
                         rs = stmt_source.executeQuery(SQL);
@@ -861,32 +908,37 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }
-                } else {
-                    txtOut.append("Line Removed... skipped" + "\n");                            
-                }                        
+                    } else {
+                        txtOut.append("Line Removed... skipped" + "\n");                            
+                    }   
+                    rs.close();                                
 
                     Dbtname="locations";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Locations" + "\n");
-                        SQL = "SELECT * FROM locations";
-                        rs = stmt_source.executeQuery(SQL);
-
-                        while (rs.next()) {
-                            SQL = "INSERT INTO locations("
-                                + "ID, NAME, ADDRESS) "
-                                + "VALUES (?, ?, ?)";
-            
-                            pstmt = con_target.prepareStatement(SQL);
-                            pstmt.setString(1, rs.getString("ID"));
-                            pstmt.setString(2, rs.getString("NAME"));
-                            pstmt.setString(3, rs.getString("ADDRESS"));
-                        
-                            pstmt.executeUpdate();
-                        }     
                     
-                if (!jlblVersion.getText().startsWith("2")) {
+                    txtOut.append("Locations" + "\n");
+                    SQL = "SELECT * FROM locations";
+                    rs = stmt_source.executeQuery(SQL);
+
+                    while (rs.next()) {
+                        SQL = "INSERT INTO locations("
+                            + "ID, NAME, ADDRESS) "
+                            + "VALUES (?, ?, ?)";
+            
+                        pstmt = con_target.prepareStatement(SQL);
+                        pstmt.setString(1, rs.getString("ID"));
+                        pstmt.setString(2, rs.getString("NAME"));
+                        pstmt.setString(3, rs.getString("ADDRESS"));
+                        
+                        pstmt.executeUpdate();
+                    }     
+                    rs.close();                                
+                
+// moorers introduced in 3.50
+                    if (Dbtversion >= 3.50) {
                         Dbtname="moorers";
-                    rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+                        rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+                        
                         txtOut.append("Moorers" + "\n");
                         SQL = "SELECT * FROM moorers";
                         rs = stmt_source.executeQuery(SQL);
@@ -904,17 +956,19 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }
-                } else {
-                    txtOut.append("Moorers... skipped" + "\n");                            
-                }                        
-                    
+                    } else {
+                        txtOut.append("Moorers... skipped" + "\n");                            
+                    }                        
+                    rs.close();                                
+
                     Dbtname="payments";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Payments" + "\n");
-                        SQL = "SELECT * FROM payments";
-                        rs = stmt_source.executeQuery(SQL);
+                    
+                    txtOut.append("Payments" + "\n");
+                    SQL = "SELECT * FROM payments";
+                    rs = stmt_source.executeQuery(SQL);
 
-                    if (!jlblVersion.getText().startsWith("2")) {                        
+                    if (Dbtversion >= 3.02) {
                         while (rs.next()) {
                             SQL = "INSERT INTO payments("
                                 + "ID, RECEIPT, PAYMENT, TOTAL, "
@@ -951,37 +1005,49 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.setBytes(6, rs.getBytes("RETURNMSG"));                        
                         
                             pstmt.executeUpdate();
-                        }                       
+                        }
                     }
+                    SQL = "UPDATE payments SET payment='ccard' WHERE payment='magcard'";
+                    pstmt.execute(SQL);
+                    SQL = "UPDATE payments SET payment='ccardrefund' WHERE payment='magcardrefund'";
+                    pstmt.execute(SQL);                        
+                    SQL = "UPDATE payments SET tendered = ROUND(total,2) WHERE tendered is null";
+                    pstmt.execute(SQL);                    
                     
+                    rs.close();                                    
+
                     Dbtname="people";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("People" + "\n");
-                        SQL = "SELECT * FROM people";
-                        rs = stmt_source.executeQuery(SQL);
 
-                        while (rs.next()) {
-                            SQL = "INSERT INTO people("
-                                + "ID, NAME, APPPASSWORD, CARD, "
-                                + "ROLE, VISIBLE, IMAGE) "
-                                + "VALUES (?, ?, ?, ?, "
-                                + "?, ?, ?)";
+                    txtOut.append("People" + "\n");
+                    SQL = "SELECT * FROM people";
+                    rs = stmt_source.executeQuery(SQL);
+
+                    while (rs.next()) {
+                        SQL = "INSERT INTO people("
+                            + "ID, NAME, APPPASSWORD, CARD, "
+                            + "ROLE, VISIBLE, IMAGE) "
+                            + "VALUES (?, ?, ?, ?, "
+                            + "?, ?, ?)";
     
-                            pstmt = con_target.prepareStatement(SQL);
-                            pstmt.setString(1, rs.getString("ID"));
-                            pstmt.setString(2, rs.getString("NAME"));
-                            pstmt.setString(3, rs.getString("APPPASSWORD"));
-                            pstmt.setString(4, rs.getString("CARD"));
-                            pstmt.setString(5, rs.getString("ROLE"));
-                            pstmt.setBoolean(6, rs.getBoolean("VISIBLE"));
-                            pstmt.setBytes(7, rs.getBytes("IMAGE"));
+                        pstmt = con_target.prepareStatement(SQL);
+                        pstmt.setString(1, rs.getString("ID"));
+                        pstmt.setString(2, rs.getString("NAME"));
+                        pstmt.setString(3, rs.getString("APPPASSWORD"));
+                        pstmt.setString(4, rs.getString("CARD"));
+                        pstmt.setString(5, rs.getString("ROLE"));
+                        pstmt.setBoolean(6, rs.getBoolean("VISIBLE"));
+                        pstmt.setBytes(7, rs.getBytes("IMAGE"));
                         
-                            pstmt.executeUpdate();
-                        }
+                        pstmt.executeUpdate();
+                    }
+                    rs.close();                
                     
-                if (!jlblVersion.getText().startsWith("2")) {
-                    Dbtname="pickup_number";
-                    rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+// pickup_number introduced in 3.50
+                    if (Dbtversion >= 3.50) {
+                        Dbtname="pickup_number";
+                        rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+                        
                         txtOut.append("Pickup Number" + "\n");
                         SQL = "SELECT * FROM pickup_number";
                         rs = stmt_source.executeQuery(SQL);
@@ -995,15 +1061,17 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }
-                } else {
-                    txtOut.append("Pickup Number... skipped" + "\n");                            
-                }                        
+                    } else {
+                        txtOut.append("Pickup Number... skipped" + "\n");                            
+                    }   
+                    rs.close();                
                     
                     Dbtname="places";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Places" + "\n");
-                        SQL = "SELECT * FROM places";
-                        rs = stmt_source.executeQuery(SQL);
+
+                    txtOut.append("Places" + "\n");
+                    SQL = "SELECT * FROM places";
+                    rs = stmt_source.executeQuery(SQL);
 
                     if (rs.getMetaData().getColumnCount() == 9) {
                         while (rs.next()) {
@@ -1042,79 +1110,81 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.executeUpdate();                        
                         }
                     }
+                    rs.close();                                    
 
                     Dbtname="products";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Products" + "\n");
+                    
+                    txtOut.append("Products" + "\n");
+                    SQL = "SELECT * FROM products";
+                    rs = stmt_source.executeQuery(SQL);
 
-                        SQL = "SELECT * FROM products";
-                        rs = stmt_source.executeQuery(SQL);
-                        switch (rs.getMetaData().getColumnCount()) {
-                            case 30:
-                                while (rs.next()) {
-                                    SQL = "INSERT INTO products("
-                                            + "ID, REFERENCE, CODE, CODETYPE, NAME, "
-                                            + "PRICEBUY, PRICESELL, CATEGORY, TAXCAT, ATTRIBUTESET_ID, "
-                                            + "STOCKCOST, STOCKVOLUME, IMAGE, ISCOM, ISSCALE, "
-                                            + "ISCONSTANT, PRINTKB, SENDSTATUS, ISSERVICE, ATTRIBUTES, "
-                                            + "DISPLAY, ISVPRICE, ISVERPATRIB, TEXTTIP, WARRANTY, "
-                                            + "STOCKUNITS, PRINTTO, SUPPLIER, UOM, MEMODATE) "
-                                            + "VALUES (?, ?, ?, ?, ?, "
-                                            + "?, ?, ?, ?, ?,"
-                                            + "?, ?, ?, ?, ?,"
-                                            + "?, ?, ?, ?, ?, "
-                                            + "?, ?, ?, ?, ?, "
-                                            + "?, ?, ?, ? ,?)";
+                    switch (rs.getMetaData().getColumnCount()) {
+                        case 30:
+                            while (rs.next()) {
+                                SQL = "INSERT INTO products("
+                                        + "ID, REFERENCE, CODE, CODETYPE, NAME, "
+                                        + "PRICEBUY, PRICESELL, CATEGORY, TAXCAT, ATTRIBUTESET_ID, "
+                                        + "STOCKCOST, STOCKVOLUME, IMAGE, ISCOM, ISSCALE, "
+                                        + "ISCONSTANT, PRINTKB, SENDSTATUS, ISSERVICE, ATTRIBUTES, "
+                                        + "DISPLAY, ISVPRICE, ISVERPATRIB, TEXTTIP, WARRANTY, "
+                                        + "STOCKUNITS, PRINTTO, SUPPLIER, UOM, MEMODATE) "
+                                        + "VALUES (?, ?, ?, ?, ?, "
+                                        + "?, ?, ?, ?, ?,"
+                                        + "?, ?, ?, ?, ?,"
+                                        + "?, ?, ?, ?, ?, "
+                                        + "?, ?, ?, ?, ?, "
+                                        + "?, ?, ?, ? ,?)";
                                     
-                                    pstmt = con_target.prepareStatement(SQL);
-                                    pstmt.setString(1, rs.getString("ID"));
-                                    pstmt.setString(2, rs.getString("REFERENCE"));
-                                    pstmt.setString(3, rs.getString("CODE"));
-                                    pstmt.setString(4, rs.getString("CODETYPE"));
-                                    pstmt.setString(5, rs.getString("NAME"));
-                                    pstmt.setDouble(6, rs.getDouble("PRICEBUY"));
-                                    pstmt.setDouble(7, rs.getDouble("PRICESELL"));
-                                    pstmt.setString(8, rs.getString("CATEGORY"));
-                                    pstmt.setString(9, rs.getString("TAXCAT"));
-                                    pstmt.setString(10, rs.getString("ATTRIBUTESET_ID"));
-                                    pstmt.setDouble(11, rs.getDouble("STOCKCOST"));
-                                    pstmt.setDouble(12, rs.getDouble("STOCKVOLUME"));
-                                    pstmt.setBytes(13, rs.getBytes("IMAGE"));
-                                    pstmt.setBoolean(14, rs.getBoolean("ISCOM"));
-                                    pstmt.setBoolean(15, rs.getBoolean("ISSCALE"));
-                                    pstmt.setBoolean(16, rs.getBoolean("ISCONSTANT"));
-                                    pstmt.setBoolean(17, rs.getBoolean("PRINTKB"));
-                                    pstmt.setBoolean(18, rs.getBoolean("SENDSTATUS"));
-                                    pstmt.setBoolean(19, rs.getBoolean("ISSERVICE"));
-                                    pstmt.setBytes(20, rs.getBytes("ATTRIBUTES"));
-                                    pstmt.setString(21, rs.getString("DISPLAY"));
-                                    pstmt.setBoolean(22, rs.getBoolean("ISVPRICE"));
-                                    pstmt.setBoolean(23, rs.getBoolean("ISVERPATRIB"));
-                                    pstmt.setString(24, rs.getString("TEXTTIP"));
-                                    pstmt.setBoolean(25, rs.getBoolean("WARRANTY"));
-                                    pstmt.setDouble(26, rs.getDouble("STOCKUNITS"));
-                                    pstmt.setString(27, rs.getString("PRINTTO"));
-                                    pstmt.setString(28, rs.getString("SUPPLIER"));
-                                    pstmt.setString(29, rs.getString("UOM"));
-                                    pstmt.setTimestamp(30, rs.getTimestamp("MEMODATE"));
+                                pstmt = con_target.prepareStatement(SQL);
+                                pstmt.setString(1, rs.getString("ID"));
+                                pstmt.setString(2, rs.getString("REFERENCE"));
+                                pstmt.setString(3, rs.getString("CODE"));
+                                pstmt.setString(4, rs.getString("CODETYPE"));
+                                pstmt.setString(5, rs.getString("NAME"));
+                                pstmt.setDouble(6, rs.getDouble("PRICEBUY"));
+                                pstmt.setDouble(7, rs.getDouble("PRICESELL"));
+                                pstmt.setString(8, rs.getString("CATEGORY"));
+                                pstmt.setString(9, rs.getString("TAXCAT"));
+                                pstmt.setString(10, rs.getString("ATTRIBUTESET_ID"));
+                                pstmt.setDouble(11, rs.getDouble("STOCKCOST"));
+                                pstmt.setDouble(12, rs.getDouble("STOCKVOLUME"));
+                                pstmt.setBytes(13, rs.getBytes("IMAGE"));
+                                pstmt.setBoolean(14, rs.getBoolean("ISCOM"));
+                                pstmt.setBoolean(15, rs.getBoolean("ISSCALE"));
+                                pstmt.setBoolean(16, rs.getBoolean("ISCONSTANT"));
+                                pstmt.setBoolean(17, rs.getBoolean("PRINTKB"));
+                                pstmt.setBoolean(18, rs.getBoolean("SENDSTATUS"));
+                                pstmt.setBoolean(19, rs.getBoolean("ISSERVICE"));
+                                pstmt.setBytes(20, rs.getBytes("ATTRIBUTES"));
+                                pstmt.setString(21, rs.getString("DISPLAY"));
+                                pstmt.setBoolean(22, rs.getBoolean("ISVPRICE"));
+                                pstmt.setBoolean(23, rs.getBoolean("ISVERPATRIB"));
+                                pstmt.setString(24, rs.getString("TEXTTIP"));
+                                pstmt.setBoolean(25, rs.getBoolean("WARRANTY"));
+                                pstmt.setDouble(26, rs.getDouble("STOCKUNITS"));
+                                pstmt.setString(27, rs.getString("PRINTTO"));
+                                pstmt.setString(28, rs.getString("SUPPLIER"));
+                                pstmt.setString(29, rs.getString("UOM"));
+                                pstmt.setTimestamp(30, rs.getTimestamp("MEMODATE"));
                                                                     
-                                    pstmt.executeUpdate();
-                                }       break;
+                                pstmt.executeUpdate();
+                            }       break;
                             case 29:
                                 while (rs.next()) {
                                     SQL = "INSERT INTO products("
-                                            + "ID, REFERENCE, CODE, CODETYPE, NAME, "
-                                            + "PRICEBUY, PRICESELL, CATEGORY, TAXCAT, ATTRIBUTESET_ID, "
-                                            + "STOCKCOST, STOCKVOLUME, IMAGE, ISCOM, ISSCALE, "
-                                            + "ISCONSTANT, PRINTKB, SENDSTATUS, ISSERVICE, ATTRIBUTES, "
-                                            + "DISPLAY, ISVPRICE, ISVERPATRIB, TEXTTIP, WARRANTY, "
-                                            + "STOCKUNITS, PRINTTO, SUPPLIER, UOM) "
-                                            + "VALUES (?, ?, ?, ?, ?, "
-                                            + "?, ?, ?, ?, ?,"
-                                            + "?, ?, ?, ?, ?,"
-                                            + "?, ?, ?, ?, ?, "
-                                            + "?, ?, ?, ?, ?, "
-                                            + "?, ?, ?, ?)";
+                                        + "ID, REFERENCE, CODE, CODETYPE, NAME, "
+                                        + "PRICEBUY, PRICESELL, CATEGORY, TAXCAT, ATTRIBUTESET_ID, "
+                                        + "STOCKCOST, STOCKVOLUME, IMAGE, ISCOM, ISSCALE, "
+                                        + "ISCONSTANT, PRINTKB, SENDSTATUS, ISSERVICE, ATTRIBUTES, "
+                                        + "DISPLAY, ISVPRICE, ISVERPATRIB, TEXTTIP, WARRANTY, "
+                                        + "STOCKUNITS, PRINTTO, SUPPLIER, UOM) "
+                                        + "VALUES (?, ?, ?, ?, ?, "
+                                        + "?, ?, ?, ?, ?,"
+                                        + "?, ?, ?, ?, ?,"
+                                        + "?, ?, ?, ?, ?, "
+                                        + "?, ?, ?, ?, ?, "
+                                        + "?, ?, ?, ?)";
                                     
                                     pstmt = con_target.prepareStatement(SQL);
                                     pstmt.setString(1, rs.getString("ID"));
@@ -1149,9 +1219,7 @@ public final class Transfer extends JPanel implements JPanelView {
                                     
                                     pstmt.executeUpdate();
                                 }       break;
-                            default:
-                                SQL = "SELECT * FROM products ";
-                                rs = stmt_source.executeQuery(SQL);
+                                default:
                                 while (rs.next()) {
                                     SQL = "INSERT INTO products("
                                             + "ID, REFERENCE, CODE, CODETYPE, NAME, "
@@ -1183,87 +1251,97 @@ public final class Transfer extends JPanel implements JPanelView {
                                     pstmt.setString(17, "<html><center>" + rs.getString("NAME"));                                    
                                     
                                     pstmt.executeUpdate();
-                                }       break;
+                            }       break;
                         }
-                    
+                    SQL = "UPDATE products set supplier = '0' WHERE supplier is null";
+                    pstmt.execute(SQL);                        
+                    rs.close();                                        
+
                     Dbtname="products_cat";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Products_Cat" + "\n");
-                        SQL = "SELECT * FROM products_cat";
-                        rs = stmt_source.executeQuery(SQL);
-
-                        while (rs.next()) {
-                            SQL = "INSERT INTO products_cat("
-                                + "PRODUCT, CATORDER) "
-                                + "VALUES (?, ?)";
-            
-                            pstmt = con_target.prepareStatement(SQL);
-                            pstmt.setString(1, rs.getString("PRODUCT"));
-                            pstmt.setInt(2, rs.getInt("CATORDER"));
                         
-                            pstmt.executeUpdate();                                
-                        }    
+                    txtOut.append("Products_Cat" + "\n");
+                    SQL = "SELECT * FROM products_cat";
+                    rs = stmt_source.executeQuery(SQL);
+
+                    while (rs.next()) {
+                        SQL = "INSERT INTO products_cat("
+                            + "PRODUCT, CATORDER) "
+                            + "VALUES (?, ?)";
+            
+                        pstmt = con_target.prepareStatement(SQL);
+                        pstmt.setString(1, rs.getString("PRODUCT"));
+                        pstmt.setInt(2, rs.getInt("CATORDER"));
+                        
+                        pstmt.executeUpdate();                                
+                    }    
+                    rs.close();                                        
                     
                     Dbtname="products_com";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Products_Com" + "\n");
-                        SQL = "SELECT * FROM products_com";
-                        rs = stmt_source.executeQuery(SQL);
-
-                        while (rs.next()) {
-                            SQL = "INSERT INTO products_com("
-                                + "ID, PRODUCT, PRODUCT2) "
-                                + "VALUES (?, ?, ?)";
-            
-                            pstmt = con_target.prepareStatement(SQL);
-                            pstmt.setString(1, rs.getString("ID"));
-                            pstmt.setString(2, rs.getString("PRODUCT"));
-                            pstmt.setString(3, rs.getString("PRODUCT2"));
                         
-                            pstmt.executeUpdate();
-                        }   
-                    
+                    txtOut.append("Products_Com" + "\n");
+                    SQL = "SELECT * FROM products_com";
+                    rs = stmt_source.executeQuery(SQL);
+
+                    while (rs.next()) {
+                        SQL = "INSERT INTO products_com("
+                            + "ID, PRODUCT, PRODUCT2) "
+                            + "VALUES (?, ?, ?)";
+            
+                        pstmt = con_target.prepareStatement(SQL);
+                        pstmt.setString(1, rs.getString("ID"));
+                        pstmt.setString(2, rs.getString("PRODUCT"));
+                        pstmt.setString(3, rs.getString("PRODUCT2"));
+                        
+                        pstmt.executeUpdate();
+                    }   
+                    rs.close();                                        
+
                     Dbtname="receipts";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+                        
                         txtOut.append("Receipts" + "\n");
                         SQL = "SELECT * FROM receipts";
                         rs = stmt_source.executeQuery(SQL);
 
-                    if (rs.getMetaData().getColumnCount() == 5) {
-                        while (rs.next()) {
-                            SQL = "INSERT INTO receipts("
-                                + "ID, MONEY, DATENEW, "
-                                + "ATTRIBUTES, PERSON) "
-                                + "VALUES (?, ?, ?, "
-                                + "?, ?)";
+                        if (rs.getMetaData().getColumnCount() == 5) {
+                            while (rs.next()) {
+                                SQL = "INSERT INTO receipts("
+                                    + "ID, MONEY, DATENEW, "
+                                    + "ATTRIBUTES, PERSON) "
+                                    + "VALUES (?, ?, ?, "
+                                    + "?, ?)";
             
-                            pstmt = con_target.prepareStatement(SQL);
-                            pstmt.setString(1, rs.getString("ID"));
-                            pstmt.setString(2, rs.getString("MONEY"));
-                            pstmt.setTimestamp(3, rs.getTimestamp("DATENEW"));
-                            pstmt.setBytes(4, rs.getBytes("ATTRIBUTES"));
-                            pstmt.setString(5, rs.getString("PERSON"));
+                                pstmt = con_target.prepareStatement(SQL);
+                                pstmt.setString(1, rs.getString("ID"));
+                                pstmt.setString(2, rs.getString("MONEY"));
+                                pstmt.setTimestamp(3, rs.getTimestamp("DATENEW"));
+                                pstmt.setBytes(4, rs.getBytes("ATTRIBUTES"));
+                                pstmt.setString(5, rs.getString("PERSON"));
                         
-                            pstmt.executeUpdate();
-                        }
-                    } else {
-                        while (rs.next()) {
-                            SQL = "INSERT INTO receipts("
-                                + "ID, MONEY, DATENEW, ATTRIBUTES) "
-                                + "VALUES (?, ?, ?, ?)";
+                                pstmt.executeUpdate();
+                            }
+                        } else {
+                            while (rs.next()) {
+                                SQL = "INSERT INTO receipts("
+                                    + "ID, MONEY, DATENEW, ATTRIBUTES) "
+                                    + "VALUES (?, ?, ?, ?)";
             
-                            pstmt = con_target.prepareStatement(SQL);
-                            pstmt.setString(1, rs.getString("ID"));
-                            pstmt.setString(2, rs.getString("MONEY"));
-                            pstmt.setTimestamp(3, rs.getTimestamp("DATENEW"));
-                            pstmt.setBytes(4, rs.getBytes("ATTRIBUTES"));
-                        
-                            pstmt.executeUpdate();
+                                pstmt = con_target.prepareStatement(SQL);
+                                pstmt.setString(1, rs.getString("ID"));
+                                pstmt.setString(2, rs.getString("MONEY"));
+                                pstmt.setTimestamp(3, rs.getTimestamp("DATENEW"));
+                                pstmt.setBytes(4, rs.getBytes("ATTRIBUTES"));
+                                
+                                pstmt.executeUpdate();
+                            }
                         }
-                    }
-                    
+                        rs.close();                                    
+
                     Dbtname="reservation_customers";
-                    rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+                        rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+                        
                         txtOut.append("Reservation_Customers" + "\n");
                         SQL = "SELECT * FROM reservation_customers";
                         rs = stmt_source.executeQuery(SQL);
@@ -1279,7 +1357,8 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }   
-                    
+                        rs.close();                                        
+
                     Dbtname="reservations";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Reservations" + "\n");
@@ -1304,18 +1383,19 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }   
+                    rs.close();                                        
 
-// Need to have v4.2 else new features not accessible so ID=0 Administrator stays
                     Dbtname="roles";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Roles" + "\n");
-                        SQL = "SELECT * FROM roles WHERE NOT ID='0' ";
-                        rs = stmt_source.executeQuery(SQL);
+                
+                    txtOut.append("Roles" + "\n");
+                    SQL = "SELECT * FROM roles WHERE NOT ID='0' ";
+                    rs = stmt_source.executeQuery(SQL);
 
-                        while (rs.next()) {
-                            SQL = "INSERT INTO roles("
-                            + "ID, NAME, PERMISSIONS) "
-                            + "VALUES (?, ?, ?)";
+                    while (rs.next()) {
+                        SQL = "INSERT INTO roles("
+                        + "ID, NAME, PERMISSIONS) "
+                        + "VALUES (?, ?, ?)";
             
                         pstmt = con_target.prepareStatement(SQL);
                         pstmt.setString(1, rs.getString("ID"));
@@ -1324,10 +1404,13 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                         pstmt.executeUpdate();
                     }
-                    
-                if (!jlblVersion.getText().startsWith("2")) {
-                    Dbtname="shift_breaks";
-                    rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+                    rs.close();                                    
+                        
+// introduced in 3.00
+                    if (Dbtversion >= 3.00) {
+                        Dbtname="shift_breaks";
+                        rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+                        
                         txtOut.append("Shift_breaks" + "\n");
                         SQL = "SELECT * FROM shift_breaks";
                         rs = stmt_source.executeQuery(SQL);
@@ -1351,32 +1434,36 @@ public final class Transfer extends JPanel implements JPanelView {
                     } else {
                         txtOut.append("Shift Breaks... skipped" + "\n");                            
                     }                        
+                    rs.close();                
                     
-                if (!jlblVersion.getText().startsWith("2")) {
+// introduced in 3.00
+                if (Dbtversion >= 3.00) {
                     Dbtname="shifts";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
-                        txtOut.append("Shifts" + "\n");
-                        SQL = "SELECT * FROM shifts";
-                        rs = stmt_source.executeQuery(SQL);
 
-                        while (rs.next()) {
-                            SQL = "INSERT INTO shifts("
-                                + "ID, STARTSHIFT, ENDSHIFT, PPLID) "
-                                + "VALUES (?, ?, ?, ?)";
+                    txtOut.append("Shifts" + "\n");
+                    SQL = "SELECT * FROM shifts";
+                    rs = stmt_source.executeQuery(SQL);
+
+                    while (rs.next()) {
+                        SQL = "INSERT INTO shifts("
+                            + "ID, STARTSHIFT, ENDSHIFT, PPLID) "
+                            + "VALUES (?, ?, ?, ?)";
             
-                            pstmt = con_target.prepareStatement(SQL);
-                            pstmt.setString(1, rs.getString("ID"));
-                            pstmt.setTimestamp(2, rs.getTimestamp("STARTSHIFT"));
-                            pstmt.setTimestamp(3, rs.getTimestamp("ENDSHIFT"));
-                            pstmt.setString(4, rs.getString("PPLID"));
+                        pstmt = con_target.prepareStatement(SQL);
+                        pstmt.setString(1, rs.getString("ID"));
+                        pstmt.setTimestamp(2, rs.getTimestamp("STARTSHIFT"));
+                        pstmt.setTimestamp(3, rs.getTimestamp("ENDSHIFT"));
+                        pstmt.setString(4, rs.getString("PPLID"));
                         
-                            pstmt.executeUpdate();
-                        }
-                    } else {
+                        pstmt.executeUpdate();
+                    }
+                } else {
                         txtOut.append("Shifts... skipped" + "\n");                            
-                    }                        
+                }                        
+                rs.close();                                
 
-                    Dbtname="stockcurrent";
+                Dbtname="stockcurrent";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Stockcurrent" + "\n");
                         SQL = "SELECT * FROM stockcurrent";
@@ -1397,9 +1484,9 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }
+                    rs.close();                                        
 
-                    
-                    Dbtname="stockdiary";
+                Dbtname="stockdiary";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Stockdiary" + "\n");
                         SQL = "SELECT * FROM stockdiary";
@@ -1450,6 +1537,7 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.executeUpdate();
                         }
                     }                                                
+                    rs.close();                
                     
                     Dbtname="stocklevel";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
@@ -1471,11 +1559,13 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.setDouble(5, rs.getDouble("STOCKMAXIMUM"));
                             pstmt.executeUpdate();
                         }    
+                    rs.close();                
+                    
+// introduced in 4
+                    if (Dbtversion >= 4.00) {
+                        Dbtname="suppliers";
+                        rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
 
-// v4 table
-                if (jlblVersion.getText().startsWith("4")) {
-                    Dbtname="suppliers";
-                    rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Suppliers" + "\n");
                         SQL = "SELECT * FROM suppliers";
                         rs = stmt_source.executeQuery(SQL);
@@ -1521,12 +1611,13 @@ public final class Transfer extends JPanel implements JPanelView {
                             pstmt.executeUpdate();
                         }
                     } else {
-                            SQL = "INSERT INTO suppliers("
-                                + "ID, NAME, SEARCHKEY)"
-                                + " VALUES ('0', 'uniCenta', 'unicenta')";
-                            pstmt.executeUpdate(SQL);                            
-                            txtOut.append("Added Supplier... uniCenta" + "\n");
+                        SQL = "INSERT INTO suppliers("
+                            + "ID, NAME, SEARCHKEY)"
+                            + " VALUES ('0', 'uniCenta', 'unicenta')";
+                        pstmt.executeUpdate(SQL);                            
+                        txtOut.append("Added Supplier... uniCenta" + "\n");
                     }
+                    rs.close();                                
 
                     Dbtname="taxcategories";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
@@ -1545,7 +1636,8 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }    
-                    
+                    rs.close();                                        
+
                     Dbtname="taxcustcategories";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Tax Customer Categories" + "\n");
@@ -1563,7 +1655,8 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }   
-                    
+                    rs.close();                                        
+
                     Dbtname="taxes";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Taxes" + "\n");
@@ -1589,7 +1682,8 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }   
-                    
+                    rs.close();                                        
+
                     Dbtname="taxlines";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("TaxLines" + "\n");
@@ -1610,7 +1704,8 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }   
-                    
+                    rs.close();                                        
+
                     Dbtname="thirdparties";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("ThirdParties" + "\n");
@@ -1645,7 +1740,8 @@ public final class Transfer extends JPanel implements JPanelView {
    
                             pstmt.executeUpdate();
                         }    
-                    
+                    rs.close();                                        
+
                     Dbtname="ticketlines";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("TicketLines" + "\n");
@@ -1671,7 +1767,8 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }   
-                    
+                    rs.close();                                        
+
                     Dbtname="tickets";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Tickets" + "\n");
@@ -1695,19 +1792,25 @@ public final class Transfer extends JPanel implements JPanelView {
                         
                             pstmt.executeUpdate();
                         }    
-                    
+                    rs.close();                                        
+
                     Dbtname="ticketsnum";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Tickets Number" + "\n");
                         SQL = "SELECT * FROM ticketsnum";
                         rs = stmt_source.executeQuery(SQL);
-
+                        
                         while (rs.next()) {
                             ticketsnum = rs.getString("ID");
                         }                          
-                        SQL = "UPDATE ticketsnum SET ID=" + ticketsnum;
-                        stmt_target.executeUpdate(SQL);        
-
+                        if (ticketsnum != null) {
+                            SQL = "UPDATE ticketsnum SET ID=" + ticketsnum;
+                        } else {
+                            SQL = "UPDATE ticketsnum SET ID='1'";                            
+                        }
+                        stmt_target.executeUpdate(SQL);                        
+                    rs.close();                
+                    
                     Dbtname="ticketsnum_payment";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Tickets Number Payments" + "\n");
@@ -1717,10 +1820,14 @@ public final class Transfer extends JPanel implements JPanelView {
                         while (rs.next()) {
                             ticketsnumPayment = rs.getString("ID");
                         }                          
-                        SQL = "UPDATE ticketsnum_payment SET ID=" + ticketsnumPayment;
-
+                        if (ticketsnumPayment != null) {
+                            SQL = "UPDATE ticketsnum_payment SET ID=" + ticketsnumPayment;
+                        } else {
+                            SQL = "UPDATE ticketsnum_payment SET ID='1'";                            
+                        }
                         stmt_target.executeUpdate(SQL);
-
+                    rs.close();                
+                    
                     Dbtname="ticketsnum_refund";
                     rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("Tickets Number Refunds" + "\n");
@@ -1730,67 +1837,73 @@ public final class Transfer extends JPanel implements JPanelView {
                         while (rs.next()) {
                             ticketsnumRefund = rs.getString("ID");
                         }                          
-                        SQL = "UPDATE ticketsnum_refund SET ID=" + ticketsnumRefund;
-
+                        if (ticketsnumRefund != null) {
+                            SQL = "UPDATE ticketsnum_refund SET ID=" + ticketsnumRefund;
+                        } else {
+                            SQL = "UPDATE ticketsnum_refund SET ID='1'";                            
+                        }
                         stmt_target.executeUpdate(SQL);   
-                    
-//  v4 table
-                if (jlblVersion.getText().startsWith("4")) {
-                    Dbtname="uom";
-                    rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
+                    rs.close();                                    
+// introduced in 4
+                    if (Dbtversion >= 4.00) {
+                        Dbtname="uom";
+                        rs = con_source.getMetaData().getTables(null,null,Dbtname,null);
                         txtOut.append("UOM" + "\n");
                         SQL = "SELECT * FROM uom";
                         rs = stmt_source.executeQuery(SQL);
                     
-                    while (rs.next()) {
-                        SQL = "INSERT INTO uom("
+                        while (rs.next()) {
+                            SQL = "INSERT INTO uom("
                                 + "id, name) "
                                 + "VALUES (?, ?)";
-                        pstmt = con_target.prepareStatement(SQL);
-                        pstmt.setString(1, rs.getString("id"));
-                        pstmt.setString(2, rs.getString("name"));
+                            pstmt = con_target.prepareStatement(SQL);
+                            pstmt.setString(1, rs.getString("id"));
+                            pstmt.setString(2, rs.getString("name"));
 
-                        pstmt.executeUpdate();
-                    }
-                } else {
-                    SQL = "INSERT INTO uom("
-                        + "ID, NAME)"
+                            pstmt.executeUpdate();
+                        }
+                    } else {
+                        SQL = "INSERT INTO uom("
+                            + "ID, NAME)"
                         + " VALUES ('0', 'Each')";
-                    pstmt.executeUpdate(SQL);                            
-                    txtOut.append("Added UOM... Each" + "\n");                    
-                }                    
 
-                if (jlblVersion.getText().startsWith("4")) {
-                    Dbtname="vouchers";
-                    rs = con_source.getMetaData().getTables(null,null,Dbtname,null);                    
-                    txtOut.append("Vouchers" + "\n");                    
-                    SQL = "SELECT * FROM vouchers";
-                    rs = stmt_source.executeQuery(SQL);
+                        pstmt.executeUpdate(SQL);                            
+                        txtOut.append("Added UOM... Each" + "\n");                    
+                    }                    
 
-                    while (rs.next()) {
-                        SQL = "INSERT INTO vouchers("
+                    if (Dbtversion >= 4.00) {
+                        Dbtname="vouchers";
+                        rs = con_source.getMetaData().getTables(null,null,Dbtname,null);                    
+
+                        txtOut.append("Vouchers" + "\n");                    
+                        SQL = "SELECT * FROM vouchers";
+                        rs = stmt_source.executeQuery(SQL);
+
+                        while (rs.next()) {
+                            SQL = "INSERT INTO vouchers("
                                 + "id, voucher_number, customer, "
                                 + "amount, status) "
                                 + "VALUES (?, ?, ?, "
                                 + "?, ?)";
-                        pstmt = con_target.prepareStatement(SQL);
-                        pstmt.setString(1, rs.getString("id"));
-                        pstmt.setString(2, rs.getString("voucher_number"));
-                        pstmt.setString(3, rs.getString("customer"));
-                        pstmt.setDouble(4, rs.getDouble("amount"));
-                        pstmt.setString(5, rs.getString("status"));
+                            pstmt = con_target.prepareStatement(SQL);
+                            pstmt.setString(1, rs.getString("id"));
+                            pstmt.setString(2, rs.getString("voucher_number"));
+                            pstmt.setString(3, rs.getString("customer"));
+                            pstmt.setDouble(4, rs.getDouble("amount"));
+                            pstmt.setString(5, rs.getString("status"));
 
-                        pstmt.executeUpdate();
-                    } 
-                } else {
-                    txtOut.append("Vouchers... skipped" + "\n");                        
-                }
+                            pstmt.executeUpdate();
+                        } 
+                    } else {
+                        txtOut.append("Vouchers... skipped" + "\n");                        
+                    }
+                    rs.close();                                
 
-                try {                  
-                    this.con_target.setAutoCommit(true);
-                } catch (SQLException ex) {
-                    Logger.getLogger(Transfer.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                    try {                  
+                        this.con_target.setAutoCommit(true);
+                    } catch (SQLException ex) {
+                        Logger.getLogger(Transfer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
             
 // Add ForeignKeys                   
                 JOptionPane.showMessageDialog(this
@@ -1800,6 +1913,13 @@ public final class Transfer extends JPanel implements JPanelView {
                     
                     FKeys();
                     txtOut.append("Data Transfer Complete" + "\n");
+
+//                  lEndTime = System.nanoTime();
+//                  lElapsedTime = lEndTime - lStartTime;
+//                  System.out.println("End : " + lEndTime);
+//                  System.out.println("Elapsed : " + lElapsedTime);
+//                    jLblEndTime.setText(Long.toString(lEndTime));
+//                    jLblElapsedTime.setText(Long.toString(lElapsedTime));
                     
                     webPBar.setString("Finished!");
                     webPBar.setBgBottom(Color.GREEN);                    
@@ -1811,6 +1931,8 @@ public final class Transfer extends JPanel implements JPanelView {
                         , JOptionPane.WARNING_MESSAGE);                    
                                         
                 } catch (SQLException | HeadlessException e) {
+                    session_source.close();                    
+                    
                     JMessageDialog.showMessage(this, new MessageInf(MessageInf.SGN_WARNING, SQL, e));
                 }
             } else {
@@ -1821,10 +1943,79 @@ public final class Transfer extends JPanel implements JPanelView {
                         , JOptionPane.WARNING_MESSAGE);
             }
 
+            SQL = "COMMIT;\n" +
+                "SET autocommit=1;\n" +
+                "SET unique_checks=1;\n" +
+                "SET foreign_key_checks=1;";
+            pstmt.executeUpdate(SQL);                            
+
             session_source.close();
         }
     }
-       
+
+    public void fillSchema() {
+        /* Use existing session credentials but declare new session and connection 
+         * to keep separated from current session instance as database could
+         * be a different server
+        */
+
+        if (jCBSchema.getItemCount() >= 1 ) {
+            jCBSchema.removeAllItems();
+        }    
+        
+        try {
+            String driverlib = jtxtDbDriverLib.getText();
+            String driver = jtxtDbDriver.getText();
+            String url = jtxtDbType.getText() + 
+                jtxtDbServerPort.getText() + 
+                jtxtDbName.getText() +
+                jtxtDbParams.getText();
+            String user = txtDbUser.getText();
+            String password = new String(txtDbPass.getPassword());
+
+            ClassLoader cloader = new URLClassLoader(new URL[] {
+                new File(driverlib).toURI().toURL()
+            });
+            
+            DriverManager.registerDriver(
+                new DriverWrapper((Driver) 
+                Class.forName(driver, true, cloader).newInstance()));
+                
+            Session session1 = new Session(url, user, password);
+            Connection connection1 = session1.getConnection();
+            ResultSet rs = connection1.getMetaData().getCatalogs();
+
+            while (rs.next()) {
+                jCBSchema.addItem(rs.getString("TABLE_CAT"));
+            }
+            
+            jCBSchema.setEnabled(true);
+            jCBSchema.setSelectedIndex(0);
+        } catch (MalformedURLException | ClassNotFoundException | SQLException 
+                | InstantiationException | IllegalAccessException ex) {
+            Logger.getLogger(Transfer.class.getName()).log(Level.SEVERE, null, ex);
+        } 
+    }
+
+    public void reset() {
+// Main Panel
+        jtxtDbDriver.setText("com.mysql.jdbc.Driver");
+        jtxtDbType.setText("jdbc:mysql://");
+        jtxtDbServerPort.setText("localhost:3306/");
+        txtDbUser.setText(null);
+        txtDbPass.setText(null);
+        jbtnConnect.setEnabled(true);
+    
+// TransferPanel
+        jCBSchema.removeAllItems();
+        jtxtDbName.setText(null);
+        jtxtDbParams.setText("?zeroDateTimeBehavior=convertToNull");
+        jlblVersion.setText(null);
+        jlblDBSize.setText(null);
+
+        jTransferPanel.setVisible(false);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -1837,30 +2028,43 @@ public final class Transfer extends JPanel implements JPanelView {
         jLabel18 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
-        webPanel2 = new com.alee.laf.panel.WebPanel();
         cbSource = new com.alee.laf.combobox.WebComboBox();
         jtxtDbDriverLib = new com.alee.laf.text.WebTextField();
         jbtnDbDriverLib = new javax.swing.JButton();
         jtxtDbDriver = new com.alee.laf.text.WebTextField();
-        jtxtDbURL = new com.alee.laf.text.WebTextField();
-        jlblVersion = new javax.swing.JLabel();
+        jtxtDbType = new com.alee.laf.text.WebTextField();
         txtDbUser = new com.alee.laf.text.WebTextField();
         txtDbPass = new com.alee.laf.text.WebPasswordField();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtOut = new javax.swing.JTextArea();
         jLabel8 = new javax.swing.JLabel();
         jlblSource = new javax.swing.JLabel();
-        jbtnExit = new javax.swing.JButton();
-        jtxtDbName = new com.alee.laf.text.WebTextField();
         jLabel9 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
-        jbtnTest = new javax.swing.JButton();
-        jbtnTransfer = new javax.swing.JButton();
+        jbtnConnect = new javax.swing.JButton();
         webPBar = new com.alee.laf.progressbar.WebProgressBar();
+        jtxtDbServerPort = new com.alee.laf.text.WebTextField();
+        jLabel12 = new javax.swing.JLabel();
+        jTransferPanel = new javax.swing.JPanel();
+        jLabel13 = new javax.swing.JLabel();
+        jCBSchema = new javax.swing.JComboBox<>();
+        jLabel14 = new javax.swing.JLabel();
+        jtxtDbParams = new com.alee.laf.text.WebTextField();
+        jLabel7 = new javax.swing.JLabel();
+        jlblVersion = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        jlblDBSize = new javax.swing.JLabel();
+        jtxtDbName = new com.alee.laf.text.WebTextField();
+        jbtnTransfer = new javax.swing.JButton();
+        webMemoryBar = new com.alee.extended.statusbar.WebMemoryBar();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
+        jbtnSet = new javax.swing.JButton();
+        jbtnReset1 = new javax.swing.JButton();
+        jbtnReset = new javax.swing.JButton();
+        jLabel16 = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 255));
         setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
@@ -1890,17 +2094,10 @@ public final class Transfer extends JPanel implements JPanelView {
 
         jLabel2.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(102, 102, 102));
-        jLabel2.setText("URL");
+        jLabel2.setText("Type");
         jLabel2.setMaximumSize(new java.awt.Dimension(150, 30));
         jLabel2.setMinimumSize(new java.awt.Dimension(150, 30));
         jLabel2.setPreferredSize(new java.awt.Dimension(160, 30));
-
-        jLabel7.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel7.setForeground(new java.awt.Color(102, 102, 102));
-        jLabel7.setText("DB Version");
-        jLabel7.setMaximumSize(new java.awt.Dimension(150, 30));
-        jLabel7.setMinimumSize(new java.awt.Dimension(150, 30));
-        jLabel7.setPreferredSize(new java.awt.Dimension(160, 30));
 
         jLabel3.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(102, 102, 102));
@@ -1914,25 +2111,12 @@ public final class Transfer extends JPanel implements JPanelView {
         jLabel4.setText(AppLocal.getIntString("label.DbPassword")); // NOI18N
         jLabel4.setMaximumSize(new java.awt.Dimension(150, 30));
         jLabel4.setMinimumSize(new java.awt.Dimension(150, 30));
-        jLabel4.setPreferredSize(new java.awt.Dimension(160, 30));
+        jLabel4.setPreferredSize(new java.awt.Dimension(100, 30));
 
         jLabel6.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
         jLabel6.setForeground(new java.awt.Color(51, 51, 51));
-        jLabel6.setText("TRANSFER TO :");
+        jLabel6.setText("Currently connected to :");
         jLabel6.setPreferredSize(new java.awt.Dimension(150, 30));
-
-        webPanel2.setBackground(new java.awt.Color(255, 255, 255));
-
-        javax.swing.GroupLayout webPanel2Layout = new javax.swing.GroupLayout(webPanel2);
-        webPanel2.setLayout(webPanel2Layout);
-        webPanel2Layout.setHorizontalGroup(
-            webPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 270, Short.MAX_VALUE)
-        );
-        webPanel2Layout.setVerticalGroup(
-            webPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 51, Short.MAX_VALUE)
-        );
 
         cbSource.setForeground(new java.awt.Color(51, 51, 51));
         cbSource.setToolTipText(bundle.getString("tooltip.transferfromdb")); // NOI18N
@@ -1947,7 +2131,7 @@ public final class Transfer extends JPanel implements JPanelView {
         jtxtDbDriverLib.setForeground(new java.awt.Color(51, 51, 51));
         jtxtDbDriverLib.setToolTipText(bundle.getString("tootltip.transferlib")); // NOI18N
         jtxtDbDriverLib.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jtxtDbDriverLib.setPreferredSize(new java.awt.Dimension(370, 30));
+        jtxtDbDriverLib.setPreferredSize(new java.awt.Dimension(360, 30));
 
         jbtnDbDriverLib.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/fileopen.png"))); // NOI18N
         jbtnDbDriverLib.setToolTipText(bundle.getString("tooltip.openfile")); // NOI18N
@@ -1958,30 +2142,22 @@ public final class Transfer extends JPanel implements JPanelView {
         jtxtDbDriver.setForeground(new java.awt.Color(51, 51, 51));
         jtxtDbDriver.setToolTipText(bundle.getString("tootltip.transferclass")); // NOI18N
         jtxtDbDriver.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jtxtDbDriver.setPreferredSize(new java.awt.Dimension(370, 30));
+        jtxtDbDriver.setPreferredSize(new java.awt.Dimension(360, 30));
 
-        jtxtDbURL.setForeground(new java.awt.Color(51, 51, 51));
-        jtxtDbURL.setToolTipText(bundle.getString("tootltip.transferdbname")); // NOI18N
-        jtxtDbURL.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jtxtDbURL.setPreferredSize(new java.awt.Dimension(370, 30));
-
-        jlblVersion.setFont(new java.awt.Font("Arial", 1, 16)); // NOI18N
-        jlblVersion.setForeground(new java.awt.Color(0, 204, 255));
-        jlblVersion.setToolTipText(bundle.getString("tooltip.transferdbversion")); // NOI18N
-        jlblVersion.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 204, 255)));
-        jlblVersion.setMaximumSize(new java.awt.Dimension(150, 30));
-        jlblVersion.setMinimumSize(new java.awt.Dimension(150, 30));
-        jlblVersion.setPreferredSize(new java.awt.Dimension(100, 30));
+        jtxtDbType.setForeground(new java.awt.Color(51, 51, 51));
+        jtxtDbType.setToolTipText(bundle.getString("tootltip.transferdbtype")); // NOI18N
+        jtxtDbType.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jtxtDbType.setPreferredSize(new java.awt.Dimension(150, 30));
 
         txtDbUser.setForeground(new java.awt.Color(51, 51, 51));
         txtDbUser.setToolTipText(bundle.getString("tooltip.dbuser")); // NOI18N
         txtDbUser.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        txtDbUser.setPreferredSize(new java.awt.Dimension(370, 30));
+        txtDbUser.setPreferredSize(new java.awt.Dimension(125, 30));
 
         txtDbPass.setForeground(new java.awt.Color(51, 51, 51));
         txtDbPass.setToolTipText(bundle.getString("tooltip.dbpassword")); // NOI18N
         txtDbPass.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        txtDbPass.setPreferredSize(new java.awt.Dimension(370, 30));
+        txtDbPass.setPreferredSize(new java.awt.Dimension(125, 30));
 
         jScrollPane1.setBorder(null);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -2008,28 +2184,6 @@ public final class Transfer extends JPanel implements JPanelView {
         jlblSource.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jlblSource.setPreferredSize(new java.awt.Dimension(150, 30));
 
-        jbtnExit.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
-        jbtnExit.setText(AppLocal.getIntString("Button.Exit")); // NOI18N
-        jbtnExit.setToolTipText(bundle.getString("tooltip.exit")); // NOI18N
-        jbtnExit.setMaximumSize(new java.awt.Dimension(70, 33));
-        jbtnExit.setMinimumSize(new java.awt.Dimension(70, 33));
-        jbtnExit.setPreferredSize(new java.awt.Dimension(80, 45));
-        jbtnExit.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbtnExitActionPerformed(evt);
-            }
-        });
-
-        jtxtDbName.setForeground(new java.awt.Color(51, 51, 51));
-        jtxtDbName.setToolTipText(bundle.getString("tooltip.dbname")); // NOI18N
-        jtxtDbName.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jtxtDbName.setPreferredSize(new java.awt.Dimension(370, 30));
-        jtxtDbName.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                jtxtDbNameFocusLost(evt);
-            }
-        });
-
         jLabel9.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel9.setForeground(new java.awt.Color(102, 102, 102));
         jLabel9.setText(AppLocal.getIntString("label.DbUser")); // NOI18N
@@ -2037,28 +2191,110 @@ public final class Transfer extends JPanel implements JPanelView {
         jLabel9.setMinimumSize(new java.awt.Dimension(150, 30));
         jLabel9.setPreferredSize(new java.awt.Dimension(160, 30));
 
-        jLabel10.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel10.setForeground(new java.awt.Color(102, 102, 102));
-        jLabel10.setText(AppLocal.getIntString("label.DbName")); // NOI18N
-        jLabel10.setMaximumSize(new java.awt.Dimension(150, 30));
-        jLabel10.setMinimumSize(new java.awt.Dimension(150, 30));
-        jLabel10.setPreferredSize(new java.awt.Dimension(160, 30));
-
-        jbtnTest.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jbtnTest.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/database.png"))); // NOI18N
-        jbtnTest.setText(bundle.getString("Button.Test")); // NOI18N
-        jbtnTest.setToolTipText(bundle.getString("tooltip.dbtest")); // NOI18N
-        jbtnTest.setActionCommand(bundle.getString("Button.Test")); // NOI18N
-        jbtnTest.setPreferredSize(new java.awt.Dimension(160, 45));
-        jbtnTest.addActionListener(new java.awt.event.ActionListener() {
+        jbtnConnect.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jbtnConnect.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/btn1.png"))); // NOI18N
+        jbtnConnect.setText(bundle.getString("Button.Test")); // NOI18N
+        jbtnConnect.setToolTipText(bundle.getString("tooltip.dbtest")); // NOI18N
+        jbtnConnect.setActionCommand(bundle.getString("Button.Test")); // NOI18N
+        jbtnConnect.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jbtnConnect.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        jbtnConnect.setPreferredSize(new java.awt.Dimension(160, 45));
+        jbtnConnect.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbtnTestjButtonTestConnectionActionPerformed(evt);
+                jbtnConnectjButtonTestConnectionActionPerformed(evt);
             }
         });
 
-        jbtnTransfer.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        webPBar.setFont(new java.awt.Font("Arial", 0, 13)); // NOI18N
+        webPBar.setHighlightDarkWhite(new java.awt.Color(204, 0, 0));
+        webPBar.setPreferredSize(new java.awt.Dimension(240, 30));
+        webPBar.setProgressBottomColor(new java.awt.Color(0, 153, 255));
+
+        jtxtDbServerPort.setForeground(new java.awt.Color(51, 51, 51));
+        jtxtDbServerPort.setToolTipText(bundle.getString("tootltip.servernameport")); // NOI18N
+        jtxtDbServerPort.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jtxtDbServerPort.setPreferredSize(new java.awt.Dimension(360, 30));
+
+        jLabel12.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel12.setForeground(new java.awt.Color(102, 102, 102));
+        jLabel12.setText(bundle.getString("labelServerPort")); // NOI18N
+        jLabel12.setMaximumSize(new java.awt.Dimension(150, 30));
+        jLabel12.setMinimumSize(new java.awt.Dimension(150, 30));
+        jLabel12.setPreferredSize(new java.awt.Dimension(160, 30));
+
+        jLabel13.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel13.setForeground(new java.awt.Color(102, 102, 102));
+        jLabel13.setText(bundle.getString("label.DbSource")); // NOI18N
+        jLabel13.setMaximumSize(new java.awt.Dimension(150, 30));
+        jLabel13.setMinimumSize(new java.awt.Dimension(150, 30));
+        jLabel13.setPreferredSize(new java.awt.Dimension(160, 30));
+
+        jCBSchema.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jCBSchema.setToolTipText(bundle.getString("tootltip.transferdbname")); // NOI18N
+        jCBSchema.setEnabled(false);
+        jCBSchema.setPreferredSize(new java.awt.Dimension(360, 30));
+
+        jLabel14.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel14.setForeground(new java.awt.Color(102, 102, 102));
+        jLabel14.setText(bundle.getString("label.DBParameters")); // NOI18N
+        jLabel14.setMaximumSize(new java.awt.Dimension(150, 30));
+        jLabel14.setMinimumSize(new java.awt.Dimension(150, 30));
+        jLabel14.setPreferredSize(new java.awt.Dimension(160, 30));
+
+        jtxtDbParams.setForeground(new java.awt.Color(51, 51, 51));
+        jtxtDbParams.setToolTipText(bundle.getString("tootltip.transferdbparams")); // NOI18N
+        jtxtDbParams.setEnabled(false);
+        jtxtDbParams.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jtxtDbParams.setPreferredSize(new java.awt.Dimension(360, 30));
+
+        jLabel7.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel7.setForeground(new java.awt.Color(102, 102, 102));
+        jLabel7.setText("DB Version");
+        jLabel7.setMaximumSize(new java.awt.Dimension(150, 30));
+        jLabel7.setMinimumSize(new java.awt.Dimension(150, 30));
+        jLabel7.setPreferredSize(new java.awt.Dimension(160, 30));
+
+        jlblVersion.setFont(new java.awt.Font("Arial", 0, 16)); // NOI18N
+        jlblVersion.setForeground(new java.awt.Color(0, 204, 255));
+        jlblVersion.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jlblVersion.setToolTipText(bundle.getString("tooltip.transferdbversion")); // NOI18N
+        jlblVersion.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 204, 255)));
+        jlblVersion.setEnabled(false);
+        jlblVersion.setMaximumSize(new java.awt.Dimension(150, 30));
+        jlblVersion.setMinimumSize(new java.awt.Dimension(150, 30));
+        jlblVersion.setPreferredSize(new java.awt.Dimension(125, 30));
+
+        jLabel11.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel11.setForeground(new java.awt.Color(102, 102, 102));
+        jLabel11.setText("DB Size");
+        jLabel11.setMaximumSize(new java.awt.Dimension(150, 30));
+        jLabel11.setMinimumSize(new java.awt.Dimension(150, 30));
+        jLabel11.setPreferredSize(new java.awt.Dimension(100, 30));
+
+        jlblDBSize.setFont(new java.awt.Font("Arial", 0, 16)); // NOI18N
+        jlblDBSize.setForeground(new java.awt.Color(0, 204, 255));
+        jlblDBSize.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jlblDBSize.setToolTipText(bundle.getString("tooltip.transferdbsize")); // NOI18N
+        jlblDBSize.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 204, 255)));
+        jlblDBSize.setEnabled(false);
+        jlblDBSize.setMaximumSize(new java.awt.Dimension(150, 30));
+        jlblDBSize.setMinimumSize(new java.awt.Dimension(150, 30));
+        jlblDBSize.setPreferredSize(new java.awt.Dimension(120, 30));
+
+        jtxtDbName.setForeground(new java.awt.Color(51, 51, 51));
+        jtxtDbName.setToolTipText(bundle.getString("tootltip.transferdbname")); // NOI18N
+        jtxtDbName.setEnabled(false);
+        jtxtDbName.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jtxtDbName.setOpaque(true);
+        jtxtDbName.setPreferredSize(new java.awt.Dimension(0, 0));
+
+        jbtnTransfer.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jbtnTransfer.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/btn3.png"))); // NOI18N
         jbtnTransfer.setText(AppLocal.getIntString("button.transfer")); // NOI18N
         jbtnTransfer.setToolTipText(bundle.getString("tooltip.transferdb")); // NOI18N
+        jbtnTransfer.setEnabled(false);
+        jbtnTransfer.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jbtnTransfer.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         jbtnTransfer.setMaximumSize(new java.awt.Dimension(70, 33));
         jbtnTransfer.setMinimumSize(new java.awt.Dimension(70, 33));
         jbtnTransfer.setPreferredSize(new java.awt.Dimension(160, 45));
@@ -2068,10 +2304,146 @@ public final class Transfer extends JPanel implements JPanelView {
             }
         });
 
-        webPBar.setFont(new java.awt.Font("Arial", 0, 13)); // NOI18N
-        webPBar.setHighlightDarkWhite(new java.awt.Color(204, 0, 0));
-        webPBar.setPreferredSize(new java.awt.Dimension(240, 30));
-        webPBar.setProgressBottomColor(new java.awt.Color(0, 153, 255));
+        webMemoryBar.setBackground(new java.awt.Color(153, 153, 153));
+        webMemoryBar.setText("Text");
+        webMemoryBar.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        webMemoryBar.setPreferredSize(new java.awt.Dimension(150, 30));
+        webMemoryBar.setUsedBorderColor(new java.awt.Color(0, 204, 204));
+        webMemoryBar.setUsedFillColor(new java.awt.Color(0, 204, 255));
+
+        jLabel10.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel10.setForeground(new java.awt.Color(102, 102, 102));
+        jLabel10.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel10.setText("Memory State");
+        jLabel10.setMaximumSize(new java.awt.Dimension(150, 30));
+        jLabel10.setMinimumSize(new java.awt.Dimension(150, 30));
+        jLabel10.setPreferredSize(new java.awt.Dimension(160, 30));
+
+        jLabel15.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
+        jLabel15.setForeground(new java.awt.Color(0, 153, 255));
+        jLabel15.setText("CHOOSE DATABASE TO TRANSFER FROM");
+        jLabel15.setPreferredSize(new java.awt.Dimension(150, 30));
+
+        jbtnSet.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jbtnSet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/btn2.png"))); // NOI18N
+        jbtnSet.setText(AppLocal.getIntString("button.setTransfer")); // NOI18N
+        jbtnSet.setToolTipText(bundle.getString("tooltip.checkTransfer")); // NOI18N
+        jbtnSet.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jbtnSet.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        jbtnSet.setMaximumSize(new java.awt.Dimension(70, 33));
+        jbtnSet.setMinimumSize(new java.awt.Dimension(70, 33));
+        jbtnSet.setPreferredSize(new java.awt.Dimension(160, 45));
+        jbtnSet.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jbtnSetActionPerformed(evt);
+            }
+        });
+
+        jbtnReset1.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jbtnReset1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/reload.png"))); // NOI18N
+        jbtnReset1.setToolTipText(bundle.getString("tooltip.transferReset")); // NOI18N
+        jbtnReset1.setMaximumSize(new java.awt.Dimension(70, 33));
+        jbtnReset1.setMinimumSize(new java.awt.Dimension(70, 33));
+        jbtnReset1.setPreferredSize(new java.awt.Dimension(80, 45));
+        jbtnReset1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jbtnReset1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jTransferPanelLayout = new javax.swing.GroupLayout(jTransferPanel);
+        jTransferPanel.setLayout(jTransferPanelLayout);
+        jTransferPanelLayout.setHorizontalGroup(
+            jTransferPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jTransferPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jTransferPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jTransferPanelLayout.createSequentialGroup()
+                        .addGroup(jTransferPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jtxtDbName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(7, 7, 7)
+                        .addGroup(jTransferPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addGroup(jTransferPanelLayout.createSequentialGroup()
+                                .addComponent(jlblVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jlblDBSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jTransferPanelLayout.createSequentialGroup()
+                                .addComponent(jbtnSet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jbtnTransfer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jbtnReset1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jTransferPanelLayout.createSequentialGroup()
+                        .addGroup(jTransferPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jTransferPanelLayout.createSequentialGroup()
+                                .addGroup(jTransferPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addGroup(jTransferPanelLayout.createSequentialGroup()
+                                        .addComponent(jLabel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jCBSchema, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(jLabel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jTransferPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(webMemoryBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(jTransferPanelLayout.createSequentialGroup()
+                                .addComponent(jLabel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jtxtDbParams, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        jTransferPanelLayout.setVerticalGroup(
+            jTransferPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jTransferPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jTransferPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jTransferPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jCBSchema, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(webMemoryBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jTransferPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jtxtDbParams, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jTransferPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jlblVersion, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel11, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jlblDBSize, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jTransferPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jTransferPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jbtnTransfer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jbtnSet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jtxtDbName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jbtnReset1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+
+        jbtnReset.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jbtnReset.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/reload.png"))); // NOI18N
+        jbtnReset.setToolTipText(bundle.getString("tooltip.transferReset")); // NOI18N
+        jbtnReset.setMaximumSize(new java.awt.Dimension(70, 33));
+        jbtnReset.setMinimumSize(new java.awt.Dimension(70, 33));
+        jbtnReset.setPreferredSize(new java.awt.Dimension(80, 45));
+        jbtnReset.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jbtnResetActionPerformed(evt);
+            }
+        });
+
+        jLabel16.setFont(new java.awt.Font("Arial", 0, 18)); // NOI18N
+        jLabel16.setForeground(new java.awt.Color(153, 153, 153));
+        jLabel16.setText("SET SERVER TO CONNECT TO");
+        jLabel16.setPreferredSize(new java.awt.Dimension(150, 30));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -2081,124 +2453,126 @@ public final class Transfer extends JPanel implements JPanelView {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jlblSource, javax.swing.GroupLayout.PREFERRED_SIZE, 470, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel9, 0, 0, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jtxtDbName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(cbSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(160, 160, 160)
-                                .addComponent(jbtnTest, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jbtnTransfer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jbtnExit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtDbPass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtDbUser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jlblVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(webPBar, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel18, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jtxtDbURL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jlblSource, javax.swing.GroupLayout.PREFERRED_SIZE, 316, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel9, 0, 0, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jTransferPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jtxtDbDriverLib, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jbtnDbDriverLib, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jtxtDbDriver, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(webPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(cbSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jtxtDbType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(jtxtDbServerPort, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jLabel18, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jtxtDbDriver, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(jtxtDbDriverLib, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(jbtnDbDriverLib, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(jbtnConnect, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(txtDbUser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(txtDbPass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGap(213, 213, 213)
+                                                .addComponent(jbtnReset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                .addGap(14, 14, 14))))
+                    .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(webPBar, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(webPBar, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jlblSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(webPBar, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jlblSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(cbSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jtxtDbName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(cbSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                                        .addComponent(jLabel18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(jtxtDbDriverLib, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(jbtnDbDriverLib, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jtxtDbDriver, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jtxtDbType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jtxtDbServerPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtDbUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtDbPass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jbtnConnect, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jbtnReset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                            .addComponent(jLabel18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jtxtDbDriverLib, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jbtnDbDriverLib, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jtxtDbDriver, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jtxtDbURL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtDbUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtDbPass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jlblVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(12, 12, 12)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jbtnTest, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jbtnTransfer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jbtnExit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(webPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jTransferPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
         );
 
         jLabel1.getAccessibleContext().setAccessibleName("DBDriver");
     }// </editor-fold>//GEN-END:initComponents
 
     private void jbtnTransferActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnTransferActionPerformed
-// csvimport & sharedtickets are transient tables and so not transferred
-// v4 tables and later are not transferred
+
         if (JOptionPane.showConfirmDialog(this, 
                 AppLocal.getIntString("message.transfer"), 
                 AppLocal.getIntString("message.transfertitle"), 
@@ -2213,137 +2587,270 @@ public final class Transfer extends JPanel implements JPanelView {
                     doTransfer();       
                     return null;
                 }
-                
             };
             
             worker.execute();
             
         }
+        System.gc();
 
     }//GEN-LAST:event_jbtnTransferActionPerformed
 
-    private void jbtnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnExitActionPerformed
+    private void jbtnResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnResetActionPerformed
 
-        session_source.close();
-
+        reset();
         deactivate();
         
-    }//GEN-LAST:event_jbtnExitActionPerformed
+    }//GEN-LAST:event_jbtnResetActionPerformed
 
-    private void jbtnTestjButtonTestConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnTestjButtonTestConnectionActionPerformed
+    private void jbtnConnectjButtonTestConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnConnectjButtonTestConnectionActionPerformed
+
+        if (!jtxtDbName.getText().equalsIgnoreCase(jlblSource.getText())) {
+            try {
+                String driverlib = jtxtDbDriverLib.getText();
+                String driver = jtxtDbDriver.getText();
+                
+                if ("Derby".equals(cbSource.getSelectedItem())) {
+                    jtxtDbName.setText("/unicentaopos-database");
+                }
+                
+                String url = jtxtDbType.getText() + 
+                jtxtDbServerPort.getText() + 
+                jtxtDbName.getText() +
+                jtxtDbParams.getText();
+                String user = txtDbUser.getText();
+                String password = new String(txtDbPass.getPassword());
+
+                ClassLoader cloader = new URLClassLoader(new URL[] {
+                    new File(driverlib).toURI().toURL()
+                });
+            
+                DriverManager.registerDriver(
+                    new DriverWrapper((Driver) 
+                        Class.forName(driver, true, cloader).newInstance()));
+                
+                Session session_source = new Session(url, user, password);
+                Connection connection = session_source.getConnection();
+                boolean isValid = (connection == null) 
+                    ? false : connection.isValid(1000);
+
+                if (isValid) {
+                    if (! "Derby".equals(cbSource.getSelectedItem())) {
+                        jCBSchema.setEnabled(true);
+                        fillSchema();
+                    }
+                    
+                    jtxtDbParams.setEnabled(true);
+                    jlblVersion.setEnabled(true);
+                    jlblDBSize.setEnabled(true);
+                    jtxtDbName.setEnabled(true);
+                    jbtnTransfer.setEnabled(true);
+                    jbtnConnect.setEnabled(false);
+                    
+                    jTransferPanel.setVisible(true);
+                    
+                    JOptionPane.showMessageDialog(this, 
+                        AppLocal.getIntString("message.databaseconnectsuccess"), 
+                        "Connection Test"
+                        , JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    reset();
+                    
+                    JMessageDialog.showMessage(this, 
+                        new MessageInf(MessageInf.SGN_WARNING, "Connection Error"));
+                }
+            } catch (InstantiationException 
+                | IllegalAccessException 
+                | MalformedURLException 
+                | ClassNotFoundException e) {
+                JMessageDialog.showMessage(this, 
+                    new MessageInf(MessageInf.SGN_WARNING, 
+                    AppLocal.getIntString("message.databasedrivererror"), e));
+        
+            } catch (SQLException e) {
+                JMessageDialog.showMessage(this, 
+                    new MessageInf(MessageInf.SGN_WARNING, 
+                    AppLocal.getIntString("message.databaseconnectionerror"), e));
+        
+            } catch (Exception e) {
+                JMessageDialog.showMessage(this, 
+                    new MessageInf(MessageInf.SGN_WARNING, "Unknown exception", e));
+            }
+        } else {
+            JOptionPane.showMessageDialog(this
+                , AppLocal.getIntString("message.transfercheck")
+                , AppLocal.getIntString("message.transfertitle")
+                , JOptionPane.WARNING_MESSAGE);     
+
+            jtxtDbName.setText("");
+        }
+        
+    }//GEN-LAST:event_jbtnConnectjButtonTestConnectionActionPerformed
+
+    private void cbSourceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSourceActionPerformed
+
+        reset();
+        
+        String dirname = System.getProperty("dirname.path");
+        dirname = dirname == null ? "./" : dirname;
+                  
+        if ("Derby".equals(cbSource.getSelectedItem())) {
+            jtxtDbDriverLib.setText(new File(new File(dirname)
+                    , "/lib/derby-10.10.2.0.jar").getAbsolutePath());
+            jtxtDbDriver.setText("org.apache.derby.jdbc.EmbeddedDriver");
+            jtxtDbType.setText("jdbc:derby:");
+            jtxtDbServerPort.setText("" + new File(new File(System.getProperty("user.home"))
+                    , ""));
+//            jtxtDbName.setText("/unicentaopos-database");
+            jtxtDbParams.setText("");            
+//            txtDbUser.setText("");
+//            txtDbPass.setText(""); 
+        } else if ("PostgreSQL".equals(cbSource.getSelectedItem())) {
+            jtxtDbDriverLib.setText(new File(new File(dirname)
+                    , "/lib/postgresql-9.4-1208.jdbc4.jar").getAbsolutePath());
+            jtxtDbDriver.setText("org.postgresql.Driver");
+            jtxtDbType.setText("jdbc:postgresql://");
+            jtxtDbServerPort.setText("localhost:5432/");
+            jtxtDbParams.setText("");                        
+        } else {
+            jtxtDbDriverLib.setText(new File(new File(dirname)
+                , "/lib/mysql-connector-java-5.1.39.jar").getAbsolutePath());
+            jtxtDbDriver.setText("com.mysql.jdbc.Driver");
+            jtxtDbType.setText("jdbc:mysql://");
+            jtxtDbServerPort.setText("localhost:3306/");
+            jtxtDbParams.setText("?zeroDateTimeBehavior=convertToNull");              
+        }
+
+        txtDbUser.setText("");
+        txtDbPass.setText("");
+        jlblVersion.setText("");
+        jlblDBSize.setText("");        
+    }//GEN-LAST:event_cbSourceActionPerformed
+
+    private void jbtnSetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnSetActionPerformed
+        String driverlib;
+        String driver;
+        String url;
+        String user;
+        String password;
+        String selected = null;
+
+//        if(! jCBSchema.getSelectedItem().equals(jlblSource.getText())) {
+        driverlib = jtxtDbDriverLib.getText();
+        driver = jtxtDbDriver.getText();
+        
+        if ("Derby".equals(cbSource.getSelectedItem())) {
+            url = jtxtDbType.getText() + 
+            jtxtDbServerPort.getText() + 
+            jtxtDbParams.getText() +
+            jtxtDbName.getText();
+        } else {
+            url = jtxtDbType.getText() + 
+            jtxtDbServerPort.getText() + 
+            jCBSchema.getSelectedItem().toString() +
+            jtxtDbParams.getText();            
+        }
+
+        user = txtDbUser.getText();
+        password = new String(txtDbPass.getPassword());
 
         try {
-            String driverlib = jtxtDbDriverLib.getText();
-            String driver = jtxtDbDriver.getText();
-            String url = jtxtDbURL.getText();
-            String user = txtDbUser.getText();
-            String password = new String(txtDbPass.getPassword());
-
             ClassLoader cloader = new URLClassLoader(new URL[] {
                 new File(driverlib).toURI().toURL()
             });
             
             DriverManager.registerDriver(
-                    new DriverWrapper((Driver) 
-                            Class.forName(driver, true, cloader).newInstance()));
-
-            Session session_source = new Session(url, user, password);
-            Connection connection = session_source.getConnection();
-            boolean isValid = (connection == null) 
-                    ? false : connection.isValid(1000);
-
-            if (isValid) {
-                SQL = "SELECT * FROM applications";
-                Statement stmt = (Statement) connection.createStatement();
-                rs = stmt.executeQuery(SQL);            
-                rs.next();
-                jlblVersion.setText(rs.getString(3));
+                new DriverWrapper((Driver) 
+                Class.forName(driver, true, cloader).newInstance()));
                 
-                stringList.add("Version check... " + rs.getString(3) + "\n");
-                txtOut.setText(stringList.get(1));                
-                
-                JOptionPane.showMessageDialog(this, 
-                        AppLocal.getIntString("message.databaseconnectsuccess"), 
-                        "Connection Test"
-                        , JOptionPane.INFORMATION_MESSAGE);
-            
-                jbtnTransfer.setEnabled(true);
-        
-            } else {
-                JMessageDialog.showMessage(this, 
-                        new MessageInf(MessageInf.SGN_WARNING, "Connection Error"));
+            Session session_source1 = new Session(url, user, password);
+            Connection connection = session_source1.getConnection();
+
+            if (! "Derby".equals(cbSource.getSelectedItem())) {
+                selected = jCBSchema.getSelectedItem().toString();            
+                if(!selected.equals(null)) {
+                    jtxtDbName.setText(selected);
+                }              
+            }            
+//                if (jCBSchema.getItemCount() > 0 ) {
+
+            SQL = "SELECT * FROM applications";
+            Statement stmt = (Statement) connection.createStatement();
+            rs = stmt.executeQuery(SQL);            
+            rs.next();
+               
+            jlblVersion.setText(rs.getString(3));
+                    
+            if (null != jtxtDbType.getText() && jtxtDbName.getText() != null) {
+                switch (jtxtDbType.getText()) {
+                    case "jdbc:mysql://":
+                        SQL="SELECT sum(round(((data_length + index_length) " +
+                            "/ 1024 / 1024), 2))  FROM information_schema.TABLES " +
+                            "WHERE table_schema = " + "'" + selected + "'";                                    
+                        rs = stmt.executeQuery(SQL);
+                        rs.next();
+                        jlblDBSize.setText(rs.getString(1) +"MB");
+                        break;
+                    case "jdbc:derby:":
+                        SQL="SELECT SUM((numallocatedpages * pagesize) /1024) /1024 " +
+                            "FROM SYS.SYSTABLES systabs, SYS.SYSSCHEMAS sysschemas, " +
+                            "TABLE (SYSCS_DIAG.SPACE_TABLE()) AS T2 " +
+                            "WHERE systabs.tabletype = 'T' " +
+                                "AND sysschemas.schemaid = systabs.schemaid " +
+                                "AND systabs.tableid = T2.tableid";
+                        rs = stmt.executeQuery(SQL);
+                        rs.next();
+                        jlblDBSize.setText(rs.getString(1) +"MB");
+                        break;
+                        case "jdbc:postgresql:":
+                            SQL="SELECT pg_size_pretty(pg_database_size(current database()))";
+                            rs = stmt.executeQuery(SQL);
+                            rs.next();
+                            jlblDBSize.setText(rs.getString(1));                       
+                            break;
+                                
+                    default:
+                        break;
+                }
             }
-        } catch (InstantiationException 
-                | IllegalAccessException 
-                | MalformedURLException 
-                | ClassNotFoundException e) {
+            
+        } catch (InstantiationException | IllegalAccessException | MalformedURLException | ClassNotFoundException e) {
             JMessageDialog.showMessage(this, 
-                    new MessageInf(MessageInf.SGN_WARNING, 
-                    AppLocal.getIntString("message.databasedrivererror"), e));
-        
+                new MessageInf(MessageInf.SGN_WARNING, 
+                AppLocal.getIntString("message.databasedrivererror"), e));
         } catch (SQLException e) {
             JMessageDialog.showMessage(this, 
-                    new MessageInf(MessageInf.SGN_WARNING, 
-                    AppLocal.getIntString("message.databaseconnectionerror"), e));
-        
+                new MessageInf(MessageInf.SGN_WARNING, 
+                AppLocal.getIntString("message.databaseconnectionerror"), e));            
         } catch (Exception e) {
             JMessageDialog.showMessage(this, 
-                    new MessageInf(MessageInf.SGN_WARNING, "Unknown exception", e));
+                new MessageInf(MessageInf.SGN_WARNING, "Unknown exception", e));
         }
-    }//GEN-LAST:event_jbtnTestjButtonTestConnectionActionPerformed
+//            } else {
+//                    JOptionPane.showMessageDialog(this, 
+//                        AppLocal.getIntString("message.transfersamedatabase"), 
+//                        "Database Transfer check"
+//                        , JOptionPane.WARNING_MESSAGE);            
+//        }
+    }//GEN-LAST:event_jbtnSetActionPerformed
 
-    private void cbSourceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbSourceActionPerformed
-        String dirname = System.getProperty("dirname.path");
-        dirname = dirname == null ? "./" : dirname;
-                  
-        if ("Derby".equals(cbSource.getSelectedItem())) {
-            jtxtDbName.setText("unicentaopos-database");
-            jtxtDbDriverLib.setText(new File(new File(dirname)
-                    , "/lib/derby-10.10.2.0.jar").getAbsolutePath());
-            jtxtDbDriver.setText("org.apache.derby.jdbc.EmbeddedDriver");
-            jtxtDbURL.setText("jdbc:derby:" + new File(new File(System.getProperty("user.home"))
-                    , "unicentaopos-database"));
-            txtDbUser.setText("");
-            txtDbPass.setText("");           
-        } else if ("PostgreSQL".equals(cbSource.getSelectedItem())) {
-            jtxtDbName.setText("unicentaopos");
-            jtxtDbDriverLib.setText(new File(new File(dirname)
-                    , "/lib/postgresql-9.4-1208.jdbc4.jar").getAbsolutePath());
-            jtxtDbDriver.setText("org.postgresql.Driver");
-            jtxtDbURL.setText("jdbc:postgresql://localhost:5432/unicentaopos");            
-        } else {
-            jtxtDbName.setText("unicentaopos");
-            jtxtDbDriverLib.setText(new File(new File(dirname)
-                , "/lib/mysql-connector-java-5.1.39.jar").getAbsolutePath());
-    
-            jtxtDbDriver.setText("com.mysql.jdbc.Driver");
-            jtxtDbURL.setText("jdbc:mysql://localhost:3306/unicentaopos?zeroDateTimeBehavior=convertToNull");
-        }
-    }//GEN-LAST:event_cbSourceActionPerformed
+    private void jbtnReset1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnReset1ActionPerformed
 
-    private void jtxtDbNameFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jtxtDbNameFocusLost
-        jtxtDbURL.setText(jtxtDbName.getText());
-        String dirname = System.getProperty("dirname.path");
-                  
-        if ("Derby".equals(cbSource.getSelectedItem())) {
-            jtxtDbURL.setText("jdbc:derby:" + new File(new File(System.getProperty("user.home"))
-                ,jtxtDbName.getText()));
-
-        } else if ("PostgreSQL".equals(cbSource.getSelectedItem())) {
-            jtxtDbURL.setText("jdbc:postgresql://localhost:5432/"
-                + jtxtDbName.getText());            
-        } else {
-            jtxtDbURL.setText("jdbc:mysql://localhost:3306/"
-                + jtxtDbName.getText()
-                + "?zeroDateTimeBehavior=convertToNull"); 
-        }        
-        
-    }//GEN-LAST:event_jtxtDbNameFocusLost
+        reset();
+        deactivate();
+    }//GEN-LAST:event_jbtnReset1ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.alee.laf.combobox.WebComboBox cbSource;
+    private javax.swing.JComboBox<String> jCBSchema;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -2354,29 +2861,27 @@ public final class Transfer extends JPanel implements JPanelView {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPanel jTransferPanel;
+    private javax.swing.JButton jbtnConnect;
     private javax.swing.JButton jbtnDbDriverLib;
-    private javax.swing.JButton jbtnExit;
-    private javax.swing.JButton jbtnTest;
+    private javax.swing.JButton jbtnReset;
+    private javax.swing.JButton jbtnReset1;
+    private javax.swing.JButton jbtnSet;
     private javax.swing.JButton jbtnTransfer;
+    private javax.swing.JLabel jlblDBSize;
     private javax.swing.JLabel jlblSource;
     private javax.swing.JLabel jlblVersion;
     private com.alee.laf.text.WebTextField jtxtDbDriver;
     private com.alee.laf.text.WebTextField jtxtDbDriverLib;
     private com.alee.laf.text.WebTextField jtxtDbName;
-    private com.alee.laf.text.WebTextField jtxtDbURL;
+    private com.alee.laf.text.WebTextField jtxtDbParams;
+    private com.alee.laf.text.WebTextField jtxtDbServerPort;
+    private com.alee.laf.text.WebTextField jtxtDbType;
     private com.alee.laf.text.WebPasswordField txtDbPass;
     private com.alee.laf.text.WebTextField txtDbUser;
     private javax.swing.JTextArea txtOut;
+    private com.alee.extended.statusbar.WebMemoryBar webMemoryBar;
     private com.alee.laf.progressbar.WebProgressBar webPBar;
-    private com.alee.laf.panel.WebPanel webPanel2;
     // End of variables declaration//GEN-END:variables
 
-/*    private int checkTableExist(String DBschema, String DBtname) throws SQLException {
-
-        String SQLs = "SELECT COUNT(*) FROM information_schema.tables "
-                        + "WHERE " + DBschema + "AND table_name " + DBtname + ";"; 
-        ResultSet rs = stmt_source.executeQuery(SQLs);
-        return rs.getFetchSize();
-    }
-*/
 }

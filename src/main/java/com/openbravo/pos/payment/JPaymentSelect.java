@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta
+//    Copyright (c) 2009-2018 uniCenta
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -170,7 +170,7 @@ public abstract class JPaymentSelect extends javax.swing.JDialog
         
  //       m_jPayTotal.setText(Formats.CURRENCY.formatValue(m_dTotal));
         
-// N. Deppe 08/11/2017
+// N. Deppe 08/11/2018
 // Fix issue where dialog keeps moving lower and lower on the screen
 // Get the size of the screen, and center the dialog in the window
         Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -652,8 +652,6 @@ public abstract class JPaymentSelect extends javax.swing.JDialog
         m_jButtonOK.setRequestFocusEnabled(false);
         m_jButtonOK.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                m_jButtonOK.setEnabled(false);
-                m_jButtonCancel.setEnabled(false);
                 m_jButtonOKActionPerformed(evt);
             }
         });

@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -20,6 +20,7 @@
 package com.openbravo.pos.sales.shared;
 
 import com.openbravo.basic.BasicException;
+import com.openbravo.beans.JNumberPop;
 import com.openbravo.data.gui.MessageInf;
 import com.openbravo.pos.forms.AppLocal;
 import com.openbravo.pos.forms.AppView;
@@ -80,7 +81,7 @@ public class JTicketsBagShared extends JTicketsBag {
         
         m_jDelTicket.setEnabled(m_App.getAppUserView().getUser().hasPermission(
                 "com.openbravo.pos.sales.JPanelTicketEdits"));
-       
+        m_jDelTicket.setEnabled(m_App.getAppUserView().getUser().hasPermission("sales.DeleteTicket"));       
     }
     
     /**
@@ -345,24 +346,21 @@ public class JTicketsBagShared extends JTicketsBag {
 
     private void m_jListTicketsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jListTicketsActionPerformed
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-
-                try {
+        SwingUtilities.invokeLater(() -> {
+            try {
                 if (!m_App.getAppUserView().getUser().hasPermission("sales.ViewSharedTicket")){
-                    JOptionPane.showMessageDialog(null, 
-                    AppLocal.getIntString("message.sharedticket"), 
-                    AppLocal.getIntString("message.sharedtickettitle"), 
-                    JOptionPane.INFORMATION_MESSAGE);                
+                    JOptionPane.showMessageDialog(null,
+                            AppLocal.getIntString("message.sharedticket"),
+                            AppLocal.getIntString("message.sharedtickettitle"),
+                            JOptionPane.INFORMATION_MESSAGE);                
                 }else{
 
                     if("0".equals(m_App.getAppUserView().getUser().getRole())
-                        || "1".equals(m_App.getAppUserView().getUser().getRole())
-                        || m_App.getAppUserView().getUser().hasPermission("sales.ViewSharedTicket")
-                        || m_App.getAppUserView().getUser().hasPermission("sales.Override"))
+                            || "1".equals(m_App.getAppUserView().getUser().getRole())
+                            || m_App.getAppUserView().getUser().hasPermission("sales.ViewSharedTicket")
+                            || m_App.getAppUserView().getUser().hasPermission("sales.Override"))
                     {
-                    List<SharedTicketInfo> l = dlReceipts.getSharedTicketList();
+                        List<SharedTicketInfo> l = dlReceipts.getSharedTicketList();
                         JTicketsBagSharedList listDialog = JTicketsBagSharedList.newJDialog(JTicketsBagShared.this);
                         String id = listDialog.showTicketsList(l, dlReceipts);
 
@@ -374,12 +372,12 @@ public class JTicketsBagShared extends JTicketsBag {
 
                         String appuser = m_App.getAppUserView().getUser().getId();
                         List<SharedTicketInfo> l = dlReceipts.getUserSharedTicketList(
-                            appuser);  
-
+                                appuser);
+                        
                         JTicketsBagSharedList listDialog = JTicketsBagSharedList.newJDialog(JTicketsBagShared.this);
-
-                        String id = listDialog.showTicketsList(l, dlReceipts);                         
-
+                        
+                        String id = listDialog.showTicketsList(l, dlReceipts);
+                        
                         if (id != null) {
                             saveCurrentTicket();
                             setActiveTicket(id); 
@@ -387,27 +385,51 @@ public class JTicketsBagShared extends JTicketsBag {
                     }
                 }
             }catch (BasicException e) {
-                    new MessageInf(e).show(JTicketsBagShared.this);
-                    newTicket();
-                }                    
+                new MessageInf(e).show(JTicketsBagShared.this);
+                newTicket();                    
             }
         });
         
     }//GEN-LAST:event_m_jListTicketsActionPerformed
 
     private void m_jDelTicketActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jDelTicketActionPerformed
+     
+        boolean pinOK = false;
+
+        if (m_sCurrentTicket != null) {
+
+            if (m_App.getProperties().getProperty("override.check").equals("true")) {
+                Integer secret = Integer.parseInt(m_App.getProperties().getProperty("override.pin"));
+                Integer iValue = JNumberPop.showEditNumber(this, AppLocal.getIntString("title.override.enterpin")); 
+
+                if (iValue == null ? secret == null : iValue.equals(secret)) {
+                    pinOK = true;
+                    int res = JOptionPane.showConfirmDialog(this
+                        , AppLocal.getIntString("message.wannadelete")
+                        , AppLocal.getIntString("title.editor")
+                        , JOptionPane.YES_NO_OPTION
+                        , JOptionPane.QUESTION_MESSAGE);
         
-        int res = JOptionPane.showConfirmDialog(this
-                , AppLocal.getIntString("message.wannadelete")
-                , AppLocal.getIntString("title.editor")
-                , JOptionPane.YES_NO_OPTION
-                , JOptionPane.QUESTION_MESSAGE);
+                    if (res == JOptionPane.YES_OPTION) {
+                        deleteTicket();
+                    }                    
+                } else {
+                    pinOK = false;
+                    JOptionPane.showMessageDialog(this, AppLocal.getIntString("message.override.badpin"));                                        
+                }
+            } else {
+                int res = JOptionPane.showConfirmDialog(this
+                    , AppLocal.getIntString("message.wannadelete")
+                    , AppLocal.getIntString("title.editor")
+                    , JOptionPane.YES_NO_OPTION
+                    , JOptionPane.QUESTION_MESSAGE);
         
-        if (res == JOptionPane.YES_OPTION) {
-// capture whole ticket delete into linesremoved            
-            deleteTicket();
+                if (res == JOptionPane.YES_OPTION) {
+                    deleteTicket();
+                }
+            }
         }
-        
+
     }//GEN-LAST:event_m_jDelTicketActionPerformed
 
     private void m_jNewTicketActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jNewTicketActionPerformed

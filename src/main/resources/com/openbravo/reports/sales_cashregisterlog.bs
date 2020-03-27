@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -27,6 +27,7 @@ report.setSentence("SELECT " +
 			"receipts.DATENEW, " +
 			"payments.PAYMENT, " +
 			"payments.TENDERED, " +
+                        "payments.VOUCHER, " +
 			"SUM( payments.TOTAL ) AS PAYMENT_TOTAL " +
                     "FROM receipts " +
 			"LEFT JOIN payments ON receipts.ID = payments.RECEIPT " +
@@ -47,6 +48,7 @@ report.addQBFFilter(paramdates);
 report.addField("DATENEW", com.openbravo.data.loader.Datas.TIMESTAMP);
 report.addField("PAYMENT", com.openbravo.data.loader.Datas.STRING);
 report.addField("TENDERED", com.openbravo.data.loader.Datas.DOUBLE);
+report.addField("VOUCHER", com.openbravo.data.loader.Datas.STRING);
 report.addField("PAYMENT_TOTAL", com.openbravo.data.loader.Datas.DOUBLE);
 
 return report;

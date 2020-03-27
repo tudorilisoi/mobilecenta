@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -33,7 +33,7 @@ public class PaymentInfoMagcard extends PaymentInfo {
     protected String m_sAuthorization;    
     protected String m_sErrorMessage;
     protected String m_sReturnMessage;
-    //JG Jan 2017 
+    //JG Jan 2018 
     protected String encryptedTrack;
     protected String encryptionKey;
     protected String m_dCardName =null;
@@ -99,7 +99,8 @@ public class PaymentInfoMagcard extends PaymentInfo {
     }
 
     public String getName() {
-        return "magcard";
+//        return "magcard";
+        return "ccard";
     }
 
     @Override
@@ -224,8 +225,6 @@ public class PaymentInfoMagcard extends PaymentInfo {
     }  
 
     public String printCardNumber() {
-        
-System.out.println("Full Card Number : " + m_sCardNumber);
 
         if (m_sCardNumber.length() > 4) {
             return m_sCardNumber.substring(0, m_sCardNumber.length() - 4).replaceAll("\\.", "*")

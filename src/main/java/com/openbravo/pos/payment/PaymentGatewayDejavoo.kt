@@ -8,30 +8,30 @@ class PaymentGatewayDejavoo :PaymentGateway {
     val PAYMENT_PROCESSOR = "Dejavoo"
 
     override fun execute(payinfo: PaymentInfoMagcard?) {
-        DejavooProcessor.INSTANCE.paymentComplete = false
+        DejavooProcessor.paymentComplete = false
 
         var timer = 0
         val timeout = 120
 
         PosApps.initPayment(PAYMENT_PROCESSOR, payinfo?.total)
 
-        while (!DejavooProcessor.INSTANCE.paymentComplete) {
+        while (!DejavooProcessor.paymentComplete) {
             Thread.sleep(1000)
             timer += 1
             if (timer > timeout) break
         }
 
-        if (DejavooProcessor.INSTANCE.response == null) {
-            payinfo?.paymentError("Transaction Error ... Please try again", "No Response")
+        if (DejavooProcessor.response == null) {
+            payinfo?.paymentError("Transaction Error! Please try again", "No Response")
         }
-        else if (DejavooProcessor.INSTANCE.response.success == "0"){
-            payinfo?.cardName = DejavooProcessor.INSTANCE.response.cardType
-            payinfo?.setVerification(DejavooProcessor.INSTANCE.response.verification)
+        else if (DejavooProcessor.response.success == "0"){
+            payinfo?.cardName = DejavooProcessor.response.cardType
+            payinfo?.setVerification(DejavooProcessor.response.verification)
             payinfo?.chipAndPin = true
-            payinfo?.paymentOK(DejavooProcessor.INSTANCE.response.authCode, DejavooProcessor.INSTANCE.response.transactionId, DejavooProcessor.INSTANCE.response.message)
+            payinfo?.paymentOK(DejavooProcessor.response.authCode, DejavooProcessor.response.transactionId, DejavooProcessor.response.message)
         }
-        else if (DejavooProcessor.INSTANCE.response.success == "1"){
-            payinfo?.paymentError("Transaction Error ... Please try again", DejavooProcessor.INSTANCE.response.message)
+        else if (DejavooProcessor.response.success == "1"){
+            payinfo?.paymentError("Transaction Error! Please try again", DejavooProcessor.response.message)
         }
 
     }

@@ -45,6 +45,8 @@ public class Places implements Serializable {
     @Basic(optional = false)
     @Column(name = "NAME")
     private String name;
+    @Column(name = "SEATS")
+    private String seats;    
     @Basic(optional = false)
     @Column(name = "X")
     private int x;
@@ -71,9 +73,10 @@ public class Places implements Serializable {
         this.id = id;
     }
 
-    public Places(String id, String name, int x, int y, String floor, short tablemoved) {
+    public Places(String id, String name, String seats, int x, int y, String floor, short tablemoved) {
         this.id = id;
         this.name = name;
+        this.seats = seats;        
         this.x = x;
         this.y = y;
         this.floor = floor;
@@ -93,12 +96,20 @@ public class Places implements Serializable {
     public String getName() {
         return name;
     }
-
     public void setName(String name) {
         String oldName = this.name;
         this.name = name;
         changeSupport.firePropertyChange("name", oldName, name);
     }
+
+    public String getSeats() {
+        return seats;
+    }
+    public void setSeats(String seats) {
+        String oldSeats = this.seats;
+        this.seats = seats;
+        changeSupport.firePropertyChange("seats", oldSeats, seats);
+    }    
 
     public int getX() {
         return x;

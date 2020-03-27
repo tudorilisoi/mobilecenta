@@ -1,6 +1,6 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
-//    https://unicenta.com
+//    Copyright (c) 2009-2015 uniCenta & previous Openbravo POS works
+//    http://www.unicenta.com
 //
 //    This file is part of uniCenta oPOS
 //
@@ -25,6 +25,15 @@ import java.awt.Component;
 import javax.swing.event.EventListenerList;
 import com.openbravo.basic.BasicException;
 import com.openbravo.data.loader.LocalRes;
+import com.openbravo.pos.customers.CustomerInfo;
+import com.openbravo.pos.customers.CustomerInfoExt;
+import com.openbravo.pos.customers.CustomerInfoGlobal;
+import com.openbravo.pos.customers.DataLogicCustomers;
+import com.openbravo.pos.forms.AppView;
+import com.openbravo.pos.forms.AppLocal;
+import com.openbravo.pos.forms.DataLogicSystem;
+import com.openbravo.pos.scripting.ScriptEngine;
+import com.openbravo.pos.scripting.ScriptFactory;
 
 /**
  *
@@ -198,8 +207,8 @@ public class BrowsableEditableData {
     private void fireStateUpdate() { 
         EventListener[] l = listeners.getListeners(StateListener.class);
         int iState = getState();
-        for (EventListener l1 : l) {
-            ((StateListener) l1).updateState(iState);
+        for (int i = 0; i < l.length; i++) {
+            ((StateListener) l[i]).updateState(iState);
         }
     }
 
@@ -400,22 +409,86 @@ public class BrowsableEditableData {
      * @throws BasicException
      */
     public void saveData() throws BasicException {
-                 
+
+        //Get the customer being referenced for firing action events
+        boolean isCustomerChangeEvent = false;
+        Object[] customer = new Object[27];
+        if (m_editorrecord.getClass().getName().equals("com.openbravo.pos.customers.CustomersView")) {
+            isCustomerChangeEvent = true;
+            customer = (Object[]) m_editorrecord.createValue();
+        }
+
         if (m_Dirty.isDirty()) {
             if (m_iState == ST_UPDATE) {
                 int i = m_bd.updateRecord(m_iIndex, m_editorrecord.createValue());
                 m_editorrecord.refresh();
                 baseMoveTo(i);
+
+                if (isCustomerChangeEvent) {
+                    triggerCustomerEvent("customer.updated", customer, customer[27]);
+                }
+
+
             } else if (m_iState == ST_INSERT) {
+
+                if (isCustomerChangeEvent) {
+                    m_editorrecord.refresh();
+
+                    AppView appView = (AppView) customer[27];
+                    int i = m_bd.insertRecord(customer);
+                    m_editorrecord.refresh();
+                    baseMoveTo(i);
+
+                    triggerCustomerEvent("customer.created", customer, customer[27]);
+
+                    int n = JOptionPane.showConfirmDialog(
+                          null, 
+                          AppLocal.getIntString("message.customerassign"), 
+                          AppLocal.getIntString("title.editor"), 
+                            JOptionPane.YES_NO_OPTION);
+
+                    if (n == 0) {
+                        CustomerInfoGlobal customerInfoGlobal = CustomerInfoGlobal.getInstance();
+                        CustomerInfoExt customerInfoExt = new CustomerInfoExt(customer[0].toString());
+                        customerInfoGlobal.setCustomerInfoExt(customerInfoExt);
+                        customerInfoExt.setName(customer[3].toString());
+
+                        appView.getAppUserView().showTask("com.openbravo.pos.sales.JPanelTicketSales");
+                    }
+
+                } else {
                     int i = m_bd.insertRecord(m_editorrecord.createValue());
                     m_editorrecord.refresh();
                     baseMoveTo(i);
+                }
+
             } else if (m_iState == ST_DELETE) {
                 int i = m_bd.removeRecord(m_iIndex);
                 m_editorrecord.refresh();
                 baseMoveTo(i);
+
+                if (isCustomerChangeEvent) {
+                    triggerCustomerEvent("customer.deleted", customer, customer[27]);
+                }
             }
         }   
+    }
+
+    private void triggerCustomerEvent(String event, Object[] customer, Object appContext) {
+        try {
+            AppView appView = (AppView) appContext;
+            ScriptEngine scriptEngine = ScriptFactory.getScriptEngine(ScriptFactory.BEANSHELL);
+
+            DataLogicSystem dlSystem = (DataLogicSystem) appView.getBean("com.openbravo.pos.forms.DataLogicSystem");
+            String script = dlSystem.getResourceAsXML(event);
+            scriptEngine.put("customer", customer);
+            scriptEngine.put("device", appView.getProperties().getProperty("machine.hostname"));
+            scriptEngine.eval(script);
+
+        }
+        catch (Exception e) {
+            System.err.println("Script Exception: "+e);
+        }
     }
       
     /**
@@ -441,11 +514,7 @@ public class BrowsableEditableData {
      */
     public boolean actionClosingForm(Component c) throws BasicException {
         if (m_Dirty.isDirty()) {
-            int res = JOptionPane.showConfirmDialog(c, 
-                    LocalRes.getIntString("message.wannasave"), 
-                    LocalRes.getIntString("title.editor"), 
-                    JOptionPane.YES_NO_CANCEL_OPTION, 
-                    JOptionPane.QUESTION_MESSAGE);
+            int res = JOptionPane.showConfirmDialog(c, LocalRes.getIntString("message.wannasave"), LocalRes.getIntString("title.editor"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
             if (res == JOptionPane.YES_OPTION) {
                 saveData();
                 return true;
@@ -516,7 +585,7 @@ public class BrowsableEditableData {
         }
     }   
     
-    private void baseMoveTo(int i) {
+    private final void baseMoveTo(int i) {
     // Este senor y el constructor a INX_EOF, son los unicos que tienen potestad de modificar m_iIndex.
         if (i >= 0 && i < m_bd.getSize()) {
             m_iIndex = i;

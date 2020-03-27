@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -23,36 +23,40 @@ report.setTitleKey("Menu.CategorySales");
 report.setReport("/com/openbravo/reports/sales_categorysales");
 report.setResourceBundle("com/openbravo/reports/sales_categorysales_messages");
 
-// JG - 8 Jan 14 Convert lowercasednname to UPPERCASE for compatability
+report.setSentence("SELECT " +
+        "R.datenew, " +
+        "C.id, " +
+        "C.name AS CATNAME, " +
+        "SUM(TL.price * TL.units) AS BASE, " +
+        "SUM((TL.price * TL.units) * TX.rate) AS AMOUNT," +
+        "SUM((TL.PRICE+(TL.PRICE*TX.RATE))*TL.units) AS TOTAL, " +
+        "SUM(TL.units) AS UNITS " +
+    "FROM (((((products P " +
+          "CROSS JOIN categories C ON (P.category = C.id)) " +
+         "INNER JOIN ticketlines TL ON (TL.product = P.id)) " +
+        "INNER JOIN taxes TX ON (TL.taxid = TX.id)) " +
+       "INNER JOIN tickets T ON (TL.ticket = T.id)) " +
+      "INNER JOIN receipts R ON (T.id = R.id)) " +
+     "INNER JOIN taxlines TXL ON (TXL.receipt = R.id) AND (TXL.taxid = TX.id) " +
+    "WHERE ?(QBF_FILTER) " +
+    "GROUP BY C.id " +
+    "ORDER BY CATNAME ASC");
 
-report.setSentence("SELECT categories.ID, categories.NAME, " +
-    "SUM(ticketlines.UNITS) AS QTY, " +
-    "SUM(ticketlines.PRICE * ticketlines.UNITS) AS CATPRICE, " +
-    "SUM((products.PRICESELL * ticketlines.UNITS)-((products.ISVPRICE ) * (ticketlines.PRICE * ticketlines.UNITS))) AS DISC, " +
-    "SUM((ticketlines.PRICE * taxes.RATE)* ticketlines.UNITS) AS CATTAX, " +
-    "SUM((ticketlines.PRICE * ticketlines.UNITS) + ((ticketlines.PRICE * taxes.RATE)* ticketlines.UNITS)) AS CATTOTAL " +
-"FROM (tickets INNER JOIN receipts ON tickets.ID = receipts.ID) INNER JOIN ((categories INNER JOIN products ON categories.ID = products.CATEGORY) INNER JOIN (taxes INNER JOIN ticketlines ON taxes.ID = ticketlines.TAXID) ON products.ID = ticketlines.PRODUCT) ON tickets.ID = ticketlines.TICKET " +
-"WHERE ?(QBF_FILTER) " +
-"GROUP BY categories.ID, categories.NAME " +
-"ORDER BY categories.NAME");
-
-report.addParameter("receipts.DATENEW");
-report.addParameter("receipts.DATENEW");
+report.addParameter("R.DATENEW");
+report.addParameter("R.DATENEW");
 
 paramdates = new com.openbravo.pos.reports.JParamsDatesInterval();
-
 paramdates.setStartDate(com.openbravo.beans.DateUtils.getToday());
-// JG - 8 Jan 14 paramdates.setEndDate(com.openbravo.beans.DateUtils.getToday());
 paramdates.setEndDate(com.openbravo.beans.DateUtils.getTodayMinutes());
 
 report.addQBFFilter(paramdates);
 
+report.addField("DATENEW", com.openbravo.data.loader.Datas.TIMESTAMP);
 report.addField("ID", com.openbravo.data.loader.Datas.STRING);
-report.addField("NAME", com.openbravo.data.loader.Datas.STRING);
-report.addField("QTY", com.openbravo.data.loader.Datas.DOUBLE);
-report.addField("CATPRICE", com.openbravo.data.loader.Datas.DOUBLE);
-report.addField("DISC", com.openbravo.data.loader.Datas.DOUBLE);
-report.addField("CATTAX", com.openbravo.data.loader.Datas.DOUBLE);
-report.addField("CATTOTAL", com.openbravo.data.loader.Datas.DOUBLE);
+report.addField("CATNAME", com.openbravo.data.loader.Datas.STRING);
+report.addField("BASE", com.openbravo.data.loader.Datas.DOUBLE);
+report.addField("AMOUNT", com.openbravo.data.loader.Datas.DOUBLE);
+report.addField("TOTAL", com.openbravo.data.loader.Datas.DOUBLE);
+report.addField("UNITS", com.openbravo.data.loader.Datas.DOUBLE);
 
 report;

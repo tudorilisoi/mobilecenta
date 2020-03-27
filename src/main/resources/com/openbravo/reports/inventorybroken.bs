@@ -1,5 +1,5 @@
 //    uniCenta oPOS - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -50,18 +50,18 @@ report.setSentence("SELECT " +
     "HAVING stocklevel.STOCKSECURITY IS NOT NULL AND stocklevel.STOCKSECURITY >= SUM(stockcurrent.UNITS) " +
     "ORDER BY CATEGORYNAME ASC, PRODUCTNAME ASC, LOCATIONID ASC");
 
-report.addParameter("products.NAME");
-report.addParameter("products.CATEGORY");
-report.addParameter("products.CODE");
-report.addParameter("stockcurrent.UNITS");
-report.addQBFFilter(new com.openbravo.pos.ticket.ProductFilter1());
+report.addParameter("stockcurrent.LOCATION");
+report.addQBFFilter(new com.openbravo.pos.reports.JParamsLocationWithFirst());
 
 report.addParameter("suppliers.ID");
 report.addParameter("suppliers.NAME");
 report.addQBFFilter(new com.openbravo.pos.reports.JParamsSuppliers());
 
-report.addParameter("stockcurrent.LOCATION");
-report.addQBFFilter(new com.openbravo.pos.reports.JParamsLocationWithFirst());
+report.addParameter("products.NAME");
+report.addParameter("products.CATEGORY");
+report.addParameter("products.CODE");
+report.addParameter("stockcurrent.UNITS");
+report.addQBFFilter(new com.openbravo.pos.ticket.ProductFilter1());
 
 report.addField("LOCATIONID", com.openbravo.data.loader.Datas.STRING);
 report.addField("LOCATIONNAME", com.openbravo.data.loader.Datas.STRING);

@@ -18,10 +18,11 @@
 */
 
 /* Header line. Object: applications. Script date: 23/07/2016 08:00:00 */
-CREATE TABLE IF NOT EXISTS `applications` (
+CREATE TABLE `applications` (
 	`id` varchar(255) NOT NULL,
 	`name` varchar(255) NOT NULL,
 	`version` varchar(255) NOT NULL,
+	`instdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY  ( `id` )
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT = Compact;
 
@@ -423,7 +424,7 @@ CREATE TABLE IF NOT EXISTS `sharedtickets` (
 	`name` varchar(255) NOT NULL,
 	`content` mediumblob default NULL,
 	`appuser` varchar(255) default NULL,
-	`pickupid` smallint(6) NOT NULL default '0',
+	`pickupid` int(11) NOT NULL default '0',
 	`locked` varchar(20) default NULL,
 	PRIMARY KEY  ( `id` )
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT = Compact;

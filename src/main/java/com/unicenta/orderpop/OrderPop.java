@@ -273,7 +273,9 @@ public class OrderPop extends Application {
 
         logger.info("Get DB connection");
         
-        String url = AppConfig.getInstance().getProperty("db.URL");
+        String url = AppConfig.getInstance().getProperty("db.URL") +
+                        AppConfig.getInstance().getProperty("db.schema") +
+                        AppConfig.getInstance().getProperty("db.options");                        
         String sDBUser = AppConfig.getInstance().getProperty("db.user");
         String sDBPassword = AppConfig.getInstance().getProperty("db.password");
 

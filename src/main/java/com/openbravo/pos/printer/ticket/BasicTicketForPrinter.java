@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -30,9 +30,10 @@ import java.awt.geom.AffineTransform;
  */
 public class BasicTicketForPrinter extends BasicTicket {
 
-    private static final Font BASEFONT = new Font("Monospaced", 
+//    private static final Font BASEFONT = new Font("Monospaced", 
+    private static final Font BASEFONT = new Font("Courier New",     
         Font.PLAIN, 7).deriveFont(AffineTransform.getScaleInstance(1.0, 1.50));
-    private static final int FONTHEIGHT = 14;
+    private static final int FONTHEIGHT = 12;
 
 //        private static Font BASEFONT = new Font("Monospaced", 
     //         Font.PLAIN, 7).deriveFont(AffineTransform.getScaleInstance(1.0, 1.40));

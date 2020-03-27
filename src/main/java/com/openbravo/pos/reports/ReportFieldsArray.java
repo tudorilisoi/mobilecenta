@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -49,6 +49,7 @@ public class ReportFieldsArray implements ReportFields {
      * @return
      * @throws ReportException
      */
+    @Override
     public Object getField(Object record, String field) throws ReportException {
         
         Integer i = (Integer) m_keys.get(field);
@@ -56,7 +57,8 @@ public class ReportFieldsArray implements ReportFields {
             throw new ReportException(AppLocal.getIntString("exception.unavailablefield", new Object[] {field}));
         } else {
             Object[] arecord = (Object[]) record;
-            if (arecord == null || i.intValue() < 0 || i.intValue() >= arecord.length) {
+            if (arecord == null || i.intValue() < 0 
+                    || i.intValue() >= arecord.length) {
                 throw new ReportException(AppLocal.getIntString("exception.unavailablefields"));
             } else {
                 return arecord[i.intValue()];

@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Adrian Romero Corchado.
+//    Copyright (c) 2009-2018 uniCenta & previous Adrian Romero Corchado.
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS

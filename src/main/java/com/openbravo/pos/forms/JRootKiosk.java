@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -35,6 +35,7 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -87,34 +88,40 @@ public class JRootKiosk extends javax.swing.JFrame implements AppMessage {
 
 /*  
  *  4 Sep 17 JG
+ *  2 Dec 17 - Mod' Thanks Hayk Sokolov!
  *  Change here for Linux/Ubuntu full screen
  *  Thanks to Hans Lengerke for solution
 */            
+            String osName = System.getProperty("os.name").toLowerCase();
+            boolean isWindows = osName.startsWith("windows");
+
             GraphicsDevice device = GraphicsEnvironment
-                .getLocalGraphicsEnvironment().getDefaultScreenDevice();
+            .getLocalGraphicsEnvironment().getDefaultScreenDevice();
 
-            if (device.isFullScreenSupported()) {
-
+            if (device.isFullScreenSupported() && !isWindows) {
                 setResizable(true);
 
                 addFocusListener(new FocusListener() {
-                    @Override
-                    public void focusGained(FocusEvent arg0) {
-                        setAlwaysOnTop(true);
-                    }
-                    @Override
-                    public void focusLost(FocusEvent arg0) {
-                        setAlwaysOnTop(false);
-                    }
-                });
-
+                @Override
+                public void focusGained(FocusEvent arg0) {
+                    setAlwaysOnTop(true);
+                }
+                @Override
+                public void focusLost(FocusEvent arg0) {
+                    setAlwaysOnTop(false);
+                }
+            });
                 device.setFullScreenWindow(this);
             } else {
                 setVisible(true);
             }
-         } else {
-             new JFrmConfig(props).setVisible(true); // Show the configuration window.
-         }       
+        } else {
+            JOptionPane.showMessageDialog(this, 
+                AppLocal.getIntString("message.databasechange"), 
+                "Connection", JOptionPane.INFORMATION_MESSAGE);
+
+            new JFrmConfig(props).setVisible(true);                             // Show the configuration window.
+        }       
     }
 
     @Override

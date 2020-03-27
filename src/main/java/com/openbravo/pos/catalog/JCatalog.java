@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -97,7 +97,6 @@ public class JCatalog extends JPanel implements ListSelectionListener, CatalogSe
         m_jscrollcat.getVerticalScrollBar().setPreferredSize(new Dimension(35, 35));
         
         tnbcat = new ThumbNailBuilder(48, 48, "com/openbravo/images/category.png");  
-//        tnbcat = new ThumbNailBuilder(width, height, "com/openbravo/images/category.png");          
         tnbsubcat = new ThumbNailBuilder(width, height, "com/openbravo/images/subcategory.png"); 
         tnbbutton = new ThumbNailBuilder(width, height, "com/openbravo/images/null.png");        
 
@@ -510,7 +509,7 @@ public class JCatalog extends JPanel implements ListSelectionListener, CatalogSe
         });
         m_jscrollcat.setViewportView(m_jListCategories);
 
-        m_jRootCategories.add(m_jscrollcat, java.awt.BorderLayout.WEST);
+        m_jRootCategories.add(m_jscrollcat, java.awt.BorderLayout.CENTER);
 
         jPanel2.setLayout(new java.awt.BorderLayout());
 

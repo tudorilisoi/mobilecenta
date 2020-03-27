@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta
+//    Copyright (c) 2009-2018 uniCenta
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -170,7 +170,6 @@ public final class TicketInfo implements SerializableRead, Externalizable {
         taxes = null;
         
         ticketstatus = dr.getInt(10);
-        
     }
 
     /**
@@ -405,7 +404,8 @@ public final class TicketInfo implements SerializableRead, Externalizable {
     public double getSubTotal() {
         double sum = 0.0;
         sum = m_aLines.stream().map((line) -> 
-                line.getSubValue()).reduce(sum, (accumulator, _item) -> accumulator + _item);
+                line.getSubValue()).reduce(sum, (accumulator, _item) -> 
+                        accumulator + _item);
         return sum;
     }
 
@@ -418,7 +418,9 @@ public final class TicketInfo implements SerializableRead, Externalizable {
                 nsum = sum;
             }
         } else {
-            sum = m_aLines.stream().map((line) -> line.getTax()).reduce(sum, (accumulator, _item) -> accumulator + _item);
+            sum = m_aLines.stream().map((line) -> 
+                    line.getTax()).reduce(sum, (accumulator, _item) -> 
+                            accumulator + _item);
             }
         return sum;
     }
@@ -435,7 +437,10 @@ public final class TicketInfo implements SerializableRead, Externalizable {
     
     public double getTotalPaid() {
         double sum = 0.0;
-        sum = payments.stream().filter((p) -> (!"debtpaid".equals(p.getName()))).map((p) -> p.getTotal()).reduce(sum, (accumulator, _item) -> accumulator + _item);
+        sum = payments.stream().filter((p) -> 
+                (!"debtpaid".equals(p.getName()))).map((p) -> 
+                        p.getTotal()).reduce(sum, (accumulator, _item) -> 
+                                accumulator + _item);
         return sum;
           }
 
@@ -595,6 +600,10 @@ public final class TicketInfo implements SerializableRead, Externalizable {
     public String printCustomer() {
         return m_Customer == null ? "" : m_Customer.getName();
     }
+
+    public String printPhone1() {
+        return m_Customer == null ? "" : m_Customer.getPhone1();
+    }    
 
     public String printArticlesCount() {
         return Formats.DOUBLE.formatValue(getArticlesCount());

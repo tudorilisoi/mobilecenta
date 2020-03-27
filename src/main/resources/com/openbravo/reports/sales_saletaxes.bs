@@ -1,5 +1,5 @@
 //    uniCenta oPOS - touch friendly EPoS
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -36,13 +36,13 @@ report.setSentence(
                 "WHERE payments.RECEIPT = receipts.ID AND " +
                     "receipts.ID = taxlines.RECEIPT AND receipts.ID=tickets.ID AND " +
                     "taxlines.TAXID = taxes.ID AND taxes.CATEGORY = taxcategories.ID AND ?(QBF_FILTER) "+
-                "ORDER BY receipts.DATENEW");
+                    "GROUP BY tickets.TICKETID " +
+                "ORDER BY tickets.TICKETTYPE, tickets.TICKETID");
 
 report.addParameter("receipts.DATENEW");
 report.addParameter("receipts.DATENEW");
 
 paramdates = new com.openbravo.pos.reports.JParamsDatesInterval();
-
 paramdates.setStartDate(com.openbravo.beans.DateUtils.getToday());
 // JG - 8 Jan 14 paramdates.setEndDate(com.openbravo.beans.DateUtils.getToday());
 paramdates.setEndDate(com.openbravo.beans.DateUtils.getTodayMinutes());

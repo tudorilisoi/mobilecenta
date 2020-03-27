@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-20162017 uniCenta
+//    Copyright (c) 2009-2018 uniCenta
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -27,7 +27,7 @@ import com.openbravo.data.loader.SerializableWrite;
 
 /**
  * @author JG uniCenta
- * Sept 2017
+ * Sept 2018
  * Recall + Reprint of last ticket
  * Allows for reprint ticket from any terminal rather than only local
 */

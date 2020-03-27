@@ -129,6 +129,8 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
         } else {
             pid = product.getID();
             attributes.setProperty("product.name", product.getName());
+            attributes.setProperty("product.reference", product.getReference());
+            attributes.setProperty("product.code", product.getCode());
 
             if (product.getMemoDate() == null) {
                 attributes.setProperty("product.memodate", "1900-01-01 00:00:01");                
@@ -165,10 +167,10 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
                 attributes.setProperty("product.categoryid", product.getCategoryID());
             }
 
-            if ("true".equals(attributes.getProperty("updated"))) {
-                attributes.setProperty("updated", "false");                
+            if ("true".equals(attributes.getProperty("ticket.updated"))) {
+                attributes.setProperty("ticket.updated", "false");                
             } else {
-                attributes.setProperty("updated", "true");                
+                attributes.setProperty("ticket.updated", "true");                
             }
         }
 
@@ -204,14 +206,9 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
         price = dPrice;
         this.tax = tax;  
         this.attributes = attributes;
-//        tax = tax;  
-//        attributes = attributes;
     
         m_sTicket = null;
         m_iLine = -1;
-        
-        
-
     }
 
     void setTicket(String ticket, int line) {
@@ -318,6 +315,9 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
     public String getProductTaxCategoryID() {
         return (attributes.getProperty("product.taxcategoryid"));
     }
+    public String getTicketUpdated() {
+        return (attributes.getProperty("ticket.updated"));
+    }
     public TaxInfo getTaxInfo() {
         return tax;
     }    
@@ -329,15 +329,12 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
     public String getProductName() {
         return attributes.getProperty("product.name");
     }
-
     public String getProductMemoDate() {
         return attributes.getProperty("product.memodate");
     }
-
     public double getPrice() {
         return price;
     }
-
     public double getMultiply() {
         return multiply;
     }
@@ -350,14 +347,13 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
     }    
 
 // These are the Summaries    
-        public double getPriceTax() {
-// System.out.println("getPriceTax: " + price * getTaxRate());
+    public double getPriceTax() {
         return price * (1.0 + getTaxRate());
     }
+
     public Properties getProperties() {
         return attributes;
     }
-  
     public String getProperty(String key) {
         return attributes.getProperty(key);
     }
@@ -380,41 +376,43 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
     public void setPrice(double dValue) {
         price = dValue;
     }
-
     public void setPriceTax(double dValue) {
         price = dValue / (1.0 + getTaxRate());               
     }
-    
     public void setMultiply(double dValue) {
         multiply = dValue;
     }
-
     public void setProperty(String key, String value) {
         attributes.setProperty(key, value);
     }    
-
     public void setProductTaxCategoryID(String taxID){
         attributes.setProperty("product.taxcategoryid",taxID);
     }
-
     public void setProductAttSetInstId(String value) {
         attsetinstid = value;
     }
-
     public void setProductAttSetInstDesc(String value) {
         if (value == null) {
             attributes.remove(value);
         } else {
             attributes.setProperty("product.attsetdesc", value);
         }
-    }    
-
+    }
+    public void setTicketUpdated(String key, String value){
+        attributes.setProperty("ticket.updated",value);
+    }
     
     /**
      *
      * @return
      */
     // Print to actual ${ticketline
+    public String printReference() {
+        return StringUtils.encodeXML(attributes.getProperty("product.reference"));
+    }
+    public String printCode() {
+        return StringUtils.encodeXML(attributes.getProperty("product.code"));
+    }
     public String printName() {
         return StringUtils.encodeXML(attributes.getProperty("product.name"));
     }
@@ -464,7 +462,7 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
 	return "true".equals(attributes.getProperty("product.warranty"));
     }    
     public boolean getUpdated() {
-        return updated;
+        return "true".equals(attributes.getProperty("ticket.updated"));
     }
     public void setUpdated(Boolean value) {
         updated = value;

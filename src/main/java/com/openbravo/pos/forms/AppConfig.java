@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -267,6 +267,9 @@ public class AppConfig implements AppProperties {
         dirname = dirname == null ? "./" : dirname;
              
         m_propsconfig.setProperty("db.multi", "false");
+        m_propsconfig.setProperty("override.check", "false");
+        m_propsconfig.setProperty("override.pin", "");        
+        
         m_propsconfig.setProperty("db.driverlib", new File(new File(dirname)
             , "mysql-connector-java-5.1.39.jar").getAbsolutePath());
         m_propsconfig.setProperty("db.engine", "MySQL");
@@ -274,13 +277,17 @@ public class AppConfig implements AppProperties {
 
 // primary DB
         m_propsconfig.setProperty("db.name", "Main DB");
-        m_propsconfig.setProperty("db.URL", "jdbc:mysql://localhost:3306/unicentaopos?zeroDateTimeBehavior=convertToNull"); 
+        m_propsconfig.setProperty("db.URL", "jdbc:mysql://localhost:3306/"); 
+        m_propsconfig.setProperty("db.schema", "unicentaopos");
+        m_propsconfig.setProperty("db.options", "?zeroDateTimeBehavior=convertToNull");        
         m_propsconfig.setProperty("db.user", "username");
         m_propsconfig.setProperty("db.password", "password");     
 
 // secondary DB        
         m_propsconfig.setProperty("db1.name", "");        
-        m_propsconfig.setProperty("db1.URL", ""); 
+        m_propsconfig.setProperty("db1.URL", "jdbc:mysql://localhost:3306/"); 
+        m_propsconfig.setProperty("db1.schema", "unicentaopos");
+        m_propsconfig.setProperty("db1.options", "?zeroDateTimeBehavior=convertToNull");        
         m_propsconfig.setProperty("db1.user", "");
         m_propsconfig.setProperty("db1.password", ""); 
 
@@ -291,8 +298,9 @@ public class AppConfig implements AppProperties {
         m_propsconfig.setProperty("user.country", l.getCountry());
         m_propsconfig.setProperty("user.variant", l.getVariant());
         
-//        m_propsconfig.setProperty("swing.defaultlaf", "com.alee.laf.WebLookAndFeel");
-        m_propsconfig.setProperty("swing.defaultlaf", System.getProperty("swing.defaultlaf", "javax.swing.plaf.metal.MetalLookAndFeel"));                
+        m_propsconfig.setProperty("swing.defaultlaf", 
+                System.getProperty("swing.defaultlaf", 
+                        "javax.swing.plaf.metal.MetalLookAndFeel"));                
         
         m_propsconfig.setProperty("machine.printer", "screen");
         m_propsconfig.setProperty("machine.printer.2", "Not defined");
@@ -303,7 +311,7 @@ public class AppConfig implements AppProperties {
                 
         m_propsconfig.setProperty("machine.display", "screen");
         m_propsconfig.setProperty("machine.scale", "Not defined");
-        m_propsconfig.setProperty("machine.screenmode", "window");
+        m_propsconfig.setProperty("machine.screenmode", "fullscreen");
         m_propsconfig.setProperty("machine.ticketsbag", "standard");
         m_propsconfig.setProperty("machine.scanner", "Not defined");
         m_propsconfig.setProperty("machine.iButton", "false");  
@@ -312,7 +320,7 @@ public class AppConfig implements AppProperties {
         
         m_propsconfig.setProperty("payment.gateway", "external");
         m_propsconfig.setProperty("payment.magcardreader", "Not defined");
-        m_propsconfig.setProperty("payment.testmode", "false");
+        m_propsconfig.setProperty("payment.testmode", "true");
         m_propsconfig.setProperty("payment.commerceid", "");
         m_propsconfig.setProperty("payment.commercepassword", "password");
         
@@ -335,12 +343,20 @@ public class AppConfig implements AppProperties {
 
         m_propsconfig.setProperty("tkt.header1", "uniCenta oPOS");
         m_propsconfig.setProperty("tkt.header2", "Touch Friendly Point Of Sale");
-        m_propsconfig.setProperty("tkt.header3", "Copyright (c) 2009-2017 uniCenta");
+        m_propsconfig.setProperty("tkt.header3", "Copyright (c) 2009-2018 uniCenta");
         m_propsconfig.setProperty("tkt.header4", "Change header text in Configuration");                
         
         m_propsconfig.setProperty("tkt.footer1", "Change footer text in Configuration");        
         m_propsconfig.setProperty("tkt.footer2", "Thank you for your custom");
         m_propsconfig.setProperty("tkt.footer3", "Please Call Again");
+        
+        m_propsconfig.setProperty("table.showcustomerdetails", "true");
+        m_propsconfig.setProperty("table.customercolour", "#58B000");        
+        m_propsconfig.setProperty("table.showwaiterdetails", "true");
+        m_propsconfig.setProperty("table.waitercolour", "#258FB0");                
+        m_propsconfig.setProperty("table.tablecolour", "#D62E52"); 
+        m_propsconfig.setProperty("till.amountattop", "true");        
+        m_propsconfig.setProperty("till.hideinfo", "true");                
 
     }
 }

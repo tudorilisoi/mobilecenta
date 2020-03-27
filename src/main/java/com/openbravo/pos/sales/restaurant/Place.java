@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -20,19 +20,15 @@
 package com.openbravo.pos.sales.restaurant;
 
 import java.awt.Dimension;
+import java.awt.Insets;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
+import com.openbravo.basic.BasicException;
 import com.openbravo.data.gui.NullIcon;
 import com.openbravo.data.loader.DataRead;
 import com.openbravo.data.loader.SerializableRead;
-import com.openbravo.basic.BasicException;
-import java.awt.Insets;
-// import com.alee.extended.button.WebSplitButton;
-// import com.alee.laf.menu.WebMenuItem;
-// import com.alee.laf.menu.WebPopupMenu;
-
 
 /**
  *
@@ -46,20 +42,24 @@ public class Place implements SerializableRead, java.io.Serializable {
     
     private String m_sId;
     private String m_sName;
+    private String m_sSeats;
     private int m_ix;
     private int m_iy;
+    private int m_diffx;
+    private int m_diffy;
     private String m_sfloor;
     private String m_customer;
     private String m_waiter;
     private String m_ticketId;
     private Boolean m_tableMoved;
-    
+    private Boolean m_changed = false;    
+
     private boolean m_bPeople;
     private JButton m_btn;
-//    private WebSplitButton m_btn;
-
-        
-    /** Creates a new instance of TablePlace */
+    
+    /**
+     * Creates a new instance of TablePlace
+     */
     public Place() {
     }
 
@@ -72,26 +72,17 @@ public class Place implements SerializableRead, java.io.Serializable {
     public void readValues(DataRead dr) throws BasicException {
         m_sId = dr.getString(1);
         m_sName = dr.getString(2);
-        m_ix = dr.getInt(3);
-        m_iy = dr.getInt(4);
-        m_sfloor = dr.getString(5);
-        m_customer = dr.getString(6);
-        m_waiter = dr.getString(7);
-        m_ticketId = dr.getString(8);
-        m_tableMoved = dr.getBoolean(9);
+        m_sSeats = dr.getString(3);        
+        m_ix = dr.getInt(4);
+        m_iy = dr.getInt(5);
+        m_sfloor = dr.getString(6);
+        m_customer = dr.getString(7);
+        m_waiter = dr.getString(8);
+        m_ticketId = dr.getString(9);
+        m_tableMoved = dr.getBoolean(10);
         
         m_bPeople = false;
         m_btn = new JButton();
-/**
- * JG experimental weblaf
-        final WebSplitButton splitButton = new WebSplitButton();
-        final WebPopupMenu popupMenu = new WebPopupMenu();
-        m_btn = new WebSplitButton();
-        m_btn = splitButton;
-        popupMenu.add(new WebMenuItem ("Server"));
-        popupMenu.add(new WebMenuItem ("Customer")); 
-        splitButton.setPopupMenu(popupMenu);
-*/ 
         m_btn.setFocusPainted(false);
         m_btn.setFocusable(false);
         m_btn.setRequestFocusEnabled(false);
@@ -100,109 +91,110 @@ public class Place implements SerializableRead, java.io.Serializable {
         m_btn.setIcon(ICO_FRE);
         m_btn.setText(m_sName);
         m_btn.setMargin(new Insets(2,5,2,5));
-        
+        m_diffx=0;
+        m_diffy=0;        
+    }
 
-/**
- * Requested feature - set transparency 
- * Configuration option
- * 
-        m_btn.setMargin(new Insets(0,0,0,0));
-        m_btn.setOpaque(false);
-        m_btn.setContentAreaFilled(false);
-        m_btn.setBorderPainted(false);
 
-//m_btn.setPreferredSize(new Dimension(d.width + 30,d.height + 8));
-*/        
-
+    public String getId() { 
+        return m_sId; 
+    }
+    
+    public String getTicketID(){
+        return m_ticketId;
+    }
+    public String getName() { 
+        return m_sName; 
+    }
+    
+    /**
+     *
+     * @return
+     */
+    public String getSeats() { 
+        return m_sSeats; 
     }
 
     /**
      *
      * @return
      */
-    public String getId() { return m_sId; }
+    public int getX() { 
+        return m_ix; 
+    }
+
+    public int getY() {
+        return m_iy;
+    }
+
+    public void setX(int x) {
+        this.m_ix = x;
+    }
+
+    public void setY(int y) {
+        this.m_iy = y;
+    }
+
+    public int getDiffX() {
+        return m_diffx;
+    }
+
+    public int getDiffY() {
+        return m_diffy;
+    }
+
+    public void setDiffX(int x) {
+        this.m_diffx = x;
+    }
     
-    /**
-     *
-     * @return
-     */
-    public String getName() { return m_sName; }
+    public void setDiffY(int y) {
+        this.m_diffy = y;
+    }
+    
+    public Boolean getChanged() {
+        return m_changed;
+    }
 
-    /**
-     *
-     * @return
-     */
-    public int getX() { return m_ix; }
+    public void setChanged(Boolean changed) {
+        this.m_changed = changed;
+    } 
 
-    /**
-     *
-     * @return
-     */
-    public int getY() { return m_iy; }
-
-    /**
-     *
-     * @return
-     */
-    public String getFloor() { return m_sfloor; }
+    
+    public String getFloor() { 
+        return m_sfloor; 
+    }
    
-    /**
-     *
-     * @return
-     */
-    public JButton getButton() { return m_btn; }
+    public JButton getButton() { 
+        return m_btn; 
+    }
     
-//    public WebSplitButton getButton() {
-//        return m_btn;
-//    }
-    
-    /**
-     *
-     * @return
-     */
-    public String getCustomer(){ return m_customer; }
+    public String getCustomer() {
+        return m_customer;
+    }
 
-    /**
-     *
-     * @return
-     */
-    public String getWaiter(){
+    public String getWaiter() {
         return m_waiter;
     }
     
-    /**
-     *
-     * @return
-     */
     public boolean hasPeople() {
         return m_bPeople;
     }   
 
-    /**
-     *
-     * @param bValue
-     */
     public void setPeople(boolean bValue) {
         m_bPeople = bValue;
-        m_btn.setIcon(bValue ? ICO_OCU : ICO_FRE); 
+        m_btn.setIcon(bValue ? ICO_OCU : ICO_FRE);
     }     
 
-    /**
-     *
-     */
     public void setButtonBounds() {
         Dimension d = m_btn.getPreferredSize();
-        m_btn.setPreferredSize(new Dimension(d.width +60,d.height + 30));        
+//        m_btn.setPreferredSize(new Dimension(d.width +60,d.height + 30));        
+        m_btn.setPreferredSize(new Dimension(d.width +90,d.height + 45));        
         d = m_btn.getPreferredSize();
         m_btn.setBounds(m_ix - d.width / 2, m_iy - d.height / 2, d.width, d.height); 
     }
     
-    /**
-     *
-     * @param btnText
-     */
-    public void setButtonText(String btnText){
+    public void setButtonText(String btnText) {
         m_btn.setText(btnText);         
-    }
-    
+    }    
+
 }

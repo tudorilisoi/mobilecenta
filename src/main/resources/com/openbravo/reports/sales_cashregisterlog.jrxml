@@ -13,6 +13,7 @@
 		<![CDATA[SELECT
 		RECEIPTS.DATENEW,
 		PAYMENTS.PAYMENT,
+                PAYMENTS.VOUCHER,
 		SUM( PAYMENTS.TOTAL ) AS PAYMENT_TOTAL
 		FROM RECEIPTS
 		LEFT JOIN PAYMENTS ON RECEIPTS.ID = PAYMENTS.RECEIPT
@@ -21,6 +22,7 @@
 	<field name="DATENEW" class="java.util.Date"/>
 	<field name="PAYMENT" class="java.lang.String"/>
 	<field name="TENDERED" class="java.lang.Double"/>
+	<field name="VOUCHER" class="java.lang.String"/>
 	<field name="PAYMENT_TOTAL" class="java.lang.Double"/>
 	<variable name="PAYMENT_TOTAL" class="java.lang.Double" calculation="Sum">
 		<variableExpression><![CDATA[$F{PAYMENT_TOTAL}]]></variableExpression>
@@ -212,7 +214,7 @@
 				<textFieldExpression><![CDATA[com.openbravo.format.Formats.TIMESTAMP.formatValue($F{DATENEW})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="138" y="0" width="160" height="13" uuid="06b01f58-e09b-4606-8a8b-6dd7fd4265c3"/>
+				<reportElement key="textField" x="138" y="0" width="124" height="13" uuid="06b01f58-e09b-4606-8a8b-6dd7fd4265c3"/>
 				<textElement>
 					<font fontName="SansSerif"/>
 				</textElement>
@@ -231,6 +233,10 @@
 					<font fontName="SansSerif"/>
 				</textElement>
 				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($F{PAYMENT_TOTAL})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="262" y="0" width="73" height="13" uuid="8a408008-d7e6-4fd8-99aa-6dfcaef33cc3"/>
+				<textFieldExpression><![CDATA[$F{VOUCHER}.equals("0") ? "":$F{VOUCHER}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

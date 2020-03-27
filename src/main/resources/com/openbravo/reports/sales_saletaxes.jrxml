@@ -2,8 +2,8 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="saletaxes" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="13371342-a846-448b-9f80-e188a307d467">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="ireport.zoom" value="2.1961500000000016"/>
-	<property name="ireport.x" value="523"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -167,20 +167,6 @@ ORDER BY RECEIPTS.DATENEW]]>
 				<textFieldExpression><![CDATA[$R{label.ticket}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-21" mode="Opaque" x="170" y="2" width="100" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="1c06e3c7-b0f6-4cb6-a8c6-7af9c22465da"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None">
-					<font fontName="SansSerif" size="11" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{label.paymenttype}]]></textFieldExpression>
-			</textField>
-			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField-22" mode="Opaque" x="275" y="2" width="100" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="74c6e07c-fe39-4073-8cc1-e9f5b692dc2f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -209,7 +195,7 @@ ORDER BY RECEIPTS.DATENEW]]>
 				<textFieldExpression><![CDATA[$R{label.tax}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement key="line-4" mode="Opaque" x="0" y="0" width="535" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="c1ca45f7-a818-4cd7-ab4a-e4ac1a6bd985"/>
+				<reportElement key="line-4" mode="Opaque" x="0" y="19" width="535" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="c1ca45f7-a818-4cd7-ab4a-e4ac1a6bd985"/>
 				<graphicElement fill="Solid">
 					<pen lineWidth="0.25" lineStyle="Solid"/>
 				</graphicElement>
@@ -228,6 +214,20 @@ ORDER BY RECEIPTS.DATENEW]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{label.nettax}]]></textFieldExpression>
 			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField-20" mode="Opaque" x="181" y="2" width="80" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="5c0536b9-2e4f-497c-b101-c10ca7a1f8a3"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None">
+					<font fontName="SansSerif" size="11" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{label.paymenttype}]]></textFieldExpression>
+			</textField>
 		</band>
 	</columnHeader>
 	<detail>
@@ -245,13 +245,6 @@ ORDER BY RECEIPTS.DATENEW]]>
 					<font fontName="SansSerif" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{NAME}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-26" x="170" y="0" width="100" height="13" uuid="37652e12-4f82-4191-9dba-4e8452384557"/>
-				<textElement>
-					<font fontName="SansSerif" size="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[str("transpayment." + (String)field_PAYMENT.getValue())]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField-25" x="90" y="0" width="80" height="13" uuid="73fa7ee8-1ddc-4578-ba26-1d4e8b41f5c5"/>
@@ -273,6 +266,13 @@ ORDER BY RECEIPTS.DATENEW]]>
 					<font fontName="SansSerif" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[com.openbravo.format.Formats.CURRENCY.formatValue($F{BASE})]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField-25" x="181" y="0" width="80" height="13" uuid="eb9d4b13-735d-4ae9-b376-839b1d226f89"/>
+				<textElement>
+					<font fontName="SansSerif" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{PAYMENT}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

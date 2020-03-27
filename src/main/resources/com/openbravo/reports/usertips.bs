@@ -1,5 +1,5 @@
 //    uniCenta oPOS - touch friendly EPoS
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -26,6 +26,11 @@ report.setResourceBundle("com/openbravo/reports/usertips_messages");
 report.setSentence("SELECT people.NAME, MIN(receipts.DATENEW) AS STARTDATE, MAX(receipts.DATENEW) AS ENDDATE, SUM(payments.TIP) AS TOTAL " +
                 "FROM people, receipts, tickets, payments WHERE people.ID = tickets.PERSON AND receipts.ID = tickets.ID AND tickets.ID = payments.RECEIPT AND ?(QBF_FILTER) " +
                 "GROUP BY people.NAME ORDER BY people.NAME");
+
+report.addParameter("people.ID");
+report.addParameter("people.NAME");
+report.addQBFFilter(new com.openbravo.pos.reports.JParamsUser());
+
 report.addParameter("receipts.DATENEW");
 report.addParameter("receipts.DATENEW");
 report.addQBFFilter(new com.openbravo.pos.reports.JParamsDatesInterval());

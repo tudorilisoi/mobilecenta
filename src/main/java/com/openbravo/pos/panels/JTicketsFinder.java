@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -38,6 +38,8 @@ import com.openbravo.pos.inventory.TaxCategoryInfo;
 import com.openbravo.pos.ticket.FindTicketsInfo;
 import com.openbravo.pos.ticket.FindTicketsRenderer;
 import java.awt.*;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -56,18 +58,15 @@ public class JTicketsFinder extends javax.swing.JDialog implements EditorCreator
     private DataLogicSales dlSales;
     private DataLogicCustomers dlCustomers;
     private FindTicketsInfo selectedTicket;
-   
+
     /** Creates new form JTicketsFinder */
     private JTicketsFinder(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
-
     }
 
     /** Creates new form JTicketsFinder */
     private JTicketsFinder(java.awt.Dialog parent, boolean modal) {
         super(parent, modal);
-        
-   
     }
     
     /**
@@ -114,7 +113,7 @@ public class JTicketsFinder extends javax.swing.JDialog implements EditorCreator
         lpr = new ListProviderCreator(dlSales.getTicketsList(), this);
 
         jListTickets.setCellRenderer(new FindTicketsRenderer());
-
+        
         getRootPane().setDefaultButton(jcmdOK);
         
         initCombos();
@@ -122,16 +121,26 @@ public class JTicketsFinder extends javax.swing.JDialog implements EditorCreator
         defaultValues();
 
         selectedTicket = null;
+ 
     }
-    
+ 
     /**
      *
      */
     public void executeSearch() {
+
+        jLblTicketCount.setVisible(false);
+        jLblReturnCount.setVisible(false);        
+        jLblTicketCount.setText(null); 
+
         try {
             jListTickets.setModel(new MyListData(lpr.loadData()));
             if (jListTickets.getModel().getSize() > 0) {
+                String count = String.valueOf(jListTickets.getModel().getSize());
+                jLblTicketCount.setVisible(true);
+                jLblReturnCount.setVisible(true);                   
                 jListTickets.setSelectedIndex(0);
+                jLblTicketCount.setText(count);
             }
         } catch (BasicException e) {
         }        
@@ -179,7 +188,16 @@ public class JTicketsFinder extends javax.swing.JDialog implements EditorCreator
         jtxtMoney.reset();
         jTxtStartDate.setText(null);
         jTxtEndDate.setText(null);
-        jtxtCustomer.setText(null);     
+        jtxtCustomer.setText(null);
+
+        jLblTicketCount.setVisible(false);
+        jLblReturnCount.setVisible(false);
+        jLblTicketCount.setText(null);   
+
+        Date startOfToday = Date.from(ZonedDateTime.now().with(LocalTime.MIN).toInstant());        
+        jTxtStartDate.setText(Formats.TIMESTAMP.formatValue(startOfToday));
+
+        repaint();
     }
     
     /**
@@ -200,15 +218,21 @@ public class JTicketsFinder extends javax.swing.JDialog implements EditorCreator
             afilter[1] = jtxtTicketID.getValueInteger();
         }
         
-        if (jComboBoxTicket.getSelectedIndex() == 2) {
-            afilter[2] = QBFCompareEnum.COMP_DISTINCT;
-            afilter[3] = 2;
-        } else if (jComboBoxTicket.getSelectedIndex() == 0) {
-            afilter[2] = QBFCompareEnum.COMP_EQUALS;
-            afilter[3] = 0;
-        } else if (jComboBoxTicket.getSelectedIndex() == 1) {
-            afilter[2] = QBFCompareEnum.COMP_EQUALS;
-            afilter[3] = 1;
+        switch (jComboBoxTicket.getSelectedIndex()) {
+            case 2:
+                afilter[2] = QBFCompareEnum.COMP_DISTINCT;
+                afilter[3] = 2;
+                break;
+            case 0:
+                afilter[2] = QBFCompareEnum.COMP_EQUALS;
+                afilter[3] = 0;
+                break;
+            case 1:
+                afilter[2] = QBFCompareEnum.COMP_EQUALS;
+                afilter[3] = 1;
+                break;
+            default:
+                break;
         }
         
         afilter[5] = jtxtMoney.getDoubleValue();
@@ -271,6 +295,18 @@ public class JTicketsFinder extends javax.swing.JDialog implements EditorCreator
             return m_data.size();
         } 
     }
+    /**
+     *
+     * @param d
+     */
+    public void setStartDate(Date d) {
+        Date startOfDay = Date.from(ZonedDateTime.now().with(LocalTime.MIN).toInstant());        
+        jTxtStartDate.setText(Formats.TIMESTAMP.formatValue(startOfDay));
+    }
+    public void setEndDate(Date d) {
+        Date endOfDay = Date.from(ZonedDateTime.now().with(LocalTime.MAX).toInstant());        
+        jTxtEndDate.setText(Formats.TIMESTAMP.formatValue(endOfDay));
+    }    
     
    
     /** This method is called from within the constructor to
@@ -313,6 +349,8 @@ public class JTicketsFinder extends javax.swing.JDialog implements EditorCreator
         jPanel1 = new javax.swing.JPanel();
         jcmdCancel = new javax.swing.JButton();
         jcmdOK = new javax.swing.JButton();
+        jLblTicketCount = new javax.swing.JLabel();
+        jLblReturnCount = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(AppLocal.getIntString("form.tickettitle")); // NOI18N
@@ -538,7 +576,7 @@ public class JTicketsFinder extends javax.swing.JDialog implements EditorCreator
         getContentPane().add(jPanel3, java.awt.BorderLayout.CENTER);
 
         jPanel2.setPreferredSize(new java.awt.Dimension(300, 250));
-        jPanel2.setLayout(new java.awt.BorderLayout());
+        jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         m_jKeys.setPreferredSize(new java.awt.Dimension(290, 300));
         m_jKeys.addActionListener(new java.awt.event.ActionListener() {
@@ -546,7 +584,7 @@ public class JTicketsFinder extends javax.swing.JDialog implements EditorCreator
                 m_jKeysActionPerformed(evt);
             }
         });
-        jPanel2.add(m_jKeys, java.awt.BorderLayout.NORTH);
+        jPanel2.add(m_jKeys, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 300, -1));
 
         jPanel8.setLayout(new java.awt.BorderLayout());
 
@@ -585,7 +623,23 @@ public class JTicketsFinder extends javax.swing.JDialog implements EditorCreator
 
         jPanel8.add(jPanel1, java.awt.BorderLayout.LINE_END);
 
-        jPanel2.add(jPanel8, java.awt.BorderLayout.PAGE_END);
+        jPanel2.add(jPanel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 536, 300, -1));
+
+        jLblTicketCount.setBackground(new java.awt.Color(51, 204, 255));
+        jLblTicketCount.setFont(new java.awt.Font("Century Gothic", 0, 18)); // NOI18N
+        jLblTicketCount.setForeground(new java.awt.Color(255, 255, 255));
+        jLblTicketCount.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLblTicketCount.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(51, 204, 255)));
+        jLblTicketCount.setOpaque(true);
+        jLblTicketCount.setPreferredSize(new java.awt.Dimension(80, 50));
+        jPanel2.add(jLblTicketCount, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 306, -1, -1));
+
+        jLblReturnCount.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("pos_messages"); // NOI18N
+        jLblReturnCount.setText(bundle.getString("label.ticketsfound")); // NOI18N
+        jLblReturnCount.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 204, 255)));
+        jLblReturnCount.setPreferredSize(new java.awt.Dimension(80, 50));
+        jPanel2.add(jLblReturnCount, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 306, 200, -1));
 
         getContentPane().add(jPanel2, java.awt.BorderLayout.LINE_END);
 
@@ -608,6 +662,10 @@ public class JTicketsFinder extends javax.swing.JDialog implements EditorCreator
     private void jbtnExecuteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnExecuteActionPerformed
         
         executeSearch();
+
+        jLblTicketCount.setVisible(true);
+        jLblReturnCount.setVisible(true);        
+        jLblReturnCount.setText(" Tickets found");        
         
     }//GEN-LAST:event_jbtnExecuteActionPerformed
 
@@ -627,10 +685,15 @@ public class JTicketsFinder extends javax.swing.JDialog implements EditorCreator
 }//GEN-LAST:event_jListTicketsMouseClicked
 
 private void jbtnResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbtnResetActionPerformed
-        defaultValues();
+
+    defaultValues();
 }//GEN-LAST:event_jbtnResetActionPerformed
 
 private void btnDateStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDateStartActionPerformed
+    
+    jLblTicketCount.setVisible(false);
+    jLblReturnCount.setVisible(false);  
+    
     Date date;
         try {
             date = (Date) Formats.TIMESTAMP.parseValue(jTxtStartDate.getText());
@@ -644,7 +707,10 @@ private void btnDateStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 }//GEN-LAST:event_btnDateStartActionPerformed
 
 private void btnDateEndActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDateEndActionPerformed
-Date date;
+    jLblTicketCount.setVisible(false);
+    jLblReturnCount.setVisible(false);  
+    
+    Date date;
         try {
             date = (Date) Formats.TIMESTAMP.parseValue(jTxtEndDate.getText());
         } catch (BasicException e) {
@@ -657,7 +723,10 @@ Date date;
 }//GEN-LAST:event_btnDateEndActionPerformed
 
 private void btnCustomerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCustomerActionPerformed
-        JCustomerFinder finder = JCustomerFinder.getCustomerFinder(this, dlCustomers);
+    jLblTicketCount.setVisible(false);
+    jLblReturnCount.setVisible(false);      
+    
+    JCustomerFinder finder = JCustomerFinder.getCustomerFinder(this, dlCustomers);
         finder.search(null);
         finder.setVisible(true);
         
@@ -690,6 +759,8 @@ private void btnCustomerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLblReturnCount;
+    private javax.swing.JLabel jLblTicketCount;
     private javax.swing.JList jListTickets;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;

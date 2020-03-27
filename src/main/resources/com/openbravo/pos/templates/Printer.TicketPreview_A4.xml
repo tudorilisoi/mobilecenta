@@ -22,11 +22,6 @@
 
 <output>
 
-<display>
-	<line><text align="left" length="10">Total</text><text align="right" length="10">${ticket.printTotal()}</text></line>
-	<line><text align="center" length="20">Thank you for your custom</text></line>
-</display>
-
 <ticket>
     <line></line>
         	<image>Printer.Ticket.Logo</image>
@@ -67,7 +62,6 @@
 
 	<line></line>                
 
-
 	#if (${ticket.ticketType} == 0)
 		<line><text align="left" length="15">Receipt:</text><text>${ticket.printId()}</text></line>
 	#end
@@ -78,9 +72,13 @@
 		<line><text align="left" length="15">Date:</text><text>${ticket.printDate()}</text></line>
 
 	#if ($ticket.getCustomer())
-		<line><text align="left" length="15">Customer:</text><text>${ticket.getCustomer().printName()}</text></line>
-		<line><text align="left" length="15">Account #:</text><text>${ticket.getCustomer().printTaxid()}</text></line>
-		<line><text align="left" length="15">Current Debt:</text><text>${ticket.getCustomer().printCurDebt()}</text></line>
+            <line><text align="left" length="15">Account #:</text><text>${ticket.getCustomer().printTaxCustomerID()}</text></line>
+            <line><text align="left" length="15">Customer:</text><text>${ticket.getCustomer().printName()}</text></line>
+            <line><text align="left" length="15">Address:</text><text>${ticket.getCustomer().printAddress()}</text></line>
+            <line><text align="left" length="15">Postal:</text><text>${ticket.getCustomer().printPostal()}</text></line>
+            <line><text align="left" length="15">Phone:</text><text>${ticket.getCustomer().printPhone1()}</text></line>
+            <line><text align="left" length="15">Current Debt:</text><text>${ticket.getCustomer().printCurDebt()}</text></line>
+
 	#end
 
 	#if (${tickettext.place} != ${place})
@@ -131,7 +129,7 @@
 		<line><text align ="right" length="108">${paymentline.printTotal()}</text></line>
 	#end
 	
-	#if ($paymentline.name == "magcard")
+	#if ($paymentline.name == "ccard")
 		<line><text bold="true">Card</text></line>
                 <line> <text>Card Type</text></line>
                 <line> 
@@ -140,7 +138,7 @@
 		<line><text align ="right" length="108">${paymentline.printTotal()}</text></line>
 	#end
 
-	#if ($paymentline.name == "magcardrefund")
+	#if ($paymentline.name == "ccardrefund")
 		<line><text bold="true">Card Refund</text></line>
                 <line> <text>Card Type</text></line>
                 <line> 

@@ -1,7 +1,7 @@
-Project: uniCenta oPOS v4.4.2
+Project: uniCenta oPOS v4.5.4
 Topic:	README installer
 Author:	Jack Gerrard
-Date: 	16 September 2017
+Date: 	15 May 2018
 
 Acknowledgement: The content of the language/Locale files are compiled from the efforts of uniCenta and uniCenta oPOS Community Members.
 We appreciate and acknowledge everyone who has contributed to making this distribution possible.
@@ -12,7 +12,7 @@ All files, including these Locale files, are made available under the GPL v3 Lic
 
 Please refer to Locales Guide for installation details.
 
-uniCenta oPOS v4.4.2 is delivered with support for 15 languages.
+uniCenta oPOS v4.5.4 is delivered with support for 15 languages.
 
 Full translations provided by uniCenta include:
 English UK - the default language set.

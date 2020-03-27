@@ -1,4 +1,21 @@
-
+//    uniCenta oPOS  - Touch Friendly Point Of Sale
+//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    https://unicenta.com
+//
+//    This file is part of uniCenta oPOS
+//
+//    uniCenta oPOS is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//   uniCenta oPOS is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with uniCenta oPOS.  If not, see <http://www.gnu.org/licenses/>.
 
 package com.openbravo.pos.voucher;
 
@@ -23,6 +40,7 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 public final class VoucherEditor extends javax.swing.JPanel implements EditorRecord {
 
@@ -40,19 +58,23 @@ public final class VoucherEditor extends javax.swing.JPanel implements EditorRec
 
         initComponents();
   
-        dlCustomers = (DataLogicCustomers) app.getBean("com.openbravo.pos.customers.DataLogicCustomers");
-        dlSystem= (DataLogicSystem) app.getBean("com.openbravo.pos.forms.DataLogicSystem");
+        dlCustomers = (DataLogicCustomers) 
+                app.getBean("com.openbravo.pos.customers.DataLogicCustomers");
+        dlSystem= (DataLogicSystem) 
+                app.getBean("com.openbravo.pos.forms.DataLogicSystem");
         m_jNumber.getDocument().addDocumentListener(dirty);
         m_jCustomer.getDocument().addDocumentListener(dirty);
         m_jAmount.getDocument().addDocumentListener(dirty);
-        jButtonPrint.setVisible(false);
+        m_jStatus.getDocument().addDocumentListener(dirty);
+        
+        jButtonPrint.setVisible(false);       
         
         m_ReasonModel = new ComboBoxValModel();
         m_ReasonModel.add(AppLocal.getIntString("cboption.find"));
         m_ReasonModel.add(AppLocal.getIntString("cboption.create"));              
-        webCBCustomer.setModel(m_ReasonModel);   
-        
-        
+        jCBCustomer.setModel(m_ReasonModel);   
+        jLblStatus.setIcon(null);
+                
         writeValueEOF();
     }
      
@@ -65,7 +87,10 @@ public final class VoucherEditor extends javax.swing.JPanel implements EditorRec
         m_jCustomer.setEnabled(false);
         m_jAmount.setText(null);
         m_jAmount.setEnabled(false);
-//        jButtonPrint.setEnabled(false);
+        m_jStatus.setText(null);
+        m_jStatus.setEnabled(false);        
+        
+        jButtonPrint.setEnabled(false);
     }
     
     @Override
@@ -77,13 +102,16 @@ public final class VoucherEditor extends javax.swing.JPanel implements EditorRec
         m_jCustomer.setEnabled(true);
         m_jAmount.setText(null);
         m_jAmount.setEnabled(true);
-//        jButtonPrint.setEnabled(false);
+        m_jStatus.setText(null);
+        m_jStatus.setText("A");
+        
+        jButtonPrint.setEnabled(false);
         jButtonPrint.setEnabled(true);        
     }
     
     @Override
     public void writeValueDelete(Object value) {
-
+    if ("A".equals(m_jStatus.getText())) {
         try {
             Object[] attr = (Object[]) value;
             id = attr[0];
@@ -92,13 +120,21 @@ public final class VoucherEditor extends javax.swing.JPanel implements EditorRec
             customerInfo = dlCustomers.getCustomerInfo(attr[2].toString());
             m_jCustomer.setText(customerInfo.getName());
             m_jCustomer.setEnabled(false);
-            m_jAmount.setText(Formats.CURRENCY.formatValue(attr[3]));
+            m_jAmount.setText(Formats.DOUBLE.formatValue(attr[3]));
             m_jAmount.setEnabled(false);
-//            jButtonPrint.setEnabled(false);
+            m_jStatus.setText(Formats.STRING.formatValue(attr[4]));
+            m_jStatus.setEnabled(false);
+            
+                jButtonPrint.setEnabled(false);
         } catch (BasicException ex) {
             Logger.getLogger(VoucherEditor.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+    } else {
+        JOptionPane.showMessageDialog(this, 
+            AppLocal.getIntString("message.voucherdelete"),
+            AppLocal.getIntString("Check"),
+            JOptionPane.WARNING_MESSAGE);
+    }
     }    
     
     @Override
@@ -112,9 +148,37 @@ public final class VoucherEditor extends javax.swing.JPanel implements EditorRec
             customerInfo = dlCustomers.getCustomerInfo(attr[2].toString());
             m_jCustomer.setText(customerInfo.getName());
             m_jCustomer.setEnabled(true);
-            m_jAmount.setText(Formats.CURRENCY.formatValue(attr[3]));
+            m_jAmount.setText(Formats.DOUBLE.formatValue(attr[3]));
             m_jAmount.setEnabled(true);
-//            jButtonPrint.setEnabled(true);
+            m_jStatus.setText(Formats.STRING.formatValue(attr[4]));
+            
+            jButtonPrint.setEnabled(true);
+            
+            if (null == m_jStatus.getText()) {
+                jLblStatus.setIcon(null);
+            } else switch (m_jStatus.getText()) {
+                case "A":
+                    jLblStatus.setIcon(new javax.swing.ImageIcon(getClass()
+                            .getResource("/com/openbravo/images/OK.png")));
+                    m_jNumber.setEnabled(true);
+                    m_jAmount.setEnabled(true); 
+                    jCBCustomer.setEnabled(true);
+                    m_jStatus.setText("A");
+                    break;
+                case "D":
+                    jLblStatus.setIcon(new javax.swing.ImageIcon(getClass()
+                            .getResource("/com/openbravo/images/refundit.png")));
+                    m_jNumber.setEnabled(false);
+                    m_jAmount.setEnabled(false);
+                    jCBCustomer.setEnabled(false);                    
+                    m_jStatus.setText("D");                    
+                    
+                    break;
+                default:
+                    jLblStatus.setIcon(null);
+                    break;
+            }             
+            
         } catch (BasicException ex) {
             Logger.getLogger(VoucherEditor.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -123,13 +187,14 @@ public final class VoucherEditor extends javax.swing.JPanel implements EditorRec
     @Override
     public Object createValue() throws BasicException {
         
-        Object[] attr = new Object[4];
+        Object[] attr = new Object[5];
 
         attr[0] = id;
         attr[1] = m_jNumber.getText();
         attr[2] = customerInfo.getId();
-        attr[3] =  Formats.DOUBLE.parseValue(m_jAmount.getText());
-
+        attr[3] = Formats.DOUBLE.parseValue(m_jAmount.getText());
+        attr[4] = m_jStatus.getText();
+        
         return attr;
     }    
      
@@ -158,7 +223,9 @@ public final class VoucherEditor extends javax.swing.JPanel implements EditorRec
         m_jAmount = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         jButtonPrint = new javax.swing.JButton();
-        webCBCustomer = new com.alee.laf.combobox.WebComboBox();
+        jLblStatus = new javax.swing.JLabel();
+        m_jStatus = new javax.swing.JTextField();
+        jCBCustomer = new javax.swing.JComboBox<>();
 
         setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
 
@@ -166,6 +233,7 @@ public final class VoucherEditor extends javax.swing.JPanel implements EditorRec
         jLabel2.setText(AppLocal.getIntString("label.Number")); // NOI18N
         jLabel2.setPreferredSize(new java.awt.Dimension(100, 30));
 
+        m_jNumber.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         m_jNumber.setPreferredSize(new java.awt.Dimension(240, 30));
 
         jLabel3.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
@@ -173,8 +241,10 @@ public final class VoucherEditor extends javax.swing.JPanel implements EditorRec
         jLabel3.setPreferredSize(new java.awt.Dimension(100, 30));
 
         m_jCustomer.setEditable(false);
+        m_jCustomer.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         m_jCustomer.setPreferredSize(new java.awt.Dimension(240, 30));
 
+        m_jAmount.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         m_jAmount.setPreferredSize(new java.awt.Dimension(240, 30));
 
         jLabel5.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
@@ -195,16 +265,23 @@ public final class VoucherEditor extends javax.swing.JPanel implements EditorRec
             }
         });
 
-        webCBCustomer.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Find", "Create" }));
-        webCBCustomer.setToolTipText(AppLocal.getIntString("tooltip.vouchercustomer")); // NOI18N
-        webCBCustomer.setExpandIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/customer.png")));
-        webCBCustomer.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        webCBCustomer.setPreferredSize(new java.awt.Dimension(110, 45));
-        webCBCustomer.setRound(3);
-        webCBCustomer.setShadeWidth(3);
-        webCBCustomer.addActionListener(new java.awt.event.ActionListener() {
+        jLblStatus.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLblStatus.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/ok.png"))); // NOI18N
+        jLblStatus.setText(AppLocal.getIntString("label.Status")); // NOI18N
+        jLblStatus.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
+        jLblStatus.setPreferredSize(new java.awt.Dimension(100, 30));
+
+        m_jStatus.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        m_jStatus.setPreferredSize(new java.awt.Dimension(240, 30));
+
+        jCBCustomer.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jCBCustomer.setMaximumRowCount(2);
+        jCBCustomer.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Find", "Create" }));
+        jCBCustomer.setToolTipText(AppLocal.getIntString("label.voucherCustomer")); // NOI18N
+        jCBCustomer.setPreferredSize(new java.awt.Dimension(110, 30));
+        jCBCustomer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                webCBCustomerActionPerformed(evt);
+                jCBCustomerActionPerformed(evt);
             }
         });
 
@@ -213,12 +290,9 @@ public final class VoucherEditor extends javax.swing.JPanel implements EditorRec
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(187, 187, 187)
-                        .addComponent(jButtonPrint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -226,15 +300,23 @@ public final class VoucherEditor extends javax.swing.JPanel implements EditorRec
                                     .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(m_jCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(m_jCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jCBCustomer, 0, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addComponent(m_jNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(m_jAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLblStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(webCBCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(40, Short.MAX_VALUE))
+                        .addComponent(m_jStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 52, Short.MAX_VALUE)
+                        .addComponent(jButtonPrint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(28, 28, 28))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -245,40 +327,41 @@ public final class VoucherEditor extends javax.swing.JPanel implements EditorRec
                     .addComponent(m_jNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(m_jCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(m_jAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(webCBCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(m_jCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jCBCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButtonPrint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(m_jAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(26, 26, 26)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButtonPrint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLblStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(m_jStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
 private void jButtonPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPrintActionPerformed
 
-        try {
-            VoucherInfo  voucherInfo = dlCustomers.getVoucherInfoAll(id.toString());
-            BufferedImage image = dlSystem.getResourceAsImage("Window.Logo");
-            
-            if (voucherInfo!=null){
-                JDialogReportPanel dialog = JDialogReportPanel.getDialog(this,m_app,voucherInfo,image);
-                dialog.setVisible(true);
-            }   
-        } catch (BasicException ex) {
-            Logger.getLogger(VoucherEditor.class.getName()).log(Level.SEVERE, null, ex);
+    try {
+        VoucherInfo  voucherInfo = dlCustomers.getVoucherInfoAll(id.toString());
+        BufferedImage image = dlSystem.getResourceAsImage("Window.Logo");
+        if (voucherInfo!=null){
+            JDialogReportPanel dialog = JDialogReportPanel
+                    .getDialog(this,m_app,voucherInfo,image);
+            dialog.setVisible(true);
         }
-    
+                
+    } catch (BasicException ex) {
+
+    }    
 }//GEN-LAST:event_jButtonPrintActionPerformed
 
-    private void webCBCustomerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webCBCustomerActionPerformed
-
-        if(webCBCustomer.getSelectedIndex() == 0){
+    private void jCBCustomerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCBCustomerActionPerformed
+        if(jCBCustomer.getSelectedIndex() == 0){
 
             JCustomerFinder finder = JCustomerFinder.getCustomerFinder(this, dlCustomers);
             finder.setVisible(true);
@@ -297,18 +380,21 @@ private void jButtonPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                  m_jCustomer.setText(customerInfo.getName());  
             }
         }
-    }//GEN-LAST:event_webCBCustomerActionPerformed
+
+    }//GEN-LAST:event_jCBCustomerActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonPrint;
+    private javax.swing.JComboBox<String> jCBCustomer;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLblStatus;
     private javax.swing.JTextField m_jAmount;
     private javax.swing.JTextField m_jCustomer;
     private javax.swing.JTextField m_jNumber;
-    private com.alee.laf.combobox.WebComboBox webCBCustomer;
+    private javax.swing.JTextField m_jStatus;
     // End of variables declaration//GEN-END:variables
 
     public boolean isDataValid() {
@@ -319,6 +405,8 @@ private void jButtonPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                 AppLocal.getIntString("message.emptycustomer"));
         validate.setValidate(m_jAmount.getText(),ValidateBuilder.IS_DOUBLE,
                 AppLocal.getIntString("message.numericamount"));
+        validate.setValidate(m_jStatus.getText(),ValidateBuilder.IS_NOT_EMPTY,
+                AppLocal.getIntString("message.emptystatus"));        
         return validate.getValid();
     }
     

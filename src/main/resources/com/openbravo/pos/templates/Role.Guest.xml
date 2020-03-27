@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
     uniCenta oPOS - Touch friendly Point Of Sale
-    Copyright (c) 2009-2017 uniCenta.
+    Copyright (c) 2009-2018 uniCenta.
     http://sourceforge.net/projects/unicentaopos
 
     This file is part of uniCenta oPOS.
@@ -20,5 +20,6 @@
     along with uniCenta oPOS.  If not, see <http://www.gnu.org/licenses/>.
  -->
 <permissions>
-    <class name="com.openbravo.pos.sales.JPanelTicketSales"/>  
+    <class name="com.openbravo.pos.sales.JPanelTicketSales"/> 
+    <class name="button.keyboard"/>     
 </permissions>

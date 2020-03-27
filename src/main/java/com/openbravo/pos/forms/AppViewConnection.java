@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -22,12 +22,12 @@ package com.openbravo.pos.forms;
 import com.openbravo.basic.BasicException;
 import com.openbravo.data.loader.Session;
 import com.openbravo.pos.util.AltEncrypter;
-import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -56,75 +56,84 @@ public class AppViewConnection {
             String dbURL=null;
             String sDBUser=null;
             String sDBPassword=null;
+            String sUserPath = System.getProperty("user.home"); 
+            String filePath = sUserPath + "\\open.db";            
             
             if (isJavaWebStart()) {
                 Class.forName(props.getProperty("db.driver"), true, Thread.currentThread().getContextClassLoader());
             } else {
                 ClassLoader cloader = new URLClassLoader(new URL[] {
-                    new File(props.getProperty("db.driverlib")).toURI().toURL()
-                });
+                    new File(props.getProperty("db.driverlib")).toURI().toURL()});
                 DriverManager.registerDriver(new DriverWrapper((Driver) 
                         Class.forName(props.getProperty("db.driver"), 
                                 true, cloader).newInstance()));
             }
-            
+
             if("true".equals(props.getProperty("db.multi"))) {
-                ImageIcon icon = new ImageIcon("/com/openbravo/images/unicentaopos.png");
-                Object[] dbs = {
+                if (!Files.exists(Paths.get(filePath))) {
+                    ImageIcon icon = new ImageIcon("/com/openbravo/images/unicentaopos.png");
+                    Object[] dbs = {
                     "0 - " + props.getProperty("db.name"),
                     "1 - " + props.getProperty("db1.name")};
-
+        
                     Object s = (Object)JOptionPane.showInputDialog(
-                        null,
-                        AppLocal.getIntString("message.databasechoose"),
-                        "Selection",
-                        JOptionPane.OK_CANCEL_OPTION,
-                        icon,
-                        dbs,
-                        props.getProperty("db.name"));
-                
-                if(s == null) {
-                    System.exit(1);
+                        null, AppLocal.getIntString("message.databasechoose"),
+                        "Selection", JOptionPane.OK_OPTION,
+                        icon, dbs, props.getProperty("db.name"));
+            
+                    if (s.toString().startsWith("1")) {
+                        sDBUser = props.getProperty("db1.user");
+                        sDBPassword = props.getProperty("db1.password");
+                        if (sDBUser != null && sDBPassword != null && sDBPassword.startsWith("crypt:")) {
+                            AltEncrypter cypher = new AltEncrypter("cypherkey" + sDBUser);
+                            sDBPassword = cypher.decrypt(sDBPassword.substring(6));
+                        }
+                        dbURL = props.getProperty("db1.URL") +
+                        props.getProperty("db1.schema") +
+                        props.getProperty("db1.options");
+                    } else {
+                        sDBUser = props.getProperty("db.user");
+                        sDBPassword = props.getProperty("db.password");
+                        if (sDBUser != null && sDBPassword != null && sDBPassword.startsWith("crypt:")) {
+                            AltEncrypter cypher = new AltEncrypter("cypherkey" + sDBUser);
+                            sDBPassword = cypher.decrypt(sDBPassword.substring(6));
+                        }
+                        dbURL = props.getProperty("db.URL") +
+                        props.getProperty("db.schema") +
+                        props.getProperty("db.options");                        
+                    }
+                } else {
+                    sDBUser = props.getProperty("db.user");
+                    sDBPassword = props.getProperty("db.password");
+                    if (sDBUser != null && sDBPassword != null && sDBPassword.startsWith("crypt:")) {
+                        AltEncrypter cypher = new AltEncrypter("cypherkey" + sDBUser);
+                        sDBPassword = cypher.decrypt(sDBPassword.substring(6));
+                    }
+                    dbURL = props.getProperty("db.URL") +
+                    props.getProperty("db.schema") +
+                    props.getProperty("db.options");                    
                 }    
 
-                if(s.toString().startsWith("1")){
-                    sDBUser = props.getProperty("db1.user");
-                    sDBPassword = props.getProperty("db1.password");        
-                    if (sDBUser != null && sDBPassword != null && sDBPassword.startsWith("crypt:")) {
-                        AltEncrypter cypher = new AltEncrypter("cypherkey" + sDBUser);
-                        sDBPassword = cypher.decrypt(sDBPassword.substring(6));
-                    }   
-                    dbURL = props.getProperty("db1.URL");
-                    
-                } else if(s.toString().startsWith("0")) {
-                    sDBUser = props.getProperty("db.user");
-                    sDBPassword = props.getProperty("db.password");        
-                    if (sDBUser != null && sDBPassword != null && sDBPassword.startsWith("crypt:")) {
-                        AltEncrypter cypher = new AltEncrypter("cypherkey" + sDBUser);
-                        sDBPassword = cypher.decrypt(sDBPassword.substring(6));
-                    }
-                    dbURL = props.getProperty("db.URL");
-                }
-                
             } else {
-                    sDBUser = props.getProperty("db.user");
-                    sDBPassword = props.getProperty("db.password");        
-                    if (sDBUser != null && sDBPassword != null && sDBPassword.startsWith("crypt:")) {
-                        AltEncrypter cypher = new AltEncrypter("cypherkey" + sDBUser);
-                        sDBPassword = cypher.decrypt(sDBPassword.substring(6));
-                    }
-                    dbURL = props.getProperty("db.URL");                   
+                sDBUser = props.getProperty("db.user");
+                sDBPassword = props.getProperty("db.password");
+                if (sDBUser != null && sDBPassword != null && sDBPassword.startsWith("crypt:")) {
+                    AltEncrypter cypher = new AltEncrypter("cypherkey" + sDBUser);
+                    sDBPassword = cypher.decrypt(sDBPassword.substring(6));
+                }
+
+                dbURL = props.getProperty("db.URL") +
+                props.getProperty("db.schema") +
+                props.getProperty("db.options");                
             }
-            
-            
+
             return new Session(dbURL, sDBUser,sDBPassword);
-            
+                
         } catch (InstantiationException | IllegalAccessException | MalformedURLException | ClassNotFoundException e) {
             throw new BasicException(AppLocal.getIntString("message.databasedrivererror"), e);
         } catch (SQLException eSQL) {
             throw new BasicException(AppLocal.getIntString("message.databaseconnectionerror"), eSQL);
         }
-    
     }
 
     private static boolean isJavaWebStart() {

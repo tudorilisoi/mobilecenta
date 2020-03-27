@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //    Copyright (C) 2011 Gjergj Sheldija
 //    http://www.acme-tech.net//
@@ -31,7 +31,8 @@ report.setSentence("SELECT " +
                 "shifts.ENDSHIFT, " +
                 "CONCAT('',TIMEDIFF(shifts.ENDSHIFT, shifts.STARTSHIFT)) AS TOTAL " +
                 "FROM people LEFT JOIN shifts ON shifts.PPLID = people.ID " +
-                "WHERE ?(QBF_FILTER) ");
+                "WHERE ?(QBF_FILTER) " +
+                "ORDER BY people.NAME ");
 
 report.addParameter("shifts.STARTSHIFT");
 report.addParameter("shifts.ENDSHIFT");

@@ -45,6 +45,9 @@ alter table payments drop foreign key payments_fk_receipt;
 alter table products drop foreign key products_attrset_fk;
 alter table products drop foreign key products_taxcat_fk;
 alter table products drop foreign key products_fk_1;
+alter table products drop index products_inx_0; 
+alter table products drop index products_inx_1; 
+alter table products drop index products_name_inx; 
 
 alter table products_bundle drop foreign key products_bundle_fk_1;
 alter table products_bundle drop foreign key products_bundle_fk_2;

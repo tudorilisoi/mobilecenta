@@ -1,5 +1,5 @@
 //    uniCenta oPOS - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -28,6 +28,10 @@ report.setSentence("SELECT ID, TAXID, NAME, ADDRESS, CURDEBT, CURDATE " +
                    "WHERE VISIBLE = " + app.getSession().DB.TRUE() + " AND ?(QBF_FILTER)" +
                    "ORDER BY NAME ");
 
+report.addParameter("ID");
+report.addParameter("NAME");
+report.addQBFFilter(new com.openbravo.pos.reports.JParamsCustomer());
+
 report.addParameter("CURDATE");
 report.addParameter("CURDATE");
 
@@ -36,10 +40,6 @@ paramdates.setStartDate(com.openbravo.beans.DateUtils.getToday());
 // JG - 8 Jan 14 paramdates.setEndDate(com.openbravo.beans.DateUtils.getToday());
 paramdates.setEndDate(com.openbravo.beans.DateUtils.getTodayMinutes());
 report.addQBFFilter(paramdates);
-
-report.addParameter("ID");
-report.addParameter("NAME");
-report.addQBFFilter(new com.openbravo.pos.reports.JParamsCustomer());
 
 report.addField("ID", com.openbravo.data.loader.Datas.STRING);
 report.addField("TAXID", com.openbravo.data.loader.Datas.STRING);

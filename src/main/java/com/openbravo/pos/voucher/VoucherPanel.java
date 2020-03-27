@@ -2,7 +2,6 @@
 
 package com.openbravo.pos.voucher;
 
-
 import com.openbravo.data.loader.Datas;
 import com.openbravo.data.model.*;
 import com.openbravo.data.user.EditorRecord;
@@ -20,7 +19,8 @@ public class VoucherPanel extends JPanelTable2 {
                 new Field("ID", Datas.STRING, Formats.STRING),
                 new Field(AppLocal.getIntString("label.Number"), Datas.STRING, Formats.STRING, true, true, true),
                 new Field(AppLocal.getIntString("label.customer"), Datas.STRING, Formats.STRING),
-                new Field(AppLocal.getIntString("label.paymenttotal"), Datas.DOUBLE, Formats.DOUBLE)
+                new Field(AppLocal.getIntString("label.paymenttotal"), Datas.DOUBLE, Formats.DOUBLE),
+                new Field(AppLocal.getIntString("label.status"), Datas.STRING, Formats.STRING)
                 
         );        
         Table table = new Table(
@@ -28,7 +28,8 @@ public class VoucherPanel extends JPanelTable2 {
                 new PrimaryKey("ID"),
                 new Column("VOUCHER_NUMBER"),
                 new Column("CUSTOMER"),
-                new Column("AMOUNT"));
+                new Column("AMOUNT"),
+                new Column("STATUS"));
         lpr = row.getListProvider(app.getSession(), table);
         spr = row.getSaveProvider(app.getSession(), table);              
         
@@ -45,6 +46,4 @@ public class VoucherPanel extends JPanelTable2 {
     public String getTitle() {
         return AppLocal.getIntString("Menu.Vouchers");
     } 
-    
-    
 }

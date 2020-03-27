@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -50,6 +50,10 @@ public class JNumberDialog extends javax.swing.JDialog {
     public JNumberDialog(java.awt.Dialog parent, boolean modal) {
         super(parent, modal);
         init();
+    }
+
+    public JNumberDialog() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     private void init() {
@@ -143,6 +147,7 @@ public class JNumberDialog extends javax.swing.JDialog {
         m_jPanelTitle = new javax.swing.JPanel();
         m_lblMessage = new javax.swing.JLabel();
 
+        setPreferredSize(new java.awt.Dimension(310, 410));
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -174,14 +179,13 @@ public class JNumberDialog extends javax.swing.JDialog {
         });
         jPanel1.add(jcmdOK);
 
-        getContentPane().add(jPanel1, java.awt.BorderLayout.SOUTH);
-
         jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         jPanel2.setLayout(new java.awt.BorderLayout());
 
         jPanelGrid.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jPanelGrid.setPreferredSize(new java.awt.Dimension(300, 300));
+        jPanelGrid.setPreferredSize(new java.awt.Dimension(300, 320));
 
+        jPanel3.setPreferredSize(new java.awt.Dimension(300, 350));
         jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.Y_AXIS));
 
         m_jKeys.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
@@ -193,18 +197,34 @@ public class JNumberDialog extends javax.swing.JDialog {
         jPanel3.add(m_jKeys);
 
         jPanel4.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        jPanel4.setMinimumSize(new java.awt.Dimension(110, 30));
+        jPanel4.setPreferredSize(new java.awt.Dimension(142, 30));
         jPanel4.setLayout(new java.awt.BorderLayout());
 
         m_jnumber.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jPanel4.add(m_jnumber, java.awt.BorderLayout.CENTER);
+        m_jnumber.setMinimumSize(new java.awt.Dimension(100, 20));
+        m_jnumber.setPreferredSize(new java.awt.Dimension(132, 20));
+        jPanel4.add(m_jnumber, java.awt.BorderLayout.PAGE_START);
 
         jPanel3.add(jPanel4);
 
-        jPanelGrid.add(jPanel3);
+        javax.swing.GroupLayout jPanelGridLayout = new javax.swing.GroupLayout(jPanelGrid);
+        jPanelGrid.setLayout(jPanelGridLayout);
+        jPanelGridLayout.setHorizontalGroup(
+            jPanelGridLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGridLayout.createSequentialGroup()
+                .addGap(16, 16, 16)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        jPanelGridLayout.setVerticalGroup(
+            jPanelGridLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelGridLayout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
+        );
 
         jPanel2.add(jPanelGrid, java.awt.BorderLayout.CENTER);
-
-        getContentPane().add(jPanel2, java.awt.BorderLayout.CENTER);
 
         m_jPanelTitle.setLayout(new java.awt.BorderLayout());
 
@@ -212,9 +232,25 @@ public class JNumberDialog extends javax.swing.JDialog {
         m_lblMessage.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, java.awt.Color.darkGray), javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5)));
         m_jPanelTitle.add(m_lblMessage, java.awt.BorderLayout.CENTER);
 
-        getContentPane().add(m_jPanelTitle, java.awt.BorderLayout.NORTH);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(m_jPanelTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 342, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 342, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 342, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(m_jPanelTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
 
-        setSize(new java.awt.Dimension(358, 452));
+        setSize(new java.awt.Dimension(358, 479));
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 

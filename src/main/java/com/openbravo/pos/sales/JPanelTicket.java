@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -27,6 +27,7 @@ import com.alee.managers.notification.NotificationIcon;
 import com.alee.managers.notification.NotificationManager;
 import com.alee.managers.notification.WebNotification;
 import com.openbravo.basic.BasicException;
+import com.openbravo.beans.JNumberPop;
 import com.openbravo.data.gui.ComboBoxValModel;
 import com.openbravo.data.gui.ListKeyed;
 import com.openbravo.data.gui.MessageInf;
@@ -87,6 +88,7 @@ import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRMapArrayDataSource;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
+
 
 /**
  *
@@ -163,6 +165,10 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
     private TicketInfo m_ticket;
     private TicketInfo m_ticketCopy;
     private AppConfig m_config;
+    
+    private Integer count = 0;
+    private Integer oCount = 0;
+    private Boolean pinOK;
    
     
     /** Creates new form JTicketView */
@@ -191,7 +197,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         dlReceipts = (DataLogicReceipts) app.getBean("com.openbravo.pos.sales.DataLogicReceipts");
         
 
-/* uniCenta Feb 2017
+/* uniCenta Feb 2018
  * Changed for 4.3
  * Set up main toolbar area with two rows to add cater for additional scripts 
  * else over-crowding and some dynamic buttons off screen/not visible
@@ -239,14 +245,8 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         senttaxcategories = dlSales.getTaxCategoriesList();       
         taxcategoriesmodel = new ComboBoxValModel();
         
-/*
-        ComboBoxValModel m_ReasonModel = new ComboBoxValModel();
-        m_ReasonModel.add(AppLocal.getIntString("cboption.find"));
-        m_ReasonModel.add(AppLocal.getIntString("cboption.create"));              
-        jCBCustomer.setModel(m_ReasonModel);         
-*/        
         stateToZero();  
-        
+
         m_oTicket = null;
         m_oTicketExt = null; 
         jCheckStock.setText(AppLocal.getIntString("message.title.checkstock"));
@@ -304,9 +304,12 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         if (currentTicket != null) {
             try {
                 dlReceipts.updateSharedTicket(currentTicket, m_oTicket,m_oTicket.getPickupId());
-            } catch (BasicException e) {
-                new MessageInf(e).show(this);
-            }  
+//            } catch (BasicException e) {
+//                new MessageInf(e).show(this);
+//            }  
+            } catch (BasicException ex) {
+                Logger.getLogger(JPanelTicket.class.getName()).log(Level.SEVERE, null, ex);
+            }                    
         }    
     }
 
@@ -397,6 +400,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         if (listener  != null) {
             listener.stop();
         }
+ 
         return m_ticketsbag.deactivate();
     }
     
@@ -461,12 +465,17 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
 
         executeEvent(m_oTicket, m_oTicketExt, "ticket.show");
     
-        if ("restaurant".equals(m_App
-            .getProperties().getProperty("machine.ticketsbag"))){
-        }else{
-            j_btnRemotePrt.setVisible(m_App
-                .getAppUserView().getUser().hasPermission("sales.PrintKitchen")); 
-        }
+//        if ("restaurant".equals(m_App
+//            .getProperties().getProperty("machine.ticketsbag"))){
+//        }else{
+//            j_btnRemotePrt.setVisible(m_App
+//                .getAppUserView().getUser().hasPermission("sales.PrintKitchen")); 
+//        }
+          if (m_App.getAppUserView().getUser().hasPermission("sales.PrintRemote")) {
+                j_btnRemotePrt.setEnabled(true);              
+          } else {
+                j_btnRemotePrt.setEnabled(false);
+          }
 
         refreshTicket();               
     }
@@ -480,7 +489,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         return m_oTicket;
     }
     
-    //private void refreshTicket() {
     private void refreshTicket() {    
         
         CardLayout cl = (CardLayout)(getLayout());
@@ -495,7 +503,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             jCheckStock.setText(null);
 
             checkStock();
-            countArticles();        
             stateToZero();
             repaint();
 
@@ -521,7 +528,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             for (int i = 0; i < m_oTicket.getLinesCount(); i++) {
                 m_ticketlines.addTicketLine(m_oTicket.getLine(i));
             }
-            
+
             countArticles();
             printPartialTotals();
             stateToZero();
@@ -543,22 +550,48 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
     }
 
     private void countArticles() {
+        oCount = count;                             // existing line before change
+        count = (int) m_oTicket.getArticlesCount(); //existing line after change
 
         if (m_oTicket != null) { 
             for (int i = 0; i < m_oTicket.getLinesCount(); i++) {
                 if (m_App.getAppUserView().getUser().hasPermission("sales.Total")
-                    && m_oTicket.getArticlesCount() > 1) {
+                        && m_oTicket.getArticlesCount() > 1) {
                     btnSplit.setEnabled(true);
                 }else{
                     btnSplit.setEnabled(false);
                 }
-            }        
+            }
         }
     }
     
-       
+    private boolean changeCount(boolean pinOK) {
+
+        pinOK = false;
+
+        if (m_oTicket != null) {
+
+            if (m_App.getProperties().getProperty("override.check").equals("true")) {
+                Integer secret = Integer.parseInt(m_App.getProperties().getProperty("override.pin"));
+                Integer iValue = JNumberPop.showEditNumber(this, AppLocal.getIntString("title.override.enterpin")); 
+
+                if (iValue == null ? secret == null : iValue.equals(secret)) {
+                    pinOK = true;
+                    JOptionPane.showMessageDialog(this, "Units changed from "
+                            + count + " to " + oCount);                    
+                    return pinOK;  
+                    
+                } else {
+                    pinOK = false;
+                    JOptionPane.showMessageDialog(this, AppLocal.getIntString("message.override.badpin"));                                        
+                    return pinOK;                    
+                }
+            }
+        }
+            return pinOK;        
+    }
+   
     private void printPartialTotals(){
-//    public void printPartialTotals(){    
             
         if (m_oTicket.getLinesCount() == 0) {
             m_jSubtotalEuros.setText(null);
@@ -568,13 +601,11 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             m_jSubtotalEuros.setText(m_oTicket.printSubTotal());
             m_jTaxesEuros.setText(m_oTicket.printTax());
             m_jTotalEuros.setText(m_oTicket.printTotal());
-//            repaint();
         }
         repaint();
     }
     
     private void paintTicketLine(int index, TicketLineInfo oLine){
-        
         if (executeEventAndRefresh("ticket.setline", 
             new ScriptArg("index", index), new ScriptArg("line", oLine)) == null) {
 
@@ -582,23 +613,27 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             m_ticketlines.setTicketLine(index, oLine);
             m_ticketlines.setSelectedIndex(index);
 
+            oCount = count;     // pass line old multiplier value
+
             countArticles();
             visorTicketLine(oLine);
             printPartialTotals();   
             stateToZero();  
 
             executeEventAndRefresh("ticket.change");
-
         }
    }
 
     private void addTicketLine(ProductInfoExt oProduct, double dMul, double dPrice) {           
         
-        if (oProduct.isVprice()){
+//        if (oProduct.isVprice() || oProduct.getID().equals("xxx999_999xxx_x9x9x9")){
+        if (oProduct.isVprice()){            
             TaxInfo tax = taxeslogic.getTaxInfo(oProduct.getTaxCategoryID(), m_oTicket.getCustomer());
+
             if (m_jaddtax.isSelected()) {
                 dPrice /= (1 + tax.getRate());
             }
+
             addTicketLine(new TicketLineInfo(oProduct, dMul, dPrice, tax, 
                 (java.util.Properties) (oProduct.getProperties().clone())));
 
@@ -626,6 +661,10 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
 
             addTicketLine(new TicketLineInfo(oProduct, dMul, dPrice, tax,
                 (java.util.Properties) (oProduct.getProperties().clone()))); 
+
+            if (oProduct.getID().equals("xxx999_999xxx_x9x9x9")){
+                m_jEditLine.doClick();
+            } 
             refreshTicket();
            
         }
@@ -703,17 +742,17 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
                 ticketID="Void";
             }
             
-                dlSystem.execLineRemoved(
-                    new Object[] {
-                        m_App.getAppUserView().getUser().getName(),
-                        ticketID,
-                        m_oTicket.getLine(i).getProductID(),
-                        m_oTicket.getLine(i).getProductName(),
-                        m_oTicket.getLine(i).getMultiply()
-                    });
+            dlSystem.execLineRemoved(
+                new Object[] {
+                m_App.getAppUserView().getUser().getName(),
+                    ticketID,
+                    m_oTicket.getLine(i).getProductID(),
+                    m_oTicket.getLine(i).getProductName(),
+                    m_oTicket.getLine(i).getMultiply()
+                }
+            );
             
             if (m_oTicket.getLine(i).isProductCom()) {
-
                 m_oTicket.removeLine(i);
                 m_ticketlines.removeTicketLine(i);   
             } else {
@@ -757,8 +796,8 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         ProductInfoExt oProduct = new ProductInfoExt();
 // Always add Default Prod ID + Add Name to Misc. if empty
         oProduct.setID("xxx999_999xxx_x9x9x9");
-        oProduct.setReference(null);
-        oProduct.setCode(null);
+        oProduct.setReference("xxx999");
+        oProduct.setCode("xxx999");
         oProduct.setName("***");
         oProduct.setTaxCategoryID(((TaxCategoryInfo) taxcategoriesmodel
             .getSelectedItem()).getID());
@@ -814,7 +853,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
     private void incProductByCode(String sCode) {
 
         try {
-//            TODO!! copy logic to API
             ProductInfoExt oProduct = dlSales.getProductInfoByCode(sCode);
 
             if (oProduct == null) {                  
@@ -879,8 +917,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             }
         }
     }
- 
-    
+     
     private void incProduct(double dPor, ProductInfoExt prod) {
 
         if (prod.isVprice()){
@@ -907,7 +944,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         }      
     }
     
-
     @SuppressWarnings("empty-statement")
     private void stateTransition(char cTrans) {
     
@@ -1210,7 +1246,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
                                 / 100);   
                         dUnits = 1;                                             // no sellprice to calculate so must be 1 Unit
                     }
-                    
 
                         if(m_jaddtax.isSelected()) {
                             addTicketLine(oProduct
@@ -1434,15 +1469,34 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
                     TicketLineInfo newline = new TicketLineInfo(m_oTicket.getLine(i));
                     //If it's a refund + button means one unit less
                     if (m_oTicket.getTicketType() == TicketInfo.RECEIPT_REFUND){
-                        newline.setMultiply(newline.getMultiply() - 1.0);
-                        paintTicketLine(i, newline);                   
-                    }
-                    else {
-                        newline.setMultiply(newline.getMultiply() + 1.0);
-                        paintTicketLine(i, newline); 
+                        if (m_App.getProperties().getProperty("override.check").equals("true")) {
+                            oCount = count - 1;  //increment existing line  
+                            pinOK=false;
+                            changeCount(pinOK);
+                            newline.setMultiply(newline.getMultiply() - 1.0);
+                            newline.setProperty("ticket.updated", "true");
+                            paintTicketLine(i, newline);
+                        } else {
+                            newline.setMultiply(newline.getMultiply() - 1.0);
+                            newline.setProperty("ticket.updated", "true");
+                            paintTicketLine(i, newline);                            
+                        }                    
+                    } else {
+                        if (m_App.getProperties().getProperty("override.check").equals("true")) {
+                            oCount = count + 1;  //increment existing line  
+                            pinOK=false;
+                            if (changeCount(pinOK)) {
+                                newline.setMultiply(newline.getMultiply() + 1.0);
+                                newline.setProperty("ticket.updated", "true");
+                                paintTicketLine(i, newline);
+                            }
+                        } else {
+                            newline.setMultiply(newline.getMultiply() + 1.0);
+                            newline.setProperty("ticket.updated", "true");
+                            paintTicketLine(i, newline);                            
+                        }
                     }
                 }
-
             } else if (cTrans == '-' 
                 && m_iNumberStatusInput == NUMBERZERO 
                 && m_iNumberStatusPor == NUMBERZERO
@@ -1455,19 +1509,43 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
                     TicketLineInfo newline = new TicketLineInfo(m_oTicket.getLine(i));
 
                     if (m_oTicket.getTicketType() == TicketInfo.RECEIPT_REFUND){
-                        newline.setMultiply(newline.getMultiply() + 1.0);
+                        if (m_App.getProperties().getProperty("override.check").equals("true")) {
+                            oCount = count - 1;  //increment existing line  
+                            pinOK=false;
+                            changeCount(pinOK);
+                            newline.setMultiply(newline.getMultiply() - 1.0);
+                            newline.setProperty("ticket.updated", "true");
+                            paintTicketLine(i, newline);
+                        } else {
+                            newline.setMultiply(newline.getMultiply() - 1.0);
+                            newline.setProperty("ticket.updated", "true");
+                            paintTicketLine(i, newline);                            
+                        } 
+
                         if (newline.getMultiply() >= 0) {
                             removeTicketLine(i);
                         } else {
                             paintTicketLine(i, newline);
                         }
                     } else {
+                        if (m_App.getProperties().getProperty("override.check").equals("true")) {
+                            oCount = count - 1;  //increment existing line  
+                            pinOK=false;
+                            if (changeCount(pinOK)) {
+                                newline.setMultiply(newline.getMultiply() - 1.0);
+                                newline.setProperty("ticket.updated", "true");
+                                paintTicketLine(i, newline);
+                            }
+                        } else {
+                            newline.setMultiply(newline.getMultiply() - 1.0);
+                            newline.setProperty("ticket.updated", "true");
+                            paintTicketLine(i, newline);                            
+                        }
 
-                        newline.setMultiply(newline.getMultiply() - 1.0);
                         if (newline.getMultiply() <= 0.0) {                   
                             removeTicketLine(i);
                         } else {
-                            paintTicketLine(i, newline);                   
+                            paintTicketLine(i, newline);
                         }
                     }
                 }
@@ -1484,16 +1562,38 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
                     TicketLineInfo newline = new TicketLineInfo(m_oTicket.getLine(i)); 
 
                     if (m_oTicket.getTicketType() == TicketInfo.RECEIPT_REFUND) {
-                        newline.setMultiply(-dPor);
-                        newline.setPrice(Math.abs(newline.getPrice()));
-                        paintTicketLine(i, newline);                
+                        if (m_App.getProperties().getProperty("override.check").equals("true")) {
+                            oCount = count - 1;  //increment existing line  
+                            pinOK=false;
+                            changeCount(pinOK);
+                            newline.setMultiply(-dPor);
+                            newline.setProperty("ticket.updated", "true");
+                            newline.setPrice(Math.abs(newline.getPrice()));
+                            paintTicketLine(i, newline);                
+                        } else {
+                            newline.setMultiply(-dPor);
+                            newline.setProperty("ticket.updated", "true");
+                            newline.setPrice(Math.abs(newline.getPrice()));
+                            paintTicketLine(i, newline);                
+                        }                    
                     } else {
-                        newline.setMultiply(dPor);
-                        newline.setPrice(Math.abs(newline.getPrice()));
-                        paintTicketLine(i, newline);
+                        if (m_App.getProperties().getProperty("override.check").equals("true")) {
+                            oCount = count + 1;  //increment existing line  
+                            pinOK=false;
+                            if (changeCount(pinOK)) {
+                            newline.setMultiply(dPor);
+                            newline.setProperty("ticket.updated", "true");
+                            newline.setPrice(Math.abs(newline.getPrice()));
+                            paintTicketLine(i, newline);
+                            }
+                        } else {
+                            newline.setMultiply(dPor);
+                            newline.setProperty("ticket.updated", "true");
+                            newline.setPrice(Math.abs(newline.getPrice()));
+                            paintTicketLine(i, newline);
+                        }
                     }
                 }
-
             } else if (cTrans == '-' 
                 && m_iNumberStatusInput == NUMBERZERO 
                 && m_iNumberStatusPor == NUMBERVALID
@@ -1506,13 +1606,39 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
                     double dPor = getPorValue();
                     TicketLineInfo newline = new TicketLineInfo(m_oTicket.getLine(i));
 
-                    if (m_oTicket.getTicketType() == TicketInfo.RECEIPT_NORMAL) {
-                        newline.setMultiply(dPor);
-                        newline.setPrice(-Math.abs(newline.getPrice()));
-                        paintTicketLine(i, newline);
-                    }           
+                   if (m_oTicket.getTicketType() == TicketInfo.RECEIPT_REFUND) {
+                        if (m_App.getProperties().getProperty("override.check").equals("true")) {
+                            oCount = count - 1;  //increment existing line  
+                            pinOK=false;
+                            changeCount(pinOK);
+                            newline.setMultiply(-dPor);
+                            newline.setProperty("ticket.updated", "true");
+                            newline.setPrice(Math.abs(newline.getPrice()));
+                            paintTicketLine(i, newline);                
+                        } else {
+                            newline.setMultiply(-dPor);
+                            newline.setProperty("ticket.updated", "true");
+                            newline.setPrice(Math.abs(newline.getPrice()));
+                            paintTicketLine(i, newline);                
+                        }                    
+                    } else {
+                        if (m_App.getProperties().getProperty("override.check").equals("true")) {
+                            oCount = count - 1;  //increment existing line  
+                            pinOK=false;
+                            if (changeCount(pinOK)) {
+                            newline.setMultiply(dPor);
+                            newline.setProperty("ticket.updated", "true");
+                            newline.setPrice(Math.abs(newline.getPrice()));
+                            paintTicketLine(i, newline);
+                            }
+                        } else {
+                            newline.setMultiply(dPor);
+                            newline.setProperty("ticket.updated", "true");
+                            newline.setPrice(Math.abs(newline.getPrice()));
+                            paintTicketLine(i, newline);
+                        }
+                    }
                 }
-
             } else if (cTrans == '+' 
                 && m_iNumberStatusInput == NUMBERVALID 
                 && m_iNumberStatusPor == NUMBERZERO
@@ -1570,7 +1696,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         }
     }
 
-    
+   
     private boolean closeTicket(TicketInfo ticket, Object ticketext) {
         if (listener  != null) {
             listener.stop();
@@ -1700,7 +1826,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             MessageInf msg = new MessageInf(MessageInf.SGN_WARNING, AppLocal.getIntString("message.cannotprintticket"));
             msg.show(JPanelTicket.this);
         } else {
-
             if (ticket.getPickupId()== 0){
                 try{
                     ticket.setPickupId(dlSales.getNextPickupIndex());
@@ -1727,7 +1852,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
                 
                 m_TTP.printTicket(script.eval(sresource).toString(), ticket);
 
-
             } catch (    ScriptException | TicketPrinterException e) {
                 MessageInf msg = new MessageInf(MessageInf.SGN_WARNING, AppLocal.getIntString("message.cannotprintticket"), e);
                 msg.show(JPanelTicket.this);
@@ -1742,14 +1866,9 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             MessageInf msg = new MessageInf(MessageInf.SGN_WARNING, AppLocal.getIntString("message.cannotexecute"));
             msg.show(this);
         } else {
-//            try {
 // JG 5 Jul 17 calculate taxes disabled as causing incorrect tax recalc
 //            taxeslogic.calculateTaxes(m_oTicket);
             printTicket(resource, m_oTicket, m_oTicketExt);
-//            } catch (TaxesException e) {
-//                MessageInf msg = new MessageInf(MessageInf.SGN_WARNING, AppLocal.getIntString("message.cannotcalculatetaxes"));
-//                msg.show(this);
-//            }
         }
     
          Notify(AppLocal.getIntString("notify.printed"));                                    
@@ -1878,8 +1997,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
     /**
      *
      */
-
-    
     private Object executeEventAndRefresh(String eventkey, ScriptArg ... args) {
 
         String resource = m_jbtnconfig.getEvent(eventkey);
@@ -1986,7 +2103,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         int i = m_ticketlines.getSelectedIndex();
 
         if (i < 0) {
-//                Toolkit.getDefaultToolkit().beep();
             } else {
                 try {            
                     TicketLineInfo line = m_oTicket.getLine(i);
@@ -1994,7 +2110,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
                     
                 String lName = (m_App.getProperties().getProperty("machine.department"));
                 lName = "'" + lName + "'";
-//                System.out.println(lName);
                     ProductStock checkProduct;
                     String location = m_App.getInventoryLocation();
                     checkProduct = dlSales.getProductStockState(pId, location);
@@ -2130,7 +2245,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             sDBPassword = cypher.decrypt(sDBPassword.substring(6));
         } 
             script.put("hostname", m_App.getProperties().getProperty("machine.hostname"));
-            script.put("dbURL", m_App.getProperties().getProperty("db.URL")); 
+            script.put("dbURL", m_App.getProperties().getProperty("db.URL")+m_App.getProperties().getProperty("db.schema"));
             script.put("dbUser", sDBUser);
             script.put("dbPassword", sDBPassword);
             
@@ -2220,7 +2335,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
 
         jTBtnShow.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jTBtnShow.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/resources.png"))); // NOI18N
-        jTBtnShow.setBorderPainted(false);
         jTBtnShow.setPreferredSize(new java.awt.Dimension(80, 45));
         jTBtnShow.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2559,6 +2673,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         m_jContEntries.setMinimumSize(new java.awt.Dimension(300, 350));
         m_jContEntries.setLayout(new java.awt.BorderLayout());
 
+        m_jPanEntries.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         m_jPanEntries.setPreferredSize(new java.awt.Dimension(300, 350));
         m_jPanEntries.setLayout(new javax.swing.BoxLayout(m_jPanEntries, javax.swing.BoxLayout.Y_AXIS));
 
@@ -2592,10 +2707,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         m_jPrice.setRequestFocusEnabled(false);
 
         m_jPor.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
-        m_jPor.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        m_jPor.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Button.darkShadow")), javax.swing.BorderFactory.createEmptyBorder(1, 4, 1, 4)));
-        m_jPor.setOpaque(true);
-        m_jPor.setPreferredSize(new java.awt.Dimension(22, 25));
+        m_jPor.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         m_jPor.setRequestFocusEnabled(false);
 
         m_jEnter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/barcode.png"))); // NOI18N
@@ -2615,11 +2727,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         m_jTax.setFocusable(false);
         m_jTax.setPreferredSize(new java.awt.Dimension(28, 25));
         m_jTax.setRequestFocusEnabled(false);
-        m_jTax.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                m_jTaxActionPerformed(evt);
-            }
-        });
 
         m_jKeyFactory.setEditable(false);
         m_jKeyFactory.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
@@ -2631,11 +2738,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         m_jKeyFactory.setPreferredSize(new java.awt.Dimension(1, 1));
         m_jKeyFactory.setRequestFocusEnabled(false);
         m_jKeyFactory.setVerifyInputWhenFocusTarget(false);
-        m_jKeyFactory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                m_jKeyFactoryActionPerformed(evt);
-            }
-        });
         m_jKeyFactory.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 m_jKeyFactoryKeyTyped(evt);
@@ -2647,7 +2749,10 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         jPanel9Layout.setHorizontalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel9Layout.createSequentialGroup()
-                .addContainerGap()
+                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(m_jPor)
+                    .addComponent(m_jKeyFactory, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel9Layout.createSequentialGroup()
                         .addComponent(m_jaddtax, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -2657,28 +2762,23 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
                     .addGroup(jPanel9Layout.createSequentialGroup()
                         .addComponent(m_jPrice, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(5, 5, 5)))
-                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(m_jEnter, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(m_jPor, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(m_jEnter, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
-            .addGroup(jPanel9Layout.createSequentialGroup()
-                .addComponent(m_jKeyFactory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel9Layout.setVerticalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel9Layout.createSequentialGroup()
                 .addComponent(m_jEnter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
-                .addComponent(m_jPor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(jPanel9Layout.createSequentialGroup()
                 .addComponent(m_jPrice, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(m_jTax, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(m_jaddtax, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(m_jPor)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(m_jKeyFactory, javax.swing.GroupLayout.PREFERRED_SIZE, 1, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -2704,6 +2804,8 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
 
     private void m_jEditLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jEditLineActionPerformed
 
+        count = (int) m_oTicket.getArticlesCount();     // get existing line value
+            
         int i = m_ticketlines.getSelectedIndex();
         
         if (i < 0){
@@ -2746,15 +2848,25 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
     }//GEN-LAST:event_m_jKeyFactoryKeyTyped
 
     private void m_jDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jDeleteActionPerformed
-
         int i = m_ticketlines.getSelectedIndex();
-        
-        if (i < 0){
-            Toolkit.getDefaultToolkit().beep();
-        } else {               
-            removeTicketLine(i);
-            jCheckStock.setText("");
-        }     
+        if (m_App.getProperties().getProperty("override.check").equals("true")) {
+            pinOK=false;
+            if (changeCount(pinOK)) {
+                if (i < 0){
+                    Toolkit.getDefaultToolkit().beep();
+                } else {               
+                    removeTicketLine(i);
+                    jCheckStock.setText("");
+                }                     
+            }
+        } else {
+            if (i < 0){
+                Toolkit.getDefaultToolkit().beep();
+            } else {               
+                removeTicketLine(i);
+                jCheckStock.setText("");
+            }                                 
+        }
     }//GEN-LAST:event_m_jDeleteActionPerformed
 
     private void m_jListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jListActionPerformed
@@ -2850,14 +2962,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         
     }//GEN-LAST:event_j_btnRemotePrtActionPerformed
 
-    private void m_jKeyFactoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jKeyFactoryActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_m_jKeyFactoryActionPerformed
-
-    private void m_jTaxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jTaxActionPerformed
-
-    }//GEN-LAST:event_m_jTaxActionPerformed
-
     private void btnReprint1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReprint1ActionPerformed
         if (m_config.getProperty("lastticket.number") != null) {
             try {
@@ -2912,7 +3016,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
         if (listener  != null) {
             listener.stop();
         } 
-
         
         int i = m_ticketlines.getSelectedIndex();
         if (i < 0) {
@@ -3016,8 +3119,6 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
                         }
 
                         content = "<html>"+
-//                            "<b>" + AppLocal.getIntString("label.locationplace") +
-//                            " : " + "</b>" + checkProduct.getLocation() + "<br>" +
                             "<b>" + AppLocal.getIntString("label.currentstock") +
                             " : " + "</b>" + checkProduct.getUnits() + "<br>" +
                             "<b>" + AppLocal.getIntString("label.maximum") +
@@ -3159,7 +3260,7 @@ public abstract class JPanelTicket extends JPanel implements JPanelView, BeanFac
             }    
             }
         }
-    
+   
         refreshTicket();
         
     }//GEN-LAST:event_jBtnCustomerActionPerformed

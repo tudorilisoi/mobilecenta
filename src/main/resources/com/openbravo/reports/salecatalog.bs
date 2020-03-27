@@ -1,5 +1,5 @@
 //    uniCenta oPOS - touch friendly EPoS
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -39,6 +39,7 @@ report.setSentence("SELECT products.id, "
         +   "RIGHT OUTER JOIN suppliers suppliers "
         +     "ON (suppliers.id = products.supplier) "
         + "WHERE ?(QBF_FILTER) "
+        + "GROUP BY products.REFERENCE "
         + "ORDER BY CATEGORYNAME ASC, products.name ASC");
 
 report.addParameter("products.NAME");

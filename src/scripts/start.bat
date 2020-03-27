@@ -43,7 +43,7 @@ set CP=%CP%;"%DIRNAME%lib/jpos-1.13.0.jar"
 set CP=%CP%;"%DIRNAME%lib/jpos-2.0.10.jar"
 set CP=%CP%;"%DIRNAME%lib/oro-2.0.8.jar"
 set CP=%CP%;"%DIRNAME%lib/poi-3.10.1.jar"
-set CP=%CP%;"%DIRNAME%lib/RXTXcomm.jar"
+set CP=%CP%;"%DIRNAME%lib/RXTXcomm-2.2.jar"
 set CP=%CP%;"%DIRNAME%lib/swingx-all-1.6.4.jar"
 set CP=%CP%;"%DIRNAME%lib/velocity-1.7-dep.jar"
 

@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -235,11 +235,11 @@ public class JPanelConfigLocale extends javax.swing.JPanel implements PanelConfi
         jLabel8 = new javax.swing.JLabel();
         jcboDatetime = new javax.swing.JComboBox();
 
-        setBackground(new java.awt.Color(255, 255, 255));
         setMinimumSize(new java.awt.Dimension(0, 0));
+        setOpaque(false);
         setPreferredSize(new java.awt.Dimension(650, 450));
 
-        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setOpaque(false);
         jPanel1.setPreferredSize(new java.awt.Dimension(600, 400));
 
         jLabel5.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N

@@ -1,5 +1,5 @@
 <html><center>uniCenta oPOS - Touch Friendly Point of Sale<br>
-Copyright 2009-2017 uniCenta <br>
+Copyright 2009-2018 uniCenta <br>
 https://unicenta.com/<br>
 <br>
 uniCenta oPOS is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.<br>

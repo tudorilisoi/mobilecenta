@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -47,6 +47,7 @@ public class PaymentInfoMagcardRefund extends PaymentInfoMagcard {
 
     @Override
     public String getName() {
-        return "magcardrefund";
+//        return "magcardrefund";
+        return "ccardrefund";        
     }    
 }

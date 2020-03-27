@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta
+//    Copyright (c) 2009-2018 uniCenta
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -21,9 +21,13 @@ package com.openbravo.pos.config;
 
 import com.openbravo.data.user.DirtyManager;
 import com.openbravo.pos.forms.AppConfig;
-import java.awt.Component;
-        
-        
+import java.awt.*;
+import com.alee.extended.colorchooser.*;
+import com.alee.managers.language.*;
+import com.alee.laf.*;
+import com.alee.extended.colorchooser.ColorDisplayType;
+import javax.swing.*;
+
 
 /**
  *
@@ -35,35 +39,37 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
     
     /** Creates new form JPanelConfigDatabase */
     public JPanelConfigSystem() {
+
+        WebLookAndFeel.initializeManagers ();
         
         initComponents();
+        
         
         jTextAutoLogoffTime.getDocument().addDocumentListener(dirty);
         jchkInstance.addActionListener(dirty);
         jchkTextOverlay.addActionListener(dirty);
         jchkAutoLogoff.addActionListener(dirty);
         jchkAutoLogoffToTables.addActionListener(dirty);
-        jchkShowCustomerDetails.addActionListener(dirty);
-        jchkShowWaiterDetails.addActionListener(dirty);
-        jCustomerColour1.addActionListener(dirty);
-        jWaiterColour1.addActionListener(dirty);
-        jTableNameColour1.addActionListener(dirty);
         jTaxIncluded.addActionListener(dirty);
         jCheckPrice00.addActionListener(dirty);          
         jMoveAMountBoxToTop.addActionListener(dirty);
         jCloseCashbtn.addActionListener(dirty);
-
         jchkautoRefreshTableMap.addActionListener(dirty);
         jTxtautoRefreshTimer.getDocument().addDocumentListener(dirty);       
-
         jchkSCOnOff.addActionListener(dirty);
         jchkSCRestaurant.addActionListener(dirty);        
         jTextSCRate.getDocument().addDocumentListener(dirty);   
-        
         jchkPriceUpdate.addActionListener(dirty);
         jchkBarcodetype.addActionListener(dirty);
-        jchkTransBtn.addActionListener(dirty);        
-        
+        jchkShowCustomerDetails.addActionListener(dirty);
+        jchkShowWaiterDetails.addActionListener(dirty);
+        CustomerColour.addActionListener(dirty);
+        WaiterColour.addActionListener(dirty);
+        TableNameColour.addActionListener(dirty);
+        jchkTransBtn.addActionListener(dirty);
+        jchkOverride.addActionListener(dirty);
+        jtxtPIN.getDocument().addDocumentListener(dirty);        
+         
     }
 
     /**
@@ -94,18 +100,19 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
         String timerCheck =(config.getProperty("till.autotimer"));
         if (timerCheck == null){
             config.setProperty("till.autotimer","100");
-        }                
-        jTextAutoLogoffTime.setText(config.getProperty("till.autotimer"));
+        } else {                
+            jTextAutoLogoffTime.setText(config.getProperty("till.autotimer"));
+        }
 
         String autoRefreshtimerCheck =(config.getProperty("till.autoRefreshTimer"));
         if (autoRefreshtimerCheck == null){
+            config.setProperty("till.autoRefreshTableMap","false");                        
             config.setProperty("till.autoRefreshTimer","5");
-        }                
-        jTxtautoRefreshTimer.setText(config.getProperty("till.autoRefreshTimer"));        
+        }
+        jTxtautoRefreshTimer.setText(config.getProperty("till.autoRefreshTimer"));
 
         jchkInstance.setSelected(Boolean.parseBoolean(config.getProperty("machine.uniqueinstance"))); 
-        jchkShowCustomerDetails.setSelected(Boolean.parseBoolean(config.getProperty("table.showcustomerdetails")));
-        jchkShowWaiterDetails.setSelected(Boolean.parseBoolean(config.getProperty("table.showwaiterdetails")));
+
         jchkTextOverlay.setSelected(Boolean.parseBoolean(config.getProperty("payments.textoverlay")));        
         jchkAutoLogoff.setSelected(Boolean.parseBoolean(config.getProperty("till.autoLogoff")));    
         jchkAutoLogoffToTables.setSelected(Boolean.parseBoolean(config.getProperty("till.autoLogoffrestaurant")));           
@@ -114,9 +121,16 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
         jMoveAMountBoxToTop.setSelected(Boolean.parseBoolean(config.getProperty("till.amountattop")));  
         jCloseCashbtn.setSelected(Boolean.parseBoolean(config.getProperty("screen.600800")));
         jchkautoRefreshTableMap.setSelected(Boolean.parseBoolean(config.getProperty("till.autoRefreshTableMap")));  
-        
         jchkPriceUpdate.setSelected(AppConfig.getInstance().getBoolean("db.prodpriceupdate"));
-        jchkBarcodetype.setSelected(Boolean.parseBoolean(config.getProperty("machine.barcodetype")));        
+        jchkBarcodetype.setSelected(Boolean.parseBoolean(config.getProperty("machine.barcodetype")));  
+        
+        String txtPIN =(config.getProperty("override.pin"));
+        if (txtPIN == null){
+            config.setProperty("override.check","true");                        
+            config.setProperty("override.pin","1234");
+        }       
+        jchkOverride.setSelected(Boolean.parseBoolean(config.getProperty("override.check")));
+        jtxtPIN.setText(config.getProperty("override.pin"));         
         
 /** Added: JG 23 July 13 */      
         String SCCheck =(config.getProperty("till.SCRate"));
@@ -159,22 +173,33 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
                 jLblautoRefresh.setVisible(false);
                 jLabelInactiveTime1.setVisible(false);
                 jTxtautoRefreshTimer.setVisible(false);
-        }        
-
-        if (config.getProperty("table.customercolour")==null){
-            jCustomerColour1.setText("blue");
-        }else{
-            jCustomerColour1.setText(config.getProperty("table.customercolour"));
         }
-        if (config.getProperty("table.waitercolour")==null){
-            jWaiterColour1.setText("red");
+
+        String customerCheck =(config.getProperty("table.showcustomerdetails"));
+        if (customerCheck == null) {
+            config.setProperty("table.showcustomerdetails","true");                      
+        }
+        jchkShowCustomerDetails.setSelected(Boolean.parseBoolean(config.getProperty("table.showcustomerdetails")));
+        if (config.getProperty("table.customercolour")==null){
+            CustomerColour.setText("");
         }else{
-            jWaiterColour1.setText(config.getProperty("table.waitercolour"));
+            CustomerColour.setText(config.getProperty("table.customercolour"));
+        }
+
+        String waiterCheck =(config.getProperty("table.showwaiterdetails"));
+        if (waiterCheck == null) {
+            config.setProperty("table.showwaiterdetails","true");                      
+        }
+        jchkShowWaiterDetails.setSelected(Boolean.parseBoolean(config.getProperty("table.showwaiterdetails")));        
+        if (config.getProperty("table.waitercolour")==null){
+            WaiterColour.setText("");
+        }else{
+            WaiterColour.setText(config.getProperty("table.waitercolour"));
         }
         if (config.getProperty("table.tablecolour")==null){                
-            jTableNameColour1.setText("black");      
+            TableNameColour.setText("");      
         }else{
-            jTableNameColour1.setText((config.getProperty("table.tablecolour")));  
+            TableNameColour.setText(config.getProperty("table.tablecolour"));  
         }
         
         jchkTransBtn.setSelected(Boolean.parseBoolean(config.getProperty("table.transbtn")));                
@@ -196,9 +221,9 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
         config.setProperty("payments.textoverlay", Boolean.toString(jchkTextOverlay.isSelected()));         
         config.setProperty("till.autoLogoff", Boolean.toString(jchkAutoLogoff.isSelected()));                 
         config.setProperty("till.autoLogoffrestaurant", Boolean.toString(jchkAutoLogoffToTables.isSelected()));                        
-        config.setProperty("table.customercolour",jCustomerColour1.getText());
-        config.setProperty("table.waitercolour",jWaiterColour1.getText());
-        config.setProperty("table.tablecolour",jTableNameColour1.getText());         
+        config.setProperty("table.customercolour",CustomerColour.getText());
+        config.setProperty("table.waitercolour",WaiterColour.getText());
+        config.setProperty("table.tablecolour",TableNameColour.getText());
         config.setProperty("till.taxincluded",Boolean.toString(jTaxIncluded.isSelected()));                     
         config.setProperty("till.pricewith00",Boolean.toString(jCheckPrice00.isSelected()));                         
         config.setProperty("till.amountattop",Boolean.toString(jMoveAMountBoxToTop.isSelected()));         
@@ -215,8 +240,12 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
         
         config.setProperty("table.transbtn", Boolean.toString(jchkTransBtn.isSelected()));
         
+        config.setProperty("override.check", Boolean.toString(jchkOverride.isSelected()));
+        config.setProperty("override.pin",jtxtPIN.getText());        
+        
         dirty.setDirty(false);
     }
+       
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -253,15 +282,18 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
         jTextSCRate = new javax.swing.JTextField();
         jLabelSCRatePerCent = new javax.swing.JLabel();
         jchkSCRestaurant = new javax.swing.JCheckBox();
-        jCustomerColour1 = new com.alee.extended.colorchooser.WebColorChooserField();
-        jWaiterColour1 = new com.alee.extended.colorchooser.WebColorChooserField();
-        jTableNameColour1 = new com.alee.extended.colorchooser.WebColorChooserField();
         jchkPriceUpdate = new javax.swing.JCheckBox();
         jchkBarcodetype = new javax.swing.JCheckBox();
         jchkTransBtn = new javax.swing.JCheckBox();
+        WaiterColour = new com.alee.extended.colorchooser.WebColorChooserField();
+        TableNameColour = new com.alee.extended.colorchooser.WebColorChooserField();
+        CustomerColour = new com.alee.extended.colorchooser.WebColorChooserField();
+        jchkOverride = new javax.swing.JCheckBox();
+        jtxtPIN = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
 
-        setBackground(new java.awt.Color(255, 255, 255));
         setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        setOpaque(false);
         setPreferredSize(new java.awt.Dimension(700, 500));
 
         jLabel1.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
@@ -281,11 +313,12 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
         jLabel4.setText(bundle.getString("label.configOptionRestaurant")); // NOI18N
         jLabel4.setPreferredSize(new java.awt.Dimension(250, 30));
 
-        jchkInstance.setBackground(new java.awt.Color(255, 255, 255));
         jchkInstance.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jchkInstance.setSelected(true);
         jchkInstance.setText(bundle.getString("label.instance")); // NOI18N
         jchkInstance.setMaximumSize(new java.awt.Dimension(0, 25));
         jchkInstance.setMinimumSize(new java.awt.Dimension(0, 0));
+        jchkInstance.setOpaque(false);
         jchkInstance.setPreferredSize(new java.awt.Dimension(250, 25));
 
         jLabelInactiveTime.setBackground(new java.awt.Color(255, 255, 255));
@@ -308,11 +341,11 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
         jLabelTimedMessage.setMinimumSize(new java.awt.Dimension(0, 0));
         jLabelTimedMessage.setPreferredSize(new java.awt.Dimension(200, 30));
 
-        jchkAutoLogoff.setBackground(new java.awt.Color(255, 255, 255));
         jchkAutoLogoff.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jchkAutoLogoff.setText(bundle.getString("label.autologonoff")); // NOI18N
         jchkAutoLogoff.setMaximumSize(new java.awt.Dimension(0, 25));
         jchkAutoLogoff.setMinimumSize(new java.awt.Dimension(0, 0));
+        jchkAutoLogoff.setOpaque(false);
         jchkAutoLogoff.setPreferredSize(new java.awt.Dimension(200, 30));
         jchkAutoLogoff.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -320,11 +353,11 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
             }
         });
 
-        jchkAutoLogoffToTables.setBackground(new java.awt.Color(255, 255, 255));
         jchkAutoLogoffToTables.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jchkAutoLogoffToTables.setText(bundle.getString("label.autoloffrestaurant")); // NOI18N
         jchkAutoLogoffToTables.setMaximumSize(new java.awt.Dimension(0, 25));
         jchkAutoLogoffToTables.setMinimumSize(new java.awt.Dimension(0, 0));
+        jchkAutoLogoffToTables.setOpaque(false);
         jchkAutoLogoffToTables.setPreferredSize(new java.awt.Dimension(0, 30));
         jchkAutoLogoffToTables.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -332,11 +365,12 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
             }
         });
 
-        jchkShowCustomerDetails.setBackground(new java.awt.Color(255, 255, 255));
         jchkShowCustomerDetails.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jchkShowCustomerDetails.setSelected(true);
         jchkShowCustomerDetails.setText(bundle.getString("label.tableshowcustomerdetails")); // NOI18N
         jchkShowCustomerDetails.setMaximumSize(new java.awt.Dimension(0, 25));
         jchkShowCustomerDetails.setMinimumSize(new java.awt.Dimension(0, 0));
+        jchkShowCustomerDetails.setOpaque(false);
         jchkShowCustomerDetails.setPreferredSize(new java.awt.Dimension(350, 30));
         jchkShowCustomerDetails.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -344,11 +378,12 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
             }
         });
 
-        jchkShowWaiterDetails.setBackground(new java.awt.Color(255, 255, 255));
         jchkShowWaiterDetails.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jchkShowWaiterDetails.setSelected(true);
         jchkShowWaiterDetails.setText(bundle.getString("label.tableshowwaiterdetails")); // NOI18N
         jchkShowWaiterDetails.setMaximumSize(new java.awt.Dimension(0, 25));
         jchkShowWaiterDetails.setMinimumSize(new java.awt.Dimension(0, 0));
+        jchkShowWaiterDetails.setOpaque(false);
         jchkShowWaiterDetails.setPreferredSize(new java.awt.Dimension(350, 30));
 
         jLabelTableNameTextColour.setBackground(new java.awt.Color(255, 255, 255));
@@ -358,12 +393,12 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
         jLabelTableNameTextColour.setMinimumSize(new java.awt.Dimension(0, 0));
         jLabelTableNameTextColour.setPreferredSize(new java.awt.Dimension(350, 30));
 
-        jCheckPrice00.setBackground(new java.awt.Color(255, 255, 255));
         jCheckPrice00.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jCheckPrice00.setText(bundle.getString("label.pricewith00")); // NOI18N
         jCheckPrice00.setToolTipText("");
         jCheckPrice00.setMaximumSize(new java.awt.Dimension(0, 25));
         jCheckPrice00.setMinimumSize(new java.awt.Dimension(0, 0));
+        jCheckPrice00.setOpaque(false);
         jCheckPrice00.setPreferredSize(new java.awt.Dimension(250, 25));
         jCheckPrice00.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -371,41 +406,42 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
             }
         });
 
-        jTaxIncluded.setBackground(new java.awt.Color(255, 255, 255));
         jTaxIncluded.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jTaxIncluded.setText(bundle.getString("label.taxincluded")); // NOI18N
         jTaxIncluded.setMaximumSize(new java.awt.Dimension(0, 25));
         jTaxIncluded.setMinimumSize(new java.awt.Dimension(0, 0));
+        jTaxIncluded.setOpaque(false);
         jTaxIncluded.setPreferredSize(new java.awt.Dimension(250, 25));
 
-        jCloseCashbtn.setBackground(new java.awt.Color(255, 255, 255));
         jCloseCashbtn.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jCloseCashbtn.setText(bundle.getString("message.systemclosecash")); // NOI18N
         jCloseCashbtn.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jCloseCashbtn.setMaximumSize(new java.awt.Dimension(0, 25));
         jCloseCashbtn.setMinimumSize(new java.awt.Dimension(0, 0));
+        jCloseCashbtn.setOpaque(false);
         jCloseCashbtn.setPreferredSize(new java.awt.Dimension(250, 25));
 
-        jMoveAMountBoxToTop.setBackground(new java.awt.Color(255, 255, 255));
         jMoveAMountBoxToTop.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jMoveAMountBoxToTop.setSelected(true);
         jMoveAMountBoxToTop.setText(bundle.getString("label.inputamount")); // NOI18N
         jMoveAMountBoxToTop.setMaximumSize(new java.awt.Dimension(0, 25));
         jMoveAMountBoxToTop.setMinimumSize(new java.awt.Dimension(0, 0));
+        jMoveAMountBoxToTop.setOpaque(false);
         jMoveAMountBoxToTop.setPreferredSize(new java.awt.Dimension(250, 25));
 
-        jchkTextOverlay.setBackground(new java.awt.Color(255, 255, 255));
         jchkTextOverlay.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jchkTextOverlay.setText(bundle.getString("label.currencybutton")); // NOI18N
         jchkTextOverlay.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jchkTextOverlay.setMaximumSize(new java.awt.Dimension(0, 25));
         jchkTextOverlay.setMinimumSize(new java.awt.Dimension(0, 0));
+        jchkTextOverlay.setOpaque(false);
         jchkTextOverlay.setPreferredSize(new java.awt.Dimension(250, 25));
 
-        jchkautoRefreshTableMap.setBackground(new java.awt.Color(255, 255, 255));
         jchkautoRefreshTableMap.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jchkautoRefreshTableMap.setText(bundle.getString("label.autoRefreshTableMap")); // NOI18N
         jchkautoRefreshTableMap.setMaximumSize(new java.awt.Dimension(0, 25));
         jchkautoRefreshTableMap.setMinimumSize(new java.awt.Dimension(0, 0));
+        jchkautoRefreshTableMap.setOpaque(false);
         jchkautoRefreshTableMap.setPreferredSize(new java.awt.Dimension(200, 30));
         jchkautoRefreshTableMap.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -433,11 +469,11 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
         jLblautoRefresh.setMinimumSize(new java.awt.Dimension(0, 0));
         jLblautoRefresh.setPreferredSize(new java.awt.Dimension(200, 30));
 
-        jchkSCOnOff.setBackground(new java.awt.Color(255, 255, 255));
         jchkSCOnOff.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jchkSCOnOff.setText(bundle.getString("label.SCOnOff")); // NOI18N
         jchkSCOnOff.setMaximumSize(new java.awt.Dimension(0, 25));
         jchkSCOnOff.setMinimumSize(new java.awt.Dimension(0, 0));
+        jchkSCOnOff.setOpaque(false);
         jchkSCOnOff.setPreferredSize(new java.awt.Dimension(0, 25));
         jchkSCOnOff.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -473,55 +509,70 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
         jchkSCRestaurant.setText(bundle.getString("label.SCRestaurant")); // NOI18N
         jchkSCRestaurant.setMaximumSize(new java.awt.Dimension(0, 25));
         jchkSCRestaurant.setMinimumSize(new java.awt.Dimension(0, 0));
+        jchkSCRestaurant.setOpaque(false);
         jchkSCRestaurant.setPreferredSize(new java.awt.Dimension(0, 25));
 
-        jCustomerColour1.setForeground(new java.awt.Color(0, 153, 255));
-        jCustomerColour1.setToolTipText(bundle.getString("tooltip.prodhtmldisplayColourChooser")); // NOI18N
-        jCustomerColour1.setColorDisplayType(com.alee.extended.colorchooser.ColorDisplayType.hex);
-        jCustomerColour1.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jCustomerColour1.setPreferredSize(new java.awt.Dimension(200, 30));
-
-        jWaiterColour1.setForeground(new java.awt.Color(0, 153, 255));
-        jWaiterColour1.setToolTipText(bundle.getString("tooltip.prodhtmldisplayColourChooser")); // NOI18N
-        jWaiterColour1.setColorDisplayType(com.alee.extended.colorchooser.ColorDisplayType.hex);
-        jWaiterColour1.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jWaiterColour1.setPreferredSize(new java.awt.Dimension(200, 30));
-
-        jTableNameColour1.setForeground(new java.awt.Color(0, 153, 255));
-        jTableNameColour1.setToolTipText(bundle.getString("tooltip.prodhtmldisplayColourChooser")); // NOI18N
-        jTableNameColour1.setColorDisplayType(com.alee.extended.colorchooser.ColorDisplayType.hex);
-        jTableNameColour1.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jTableNameColour1.setPreferredSize(new java.awt.Dimension(200, 30));
-
-        jchkPriceUpdate.setBackground(new java.awt.Color(255, 255, 255));
         jchkPriceUpdate.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jchkPriceUpdate.setText(bundle.getString("label.priceupdate")); // NOI18N
         jchkPriceUpdate.setToolTipText(bundle.getString("tooltip.priceupdate")); // NOI18N
         jchkPriceUpdate.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jchkPriceUpdate.setMaximumSize(new java.awt.Dimension(0, 25));
         jchkPriceUpdate.setMinimumSize(new java.awt.Dimension(0, 0));
+        jchkPriceUpdate.setOpaque(false);
         jchkPriceUpdate.setPreferredSize(new java.awt.Dimension(250, 25));
 
-        jchkBarcodetype.setBackground(new java.awt.Color(255, 255, 255));
         jchkBarcodetype.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jchkBarcodetype.setText(bundle.getString("label.barcodetype")); // NOI18N
         jchkBarcodetype.setToolTipText(bundle.getString("tooltip.barcodetype")); // NOI18N
         jchkBarcodetype.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jchkBarcodetype.setMaximumSize(new java.awt.Dimension(0, 25));
         jchkBarcodetype.setMinimumSize(new java.awt.Dimension(0, 0));
+        jchkBarcodetype.setOpaque(false);
         jchkBarcodetype.setPreferredSize(new java.awt.Dimension(250, 25));
 
-        jchkTransBtn.setBackground(new java.awt.Color(255, 255, 255));
         jchkTransBtn.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jchkTransBtn.setText(bundle.getString("label.tabletransbutton")); // NOI18N
         jchkTransBtn.setMaximumSize(new java.awt.Dimension(0, 25));
         jchkTransBtn.setMinimumSize(new java.awt.Dimension(0, 0));
+        jchkTransBtn.setOpaque(false);
         jchkTransBtn.setPreferredSize(new java.awt.Dimension(350, 30));
         jchkTransBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jchkTransBtnActionPerformed(evt);
             }
         });
+
+        WaiterColour.setToolTipText(bundle.getString("tooltip.prodhtmldisplayColourChooser")); // NOI18N
+        WaiterColour.setColorDisplayType(com.alee.extended.colorchooser.ColorDisplayType.hex);
+        WaiterColour.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        WaiterColour.setMinimumSize(new java.awt.Dimension(51, 30));
+
+        TableNameColour.setToolTipText(bundle.getString("tooltip.prodhtmldisplayColourChooser")); // NOI18N
+        TableNameColour.setColorDisplayType(com.alee.extended.colorchooser.ColorDisplayType.hex);
+        TableNameColour.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        TableNameColour.setMinimumSize(new java.awt.Dimension(51, 30));
+
+        CustomerColour.setToolTipText(bundle.getString("tooltip.prodhtmldisplayColourChooser")); // NOI18N
+        CustomerColour.setColorDisplayType(com.alee.extended.colorchooser.ColorDisplayType.hex);
+        CustomerColour.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        CustomerColour.setMinimumSize(new java.awt.Dimension(51, 30));
+
+        jchkOverride.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jchkOverride.setText(bundle.getString("label.override")); // NOI18N
+        jchkOverride.setMaximumSize(new java.awt.Dimension(0, 25));
+        jchkOverride.setMinimumSize(new java.awt.Dimension(0, 0));
+        jchkOverride.setOpaque(false);
+        jchkOverride.setPreferredSize(new java.awt.Dimension(200, 30));
+
+        jtxtPIN.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jtxtPIN.setText("1234");
+        jtxtPIN.setToolTipText("");
+        jtxtPIN.setMaximumSize(new java.awt.Dimension(0, 25));
+        jtxtPIN.setMinimumSize(new java.awt.Dimension(0, 0));
+        jtxtPIN.setPreferredSize(new java.awt.Dimension(60, 30));
+
+        jLabel5.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabel5.setText("PIN");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -562,9 +613,9 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
                                         .addComponent(jTxtautoRefreshTimer, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(jLblautoRefresh, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(jTableNameColour1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jWaiterColour1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jCustomerColour1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(WaiterColour, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(TableNameColour, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(CustomerColour, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addContainerGap())
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -580,25 +631,34 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(jLabelTimedMessage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addGap(0, 0, Short.MAX_VALUE))))
-                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 654, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 654, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(10, 10, 10)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jchkInstance, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jTaxIncluded, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jchkTextOverlay, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jchkPriceUpdate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addGap(150, 150, 150)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jCheckPrice00, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jMoveAMountBoxToTop, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jCloseCashbtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jchkBarcodetype, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(10, 10, 10)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jchkInstance, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(jTaxIncluded, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(jchkTextOverlay, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(jchkPriceUpdate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(jchkOverride, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(jtxtPIN, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                .addComponent(jLabel5)))))
+                                .addGap(107, 107, 107)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jCheckPrice00, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jMoveAMountBoxToTop, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jCloseCashbtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jchkBarcodetype, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -623,6 +683,11 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jchkPriceUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jchkBarcodetype, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(jtxtPIN, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jchkOverride, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -652,23 +717,19 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jchkShowCustomerDetails, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jCustomerColour1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(CustomerColour, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(jchkShowWaiterDetails, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jWaiterColour1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(WaiterColour, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabelTableNameTextColour, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTableNameColour1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(TableNameColour, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelTableNameTextColour, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jchkTransBtn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addGap(32, 32, 32))
         );
-
-        jCustomerColour1.getAccessibleContext().setAccessibleName("colourChooser");
-        jWaiterColour1.getAccessibleContext().setAccessibleName("colourChooser1");
-        jTableNameColour1.getAccessibleContext().setAccessibleName("colourChooser2");
     }// </editor-fold>//GEN-END:initComponents
 
     private void jchkAutoLogoffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jchkAutoLogoffActionPerformed
@@ -699,13 +760,13 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
 
     private void jchkautoRefreshTableMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jchkautoRefreshTableMapActionPerformed
         if (jchkautoRefreshTableMap.isSelected()){
-                jLblautoRefresh.setVisible(true);
-                jLabelInactiveTime1.setVisible(true);
-                jTxtautoRefreshTimer.setVisible(true);
+            jLblautoRefresh.setVisible(true);
+            jLabelInactiveTime1.setVisible(true);
+            jTxtautoRefreshTimer.setVisible(true);
         }else{    
-                jLblautoRefresh.setVisible(false);
-                jLabelInactiveTime1.setVisible(false);
-                jTxtautoRefreshTimer.setVisible(false);
+            jLblautoRefresh.setVisible(false);
+            jLabelInactiveTime1.setVisible(false);
+            jTxtautoRefreshTimer.setVisible(false);
         }  
     }//GEN-LAST:event_jchkautoRefreshTableMapActionPerformed
 
@@ -733,13 +794,16 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private com.alee.extended.colorchooser.WebColorChooserField CustomerColour;
+    private com.alee.extended.colorchooser.WebColorChooserField TableNameColour;
+    private com.alee.extended.colorchooser.WebColorChooserField WaiterColour;
     private javax.swing.JCheckBox jCheckPrice00;
     private javax.swing.JCheckBox jCloseCashbtn;
-    private com.alee.extended.colorchooser.WebColorChooserField jCustomerColour1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabelInactiveTime;
     private javax.swing.JLabel jLabelInactiveTime1;
     private javax.swing.JLabel jLabelSCRate;
@@ -748,16 +812,15 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
     private javax.swing.JLabel jLabelTimedMessage;
     private javax.swing.JLabel jLblautoRefresh;
     private javax.swing.JCheckBox jMoveAMountBoxToTop;
-    private com.alee.extended.colorchooser.WebColorChooserField jTableNameColour1;
     private javax.swing.JCheckBox jTaxIncluded;
     private javax.swing.JTextField jTextAutoLogoffTime;
     private javax.swing.JTextField jTextSCRate;
     private javax.swing.JTextField jTxtautoRefreshTimer;
-    private com.alee.extended.colorchooser.WebColorChooserField jWaiterColour1;
     private javax.swing.JCheckBox jchkAutoLogoff;
     private javax.swing.JCheckBox jchkAutoLogoffToTables;
     private javax.swing.JCheckBox jchkBarcodetype;
     private javax.swing.JCheckBox jchkInstance;
+    private javax.swing.JCheckBox jchkOverride;
     private javax.swing.JCheckBox jchkPriceUpdate;
     private javax.swing.JCheckBox jchkSCOnOff;
     private javax.swing.JCheckBox jchkSCRestaurant;
@@ -766,6 +829,7 @@ public class JPanelConfigSystem extends javax.swing.JPanel implements PanelConfi
     private javax.swing.JCheckBox jchkTextOverlay;
     private javax.swing.JCheckBox jchkTransBtn;
     private javax.swing.JCheckBox jchkautoRefreshTableMap;
+    private javax.swing.JTextField jtxtPIN;
     // End of variables declaration//GEN-END:variables
     
 }

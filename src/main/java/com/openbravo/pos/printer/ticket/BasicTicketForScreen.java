@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -29,7 +29,8 @@ import java.awt.geom.AffineTransform;
  */
 public class BasicTicketForScreen extends BasicTicket {
 
-    private static Font BASEFONT = new Font("Monospaced", 
+//    private static Font BASEFONT = new Font("Monospaced", 
+    private static Font BASEFONT = new Font("Courier New",     
             Font.PLAIN, 12).deriveFont(AffineTransform.getScaleInstance(1.0, 1.40));
 // JG Feb' 16 - Revert
 // Consolas intro'd in v4.1 but causes issue in RightToLeft languages i.e.: Arabic

@@ -1,5 +1,5 @@
 //    uniCenta oPOS  - Touch Friendly Point Of Sale
-//    Copyright (c) 2009-2017 uniCenta & previous Openbravo POS works
+//    Copyright (c) 2009-2018 uniCenta & previous Openbravo POS works
 //    https://unicenta.com
 //
 //    This file is part of uniCenta oPOS
@@ -209,7 +209,7 @@ public class DataLogicCustomers extends BeanFactoryDataSingle {
                 c.setImage(ImageUtils.readImage(dr.getBytes(8)));
 //                c.setCurDebt(dr.getDouble(9));
 
-return c;                
+            return c;                
         });
     }
         
@@ -227,7 +227,7 @@ return c;
                     c.setPcode(dr.getString(5));
 //                            c.setisVip(dr.getBoolean(6));
 //                            c.setDiscount(dr.getDouble(7));
-return c;
+            return c;
         }).find(id);
     }        
        
@@ -341,22 +341,18 @@ return c;
             "SELECT SUBSTRING(MAX(VOUCHER_NUMBER),10,3) AS LAST_NUMBER FROM vouchers " +
             "WHERE SUBSTRING(VOUCHER_NUMBER,1,8) = ?" 
             , SerializerWriteString.INSTANCE
-            , new SerializerRead() 
-            
-            { @Override
-            public Object readValues(DataRead dr) throws BasicException {
-                return 
-                dr.getString(1);
-            } } );
+            , (DataRead dr) -> dr.getString(1));
     }
       
       
         public final VoucherInfo getVoucherInfo(String id) throws BasicException {
             return (VoucherInfo) new PreparedSentence(s
-                , "SELECT vouchers.ID,vouchers.VOUCHER_NUMBER,vouchers.CUSTOMER,customers.NAME,AMOUNT " +
+                , "SELECT vouchers.ID, VOUCHER_NUMBER, CUSTOMER, " +
+                        "customers.NAME, AMOUNT, STATUS " +
                   "FROM vouchers " +
                     "JOIN customers ON customers.id = vouchers.CUSTOMER " +
                   "WHERE STATUS='A' AND vouchers.ID=?" 
+//                  "WHERE STATUS='A' "                         
 		, SerializerWriteString.INSTANCE
 		, VoucherInfo.getSerializerRead()).find(id);
     }
@@ -364,8 +360,8 @@ return c;
           
         public final VoucherInfo getVoucherInfoAll(String id) throws BasicException {
             return (VoucherInfo) new PreparedSentence(s
-		, "SELECT vouchers.ID,vouchers.VOUCHER_NUMBER,vouchers.CUSTOMER, " +
-                        "customers.NAME,AMOUNT " +
+		, "SELECT vouchers.ID, VOUCHER_NUMBER, CUSTOMER, " +
+                        "customers.NAME, AMOUNT, STATUS " +
                     "FROM vouchers " +
                         "JOIN customers ON customers.id = vouchers.CUSTOMER  " +
                     "WHERE vouchers.ID=?" 
