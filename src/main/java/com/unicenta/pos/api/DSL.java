@@ -165,6 +165,31 @@ public class DSL extends DataLogicSystem {
                 SerializerReadBytes.INSTANCE);
         try {
             Object bytes = ps.find(new String[]{pk});
+            if (bytes == null) {
+                if (tableName.equals("categories")) {
+                    bytes = defaultCategoryBytes;
+                    return bytes;
+                }
+                if (tableName.equals("floors")) {
+                    bytes = defaultCategoryBytes;
+                    return bytes;
+                }
+                //TODO proper floor and place images
+                if (tableName.equals("places")) {
+                    bytes = defaultProductBytes;
+                    return bytes;
+                }
+
+                if (tableName.equals("products")) {
+                    bytes = defaultProductBytes;
+                    return bytes;
+                }
+
+                if (tableName.equals("people")) {
+                    bytes = defaultUserBytes;
+                    return bytes;
+                }
+            }
             return bytes;
 
         } catch (BasicException e) {
@@ -177,39 +202,7 @@ public class DSL extends DataLogicSystem {
             throws BasicException {
 
         Object bytes;
-
-        if (pk.equals("-1")) {
-            bytes = null; //when pk is -1 return the default image
-        } else {
-            bytes = getDBImageBytes(tableName, pk);
-        }
-
-        if (bytes == null) {
-            if (tableName.equals("categories")) {
-                bytes = defaultCategoryBytes;
-                return bytes;
-            }
-            if (tableName.equals("floors")) {
-                bytes = defaultCategoryBytes;
-                return bytes;
-            }
-            //TODO proper floor and place images
-            if (tableName.equals("places")) {
-                bytes = defaultProductBytes;
-                return bytes;
-            }
-
-            if (tableName.equals("products")) {
-                bytes = defaultProductBytes;
-                return bytes;
-            }
-
-            if (tableName.equals("people")) {
-                bytes = defaultUserBytes;
-                return bytes;
-            }
-        }
-
+        bytes = getDBImageBytes(tableName, pk);
         return getImageThumb((byte[]) bytes);
 
     }
