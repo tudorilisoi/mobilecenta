@@ -61,7 +61,6 @@ public class ApiServer {
     private TicketDSL ticketDSL;
     private Cache cacheProducts = null;
     private Cache cacheFloors = null;
-    private Cache cacheTickets = null;
     private Cache cacheImages = null;
 
     //TODO make this use the stored password
@@ -74,7 +73,7 @@ public class ApiServer {
 
 
     private static String AESKey = "a disturbing secret";
-    private static boolean useEncryption = true; //set to false in dev mode for easier debugging
+    private static boolean useEncryption = false; //set to false in dev mode for easier debugging
 
     public ApiServer(JRootApp app) {
         this.running = false;
@@ -104,7 +103,6 @@ public class ApiServer {
 
         cacheProducts = makeCache("routeProducts", 500);
         cacheFloors = makeCache("routeFloors", 500);
-        cacheTickets = makeCache("routeSharedtickets", 0);
         cacheImages = makeCache("routeDBImage", 500);
 
         //Spark: log HTTP 500 expceptions
@@ -572,6 +570,10 @@ public class ApiServer {
             String method = request.requestMethod();
             String url = request.url();
             logger.info(method + " " + url);
+            logger.info("REQ HEADERS:\n ");
+            for (String headerName : request.headers()) {
+                logger.info(headerName + ": " + request.headers(headerName));
+            }
         });
 
         middlewareEnableCORS("*",
@@ -646,7 +648,10 @@ public class ApiServer {
             response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
 
-            return (String) cacheTickets.get(params);
+            JSONPayload ret = createJSONPayload();
+            ret.setStatus("OK");
+            ret.setData(routeSharedtickets(params));
+            return ret.getString();
         });
 
         get("/users", (request, response) -> {

@@ -204,7 +204,7 @@ public class DSL extends DataLogicSystem {
                 return bytes;
             }
 
-            if (tableName.equals("users")) {
+            if (tableName.equals("people")) {
                 bytes = defaultUserBytes;
                 return bytes;
             }
