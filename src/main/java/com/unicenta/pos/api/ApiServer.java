@@ -373,7 +373,7 @@ public class ApiServer {
                 logger.warning("Invalid X-AES-Verify header: " + verifyHeader);
                 JSONPayload ret = new JSONPayload(false);
                 ret.setErrorMessage("BAD_AES_KEY");
-                halt(401, ret.getString());
+                halt(412, ret.getString());
             }
         });
     }
@@ -504,12 +504,12 @@ public class ApiServer {
         JSONPayload ret = createJSONPayload();
         ret.setStatus("ERROR");
         if (user == null) {
-            response.status(404);
+            response.status(401);
             ret.setErrorMessage("NO_SUCH_USER_ID");
             return ret.getString();
         }
         if (!Hashcypher.authenticate(password, user.getPassword())) {
-            response.status(400);
+            response.status(401);
             ret.setErrorMessage("BAD_PASSWORD");
             return ret.getString();
         }
