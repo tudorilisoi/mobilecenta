@@ -64,7 +64,7 @@ public class ApiServer {
     private Cache cacheImages = null;
 
     //TODO make this use the stored password
-    private SessionStore sessionStore = SessionStore.instance("123456");
+    private SessionStore sessionStore;
 
 
     // encryption settings
@@ -75,9 +75,24 @@ public class ApiServer {
     private static String AESKey = "a disturbing secret";
     private static boolean useEncryption = false; //set to false in dev mode for easier debugging
 
+    public String getConfigParam(String prop) {
+        File configFile = app.getProperties().getConfigFile();
+        AppProperties props = app.getProperties();
+
+        String value = props.getProperty(prop);
+        if (value != null && value.startsWith("crypt:")) {
+            AltEncrypter cypher = new AltEncrypter("cipherkey");
+            value = cypher.decrypt(value.substring(6));
+        }
+        return value;
+    }
+
     public ApiServer(JRootApp app) {
         this.running = false;
         this.app = app;
+
+        String aesPassword = getConfigParam("mobilecenta.aes_password");
+        sessionStore = SessionStore.instance(aesPassword);
 
         DSL = (DSL) app.getBean("com.unicenta.pos.api.DSL");
         DataLogicReceipts receiptsLogic = (DataLogicReceipts) app.getBean("com.openbravo.pos.sales.DataLogicReceipts");
@@ -536,30 +551,24 @@ public class ApiServer {
         ArrayList<String> s = NetworkInfo.getAllAddresses();
         logger.warning(s.toString());
 
-        File configFile = app.getProperties().getConfigFile();
-        AppProperties props = app.getProperties();
+
 
         //TODO read mobilecenta.aes_secret_keys instead
-        String aesKey = props.getProperty("mobilecenta.aes_secret_keys");
-        if (aesKey != null && aesKey.startsWith("crypt:")) {
-            AltEncrypter cypher = new AltEncrypter("cipherkey");
-            aesKey = cypher.decrypt(aesKey.substring(6));
-        }
-        logger.warning("KEY " + aesKey);
+        String aesKey = getConfigParam("mobilecenta.aes_secret_keys");
+        logger.warning("AES KEY " + aesKey);
         AES256Cryptor.setKeysStr(aesKey);
         AESKey = aesKey;
 
         // TODO check if IP address exists!
         // TODO memorize network if name and check if the IP has changed!
         // NOTE if it does not spark will bail out with exit code 100
-        String ipAddressStr = props.getProperty("mobilecenta.server_ip_address");
+        String ipAddressStr = getConfigParam("mobilecenta.server_ip_address");
         if (ipAddressStr != null) {
             logger.warning("API SERVER IP " + ipAddressStr);
             ipAddress(ipAddressStr);
         }
 
-
-        String portStr = props.getProperty("mobilecenta.server_port");
+        String portStr = getConfigParam("mobilecenta.server_port");
         if (portStr == null) {
             portStr = "7777";
         }

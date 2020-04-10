@@ -9,7 +9,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import java.util.HashMap;
 
 public class SessionStore {
-    private String secret = null;
+    private String secret;
     private HashMap<String, String> tokenStore = new HashMap();
 
     //TODO implement checking
