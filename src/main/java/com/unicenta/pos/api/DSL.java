@@ -112,7 +112,10 @@ public class DSL extends DataLogicSystem {
             return bytes;
         }
         try {
-            Image img = api_thumb.getThumbNail(ImageUtils.readImage(bytes));
+            BufferedImage bi = ImageUtils.readImage(bytes);
+            logger.warning(String.format("ORIG IMAGE width %d height %d", bi.getWidth(), bi.getHeight()));
+//            Image img = api_thumb.getThumbNail(bi);
+            Image img = resizeImage(bi);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             BufferedImage bimg = new BufferedImage(
                     img.getWidth(null),
@@ -196,6 +199,46 @@ public class DSL extends DataLogicSystem {
             e.printStackTrace(System.out);
             return null;
         }
+    }
+
+    private Dimension m_maxsize = new Dimension(128, 128);
+
+    private BufferedImage resizeImage(BufferedImage img) {
+
+        int myheight = img.getHeight();
+        int mywidth = img.getWidth();
+
+        if (myheight > m_maxsize.height) {
+            mywidth = (int) (mywidth * m_maxsize.height / myheight);
+            myheight = m_maxsize.height;
+        }
+        if (mywidth > m_maxsize.width) {
+            myheight = (int) (myheight * m_maxsize.width / mywidth);
+            mywidth = m_maxsize.width;
+        }
+
+        BufferedImage thumb = new BufferedImage(mywidth, myheight, BufferedImage.TYPE_4BYTE_ABGR);
+
+        double scalex = (double) mywidth / (double) img.getWidth(null);
+        double scaley = (double) myheight / (double) img.getHeight(null);
+
+        Graphics2D g2d = thumb.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+        g2d.setColor(new Color(0, 0, 0, 0));
+
+        g2d.fillRect(0, 0, mywidth, myheight);
+        if (scalex < scaley) {
+            g2d.drawImage(img, 0, (int) ((myheight - img.getHeight(null) * scalex) / 2.0)
+                    , mywidth, (int) (img.getHeight(null) * scalex), null);
+        } else {
+            g2d.drawImage(img, (int) ((mywidth - img.getWidth(null) * scaley) / 2.0), 0
+                    , (int) (img.getWidth(null) * scaley), myheight, null);
+        }
+        g2d.dispose();
+
+        return thumb;
     }
 
     public final Object getDBImageThumbnail(String tableName, String pk)
