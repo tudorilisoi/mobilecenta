@@ -424,7 +424,7 @@ public class DSL extends DataLogicSystem {
     }
 
     public final AppUser getAppUserByID(String ID) {
-        String[] columnNames = "ID NAME APPPASSWORD CARD ROLE IMAGE".split(" ");
+        String[] columnNames = "ID NAME APPPASSWORD CARD ROLE".split(" ");
         String query = "SELECT "
                 + String.join(", ", columnNames)
                 + " FROM people WHERE VISIBLE = " + s.DB.TRUE()
@@ -449,7 +449,7 @@ public class DSL extends DataLogicSystem {
                     (String) h.get("APPPASSWORD"),
                     (String) h.get("CARD"),
                     (String) h.get("ROLE"),
-                    (Icon) h.get("IMAGE")
+                    null
             );
             return u;
 //            return null;

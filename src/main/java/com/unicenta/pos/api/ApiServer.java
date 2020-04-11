@@ -552,7 +552,6 @@ public class ApiServer {
         logger.warning(s.toString());
 
 
-
         //TODO read mobilecenta.aes_secret_keys instead
         String aesKey = getConfigParam("mobilecenta.aes_secret_keys");
         logger.warning("AES KEY " + aesKey);
@@ -575,6 +574,18 @@ public class ApiServer {
         logger.warning("API SERVER PORT " + portStr);
         port(Integer.parseInt(portStr));
 
+        //err handler
+        internalServerError((req, res) -> {
+            res.type("application/json");
+            return "{\"message\":\"Server error\"}";
+        });
+        // Using Route
+        notFound((req, res) -> {
+            res.type("application/json");
+            return "{\"message\":\"Route not found\"}";
+        });
+
+        //Request logging
         before((request, response) -> {
             String method = request.requestMethod();
             String url = request.url();
