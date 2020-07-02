@@ -58,7 +58,9 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
-import javax.swing.*;     
+import javax.swing.*;
+
+import com.unicenta.pos.api.ApiServer;
 import org.joda.time.DateTime;
 import com.dalsemi.onewire.OneWireAccessProvider;
 import com.dalsemi.onewire.adapter.DSPortAdapter;
@@ -136,8 +138,9 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
     }
 
     private String sLaunch;
-    private String sMachine;    
-                
+    private String sMachine;
+    private ApiServer server;
+
     private class PrintTimeAction implements ActionListener {
 
         @Override
@@ -552,7 +555,20 @@ public class JRootApp extends JPanel implements AppView, DeviceMonitorEventListe
         if(ibutton.equals("true")) {
             initIButtonMonitor();
             uOWWatch.iButtonOn();
-        }    
+        }
+
+
+        server = new ApiServer(this);
+        server.start();
+        if (!server.isRunning()) {
+            MessageInf msg = new MessageInf(MessageInf.SGN_IMPORTANT
+                    , AppLocal.getIntString("label.mobilecenta.incorrect_server_config"),
+                    server.lastErrorMessage()
+            );
+            msg.show(this);
+            return false;
+        }
+
         return true;
     }
    
