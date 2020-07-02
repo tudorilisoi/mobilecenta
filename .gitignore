@@ -1,0 +1,11 @@
+/target/
+/nbactions.xml
+/nb-configuration.xml
+/unicentaopos.iml
+*.jar
+
+#intellij
+.idea
+
+#config file
+build
