@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
-
 public class DSL extends DataLogicSystem {
 
     private static final Logger logger = Logger.getLogger("DSL");
@@ -135,8 +134,8 @@ public class DSL extends DataLogicSystem {
     }
 
     public Object getImageDimensions(byte[] imageData) {
-        ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
         try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
             BufferedImage bimage = ImageIO.read(bais);
             int h = bimage.getHeight();
             int w = bimage.getWidth();
@@ -145,7 +144,8 @@ public class DSL extends DataLogicSystem {
             dimensions.put("width", w);
             return dimensions;
 
-        } catch (IOException e) {
+        } catch (Exception e) {
+            logger.warning(e.toString());
             return null;
 //            throw new RuntimeException(e);
         }
@@ -230,11 +230,11 @@ public class DSL extends DataLogicSystem {
 
         g2d.fillRect(0, 0, mywidth, myheight);
         if (scalex < scaley) {
-            g2d.drawImage(img, 0, (int) ((myheight - img.getHeight(null) * scalex) / 2.0)
-                    , mywidth, (int) (img.getHeight(null) * scalex), null);
+            g2d.drawImage(img, 0, (int) ((myheight - img.getHeight(null) * scalex) / 2.0),
+                    mywidth, (int) (img.getHeight(null) * scalex), null);
         } else {
-            g2d.drawImage(img, (int) ((mywidth - img.getWidth(null) * scaley) / 2.0), 0
-                    , (int) (img.getWidth(null) * scaley), myheight, null);
+            g2d.drawImage(img, (int) ((mywidth - img.getWidth(null) * scaley) / 2.0), 0,
+                    (int) (img.getWidth(null) * scaley), myheight, null);
         }
         g2d.dispose();
 
@@ -250,15 +250,13 @@ public class DSL extends DataLogicSystem {
 
     }
 
-
     public final HashMap listSharedTickets() throws BasicException {
         List<SharedTicketInfo> infoList = receiptsLogic.getSharedTicketList();
         HashMap ret = new HashMap();
         //map place id to shared ticket
         infoList.stream()
                 .filter(el -> el != null)
-                .forEach(el -> ret.put(el.getId(), this.getTicketInfo(el.getId())))
-        ;
+                .forEach(el -> ret.put(el.getId(), this.getTicketInfo(el.getId())));
         System.out.print(ret);
         return ret;
     }
@@ -273,8 +271,6 @@ public class DSL extends DataLogicSystem {
 
 //                    logger.warning(columnNames[i]);
 //                    logger.warning(columnName);
-
-
                     switch (columnName) {
 
                         case "PARENTID": //categories
@@ -332,7 +328,6 @@ public class DSL extends DataLogicSystem {
         }
     }
 
-
     public final List listFloors() throws BasicException {
         String[] columnNames = "ID NAME IMAGE" //IMAGE
                 .split(" ");
@@ -358,7 +353,6 @@ public class DSL extends DataLogicSystem {
         );
         return tryCatchList(sl);
     }
-
 
     public final List listProductCategoryOrder() throws BasicException {
         String[] columnNames = "PRODUCT CATORDER".split(" ");
@@ -398,7 +392,6 @@ public class DSL extends DataLogicSystem {
         return tryCatchList(sl);
     }
 
-
     public final List listProductCategories() throws BasicException {
         String[] columnNames = "ID NAME PARENTID IMAGE".split(" ");
         String sql = "SELECT "
@@ -433,7 +426,7 @@ public class DSL extends DataLogicSystem {
         PreparedSentence ps = new PreparedSentence(
                 s,
                 query,
-//                new SerializerWriteBasic(Datas.STRING),
+                //                new SerializerWriteBasic(Datas.STRING),
                 new SerializerWriteBasic(Datas.STRING),
                 getReader(columnNames));
         try {
@@ -455,7 +448,6 @@ public class DSL extends DataLogicSystem {
 //            return null;
 
             //return new AppUser(data.name);
-
         } catch (BasicException e) {
             e.printStackTrace(System.out);
             return null;
@@ -490,7 +482,6 @@ public class DSL extends DataLogicSystem {
         );
         return tryCatchList(sl);
     }
-
 
     public void setTaxesLogic(TaxesLogic taxesLogic) {
         this.taxesLogic = taxesLogic;

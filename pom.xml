@@ -478,12 +478,16 @@
                 <version>1.4.0</version>
                 <executions>
                     <execution>
+
                         <goals>
                             <goal>exec</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
+                    <arguments>
+                    <argument>-Dhttps.protocols=TLSv1.2</argument>
+                    </arguments>
                     <mainClass>com.openbravo.pos.forms.StartPOS</mainClass>
                     <executable>${bitrock.exec}</executable>
                     <arguments>

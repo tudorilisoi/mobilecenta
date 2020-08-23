@@ -605,7 +605,7 @@ public class ApiServer {
 
         middlewareEnableCORS("*",
                 "GET,POST,PUT,DELETE,PATCH,OPTIONS",
-                "Content-type,X-Requested-With"
+                "Content-type,X-Requested-With,Accept"
         );
         middlewareVerifyAESKey();
         middleWareJWTAuth();
