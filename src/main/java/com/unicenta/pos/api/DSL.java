@@ -34,6 +34,7 @@ public class DSL extends DataLogicSystem {
     public DataLogicSales salesLogic;
     public TaxesLogic taxesLogic;
     public DataLogicReceipts receiptsLogic;
+    public DataLogicSystem systemLogic;
 
     private byte[] defaultCategoryBytes = null;
     private byte[] defaultProductBytes = null;
@@ -59,6 +60,10 @@ public class DSL extends DataLogicSystem {
 
     public void setSalesLogic(DataLogicSales salesLogic) {
         this.salesLogic = salesLogic;
+    }
+
+    public void setSystemLogic(DataLogicSystem systemLogic) {
+        this.systemLogic = systemLogic;
     }
 
     private void initDefaultImages() {

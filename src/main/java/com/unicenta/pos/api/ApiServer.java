@@ -17,6 +17,7 @@ import com.openbravo.basic.BasicException;
 import com.openbravo.pos.forms.AppProperties;
 import com.openbravo.pos.forms.AppUser;
 import com.openbravo.pos.forms.DataLogicSales;
+import com.openbravo.pos.forms.DataLogicSystem;
 import com.openbravo.pos.forms.JRootApp;
 import com.openbravo.pos.sales.DataLogicReceipts;
 import com.openbravo.pos.sales.TaxesLogic;
@@ -29,6 +30,7 @@ import com.openbravo.pos.util.AltEncrypter;
 import com.openbravo.pos.util.Hashcypher;
 import com.unicenta.pos.api.JSONOrder.JSONOrder;
 import com.unicenta.pos.api.JSONOrder.Line;
+import com.unicenta.pos.api.TicketOps;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
@@ -45,7 +47,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static spark.Spark.*;
-
 
 /**
  * @author tudor
@@ -66,12 +67,9 @@ public class ApiServer {
     //TODO make this use the stored password
     private SessionStore sessionStore;
 
-
     // encryption settings
     // since there is no easy way to run HTTPS on a LAN server
     // we use a shared private key
-
-
     private static String AESKey = "a disturbing secret";
     private static boolean useEncryption = false; //set to false in dev mode for easier debugging
 
@@ -91,8 +89,11 @@ public class ApiServer {
         this.running = false;
         this.app = app;
 
-
         DSL = (DSL) app.getBean("com.unicenta.pos.api.DSL");
+
+        DataLogicSystem systemLogic = (DataLogicSystem) app.getBean("com.openbravo.pos.forms.DataLogicSystem");
+        DSL.setSystemLogic(systemLogic);
+
         DataLogicReceipts receiptsLogic = (DataLogicReceipts) app.getBean("com.openbravo.pos.sales.DataLogicReceipts");
         DSL.setReceiptsLogic(receiptsLogic);
 
@@ -110,9 +111,7 @@ public class ApiServer {
         ticketDSL = (TicketDSL) app.getBean("com.unicenta.pos.api.TicketDSL");
         ticketDSL.setReceiptsLogic(receiptsLogic);
 
-
         ticketDSL.setApp(app);
-
 
         cacheProducts = makeCache("routeProducts", 500);
         cacheFloors = makeCache("routeFloors", 500);
@@ -154,32 +153,32 @@ public class ApiServer {
     private Cache makeCache(String routeMethod, Integer size) {
         return CacheBuilder.newBuilder()
                 .maximumSize(size)
-//                .expireAfterWrite(10, TimeUnit.MINUTES)
+                //                .expireAfterWrite(10, TimeUnit.MINUTES)
                 .build(
                         new CacheLoader<HashMap, Object>() {
-                            @Override
-                            public Object load(HashMap params) throws Exception {
-                                JSONPayload ret = createJSONPayload();
-                                ret.setStatus("OK");
-                                JsonElement data = null;
-                                switch (routeMethod) {
-                                    case "routeFloors":
-                                        data = routeFloors(params);
-                                        break;
-                                    case "routeProducts":
-                                        data = routeProducts(params);
-                                        break;
-                                    case "routeSharedtickets":
-                                        data = routeSharedtickets(params);
-                                        break;
-                                    case "routeDBImage":
-                                        return routeDBImage(params);
+                    @Override
+                    public Object load(HashMap params) throws Exception {
+                        JSONPayload ret = createJSONPayload();
+                        ret.setStatus("OK");
+                        JsonElement data = null;
+                        switch (routeMethod) {
+                            case "routeFloors":
+                                data = routeFloors(params);
+                                break;
+                            case "routeProducts":
+                                data = routeProducts(params);
+                                break;
+                            case "routeSharedtickets":
+                                data = routeSharedtickets(params);
+                                break;
+                            case "routeDBImage":
+                                return routeDBImage(params);
 
-                                }
-                                ret.setData(data);
-                                return ret.getString();
-                            }
                         }
+                        ret.setData(data);
+                        return ret.getString();
+                    }
+                }
                 );
     }
 
@@ -203,7 +202,6 @@ public class ApiServer {
             throw new BasicException(e.getMessage(), e);
         }
     }
-
 
     private JsonElement routeUsers(Map params) throws BasicException {
 
@@ -245,7 +243,6 @@ public class ApiServer {
 
         //TODO!! parse req body, move this method into DSL,
         // cycle through lines and replace them  in the shared ticket
-
         HashMap d = new HashMap();
 
         JSONOrder order = Converter.fromJsonString(params.get("data").toString());
@@ -271,7 +268,7 @@ public class ApiServer {
             ProductInfoExt productInfo = DSL.salesLogic.getProductInfo(l.getProductID());
             productInfo.setName(
                     productInfo.getName()
-                            + (l.getUm() == 1.0 ? "" : " (" + nf.format(l.getUm()) + ")"));
+                    + (l.getUm() == 1.0 ? "" : " (" + nf.format(l.getUm()) + ")"));
             TaxInfo tax = DSL.taxesLogic.getTaxInfo(
                     productInfo.getTaxCategoryID(),
                     ticketInfo.getCustomer()
@@ -298,10 +295,16 @@ public class ApiServer {
             //NOTE use 2nd arg null to unlock
             DSL.receiptsLogic.lockSharedTicket(placeID, "locked");
 //            DSL.salesLogic.saveTicket(ticketInfo, app.getInventoryLocation());
+
+            //print to kitchen test
+            TicketOps ops = new TicketOps(app, DSL, ticketInfo, user, placeID);
+            ops.printToKitchen();
+
         } catch (BasicException e) {
 //            TODO!! return HTTP 500
             e.printStackTrace();
         }
+
         d.put("ticket", ticketInfo);
 
         Gson b = new GsonBuilder().serializeNulls().create();
@@ -394,10 +397,8 @@ public class ApiServer {
     private void middleWareJWTAuth() {
         before((request, response) -> {
             String whiteList = "^\\/(dbimage|authenticate)\\/(.+)?";
-            if (
-                    request.pathInfo().equals("/users") ||
-                            request.pathInfo().matches(whiteList)
-            ) {
+            if (request.pathInfo().equals("/users")
+                    || request.pathInfo().matches(whiteList)) {
                 return;
             }
 //            if(true){
@@ -464,7 +465,6 @@ public class ApiServer {
         });
     }
 
-
     private String getAuthTokenFromHeader(Request request) {
 
         String authHeader = request.headers("Authorization");
@@ -488,7 +488,8 @@ public class ApiServer {
      * Gets (and decrypts if necessary) the data member of the request JSON body
      *
      * <p>
-     * HTTP request body should follow the {encrypted:true|false, data:{...}} pattern
+     * HTTP request body should follow the {encrypted:true|false, data:{...}}
+     * pattern
      * </p>
      *
      * @param request a sparkjava request object
@@ -563,7 +564,6 @@ public class ApiServer {
         ArrayList<String> s = NetworkInfo.getAllAddresses();
         logger.warning(s.toString());
 
-
         //TODO read mobilecenta.aes_secret_keys instead
         logger.warning("AES KEY " + aesKey);
         AES256Cryptor.setKeysStr(aesKey);
@@ -576,7 +576,6 @@ public class ApiServer {
             logger.warning("API SERVER IP " + ipAddressStr);
             ipAddress(ipAddressStr);
         }
-
 
         logger.warning("API SERVER PORT " + portStr);
         port(Integer.parseInt(portStr));
@@ -610,12 +609,9 @@ public class ApiServer {
         middlewareVerifyAESKey();
         middleWareJWTAuth();
 
-
         // NOTE test with
         // curl  -X POST localhost:7777/authenticate/ -H "Content-Type: application/json; charset=utf8" --data '{"id":"0", "password":"123"}'
-
         //NOTE when changing pass in Unicenta mind the keyb switching from numbers to letters
-
         post("/authenticate/", this::routeAuthenticate);
 
         get("/dbimage/:tableName/:pk/:size/", (request, response) -> {
@@ -640,7 +636,7 @@ public class ApiServer {
                     MessageDigest md = MessageDigest.getInstance("MD5");
                     byte[] md5Arr = md.digest(bytes);
                     String md5Str = new BigInteger(1, md5Arr).toString(16);
-                    */
+                     */
                     byte[] bytes = (byte[]) bytesA;
                     logger.info("User-agent ETag: " + request.headers("If-None-Match"));
                     String clientETag = request.headers("If-None-Match");
@@ -697,7 +693,6 @@ public class ApiServer {
             return (String) cacheFloors.get(params);
         });
 
-
         get("/products", (request, response) -> {
             response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
@@ -744,7 +739,6 @@ public class ApiServer {
             return ret.getString();
         });
 
-
         awaitInitialization();
         running = true;
         return 0;
@@ -756,6 +750,7 @@ public class ApiServer {
 }
 
 class JSONPayload {
+
     String status;
     String errorMessage = null;
     JsonElement data;
