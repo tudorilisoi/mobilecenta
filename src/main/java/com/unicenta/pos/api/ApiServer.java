@@ -286,6 +286,10 @@ public class ApiServer {
         ticketInfo.setLines(lines);
         try {
 
+            //print to kitchen test
+            TicketOps ops = new TicketOps(app, DSL, ticketInfo, user, placeID);
+            ops.printToKitchen();
+
             if (isNew) {
                 DSL.receiptsLogic.insertSharedTicket(placeID, ticketInfo, 0);
             } else {
@@ -296,10 +300,6 @@ public class ApiServer {
             DSL.receiptsLogic.lockSharedTicket(placeID, "locked");
 //            DSL.salesLogic.saveTicket(ticketInfo, app.getInventoryLocation());
 
-            //print to kitchen test
-            TicketOps ops = new TicketOps(app, DSL, ticketInfo, user, placeID);
-            ops.printToKitchen();
-
         } catch (BasicException e) {
 //            TODO!! return HTTP 500
             e.printStackTrace();
@@ -307,7 +307,10 @@ public class ApiServer {
 
         d.put("ticket", ticketInfo);
 
-        Gson b = new GsonBuilder().serializeNulls().create();
+        Gson b = new GsonBuilder()
+                .setPrettyPrinting()
+                .serializeNulls()
+                .create();
         return b.toJsonTree(d);
     }
 
