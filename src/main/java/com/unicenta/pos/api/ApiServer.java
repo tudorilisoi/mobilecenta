@@ -267,6 +267,7 @@ public class ApiServer {
         List<TicketLineInfo> lines = new ArrayList<>();
         NumberFormat nf = DecimalFormat.getInstance(Locale.getDefault());
         for (Line l : order.getLines()) {
+            //TODO put received um into a property
             ProductInfoExt productInfo = DSL.salesLogic.getProductInfo(l.getProductID());
             productInfo.setName(
                     productInfo.getName()
