@@ -19,6 +19,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
@@ -92,6 +94,29 @@ public class DSL extends DataLogicSystem {
             e.printStackTrace(System.out);
         }
         return null;
+    }
+
+    public HashMap getTicketData(String id) {
+        TicketInfo i = getTicketInfo(id);
+        if (i == null) {
+            return null;
+        }
+        HashMap ret = new HashMap();
+        ret.put("id", i.getId());
+        ArrayList lines = new ArrayList<>();
+        i.getLines().forEach(l -> {
+            HashMap line = new HashMap();
+            line.put("id", l.getTicketLine()); //always -1 for shared ticket
+            line.put("productID", l.getProductID());
+            line.put("name", l.getProductName());
+            line.put("multiply", l.getMultiply());
+            line.put("price", l.getPrice());
+            line.put("priceTax", l.getPriceTax());
+            line.put("updated", l.getUpdated());
+            lines.add(line);
+        });
+        ret.put("lines", lines);
+        return ret;
     }
 
     public final String escapeSQLString(String s) {
@@ -261,7 +286,7 @@ public class DSL extends DataLogicSystem {
         //map place id to shared ticket
         infoList.stream()
                 .filter(el -> el != null)
-                .forEach(el -> ret.put(el.getId(), this.getTicketInfo(el.getId())));
+                .forEach(el -> ret.put(el.getId(), this.getTicketData(el.getId())));
         System.out.print(ret);
         return ret;
     }

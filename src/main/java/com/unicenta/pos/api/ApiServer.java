@@ -194,7 +194,9 @@ public class ApiServer {
             HashMap d = new HashMap();
             d.put("sharedtickets", DSL.listSharedTickets());
             d.put("_comment", "PLACEID:sharedticket map");
-            Gson b = new GsonBuilder().serializeNulls().create();
+            Gson b = new GsonBuilder()
+                    .setPrettyPrinting()
+                    .serializeNulls().create();
             return b.toJsonTree(d);
         } catch (Exception e) {
             System.out.println(e.getMessage());
