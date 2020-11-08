@@ -156,29 +156,29 @@ public class ApiServer {
                 //                .expireAfterWrite(10, TimeUnit.MINUTES)
                 .build(
                         new CacheLoader<HashMap, Object>() {
-                    @Override
-                    public Object load(HashMap params) throws Exception {
-                        JSONPayload ret = createJSONPayload();
-                        ret.setStatus("OK");
-                        JsonElement data = null;
-                        switch (routeMethod) {
-                            case "routeFloors":
-                                data = routeFloors(params);
-                                break;
-                            case "routeProducts":
-                                data = routeProducts(params);
-                                break;
-                            case "routeSharedtickets":
-                                data = routeSharedtickets(params);
-                                break;
-                            case "routeDBImage":
-                                return routeDBImage(params);
+                            @Override
+                            public Object load(HashMap params) throws Exception {
+                                JSONPayload ret = createJSONPayload();
+                                ret.setStatus("OK");
+                                JsonElement data = null;
+                                switch (routeMethod) {
+                                    case "routeFloors":
+                                        data = routeFloors(params);
+                                        break;
+                                    case "routeProducts":
+                                        data = routeProducts(params);
+                                        break;
+                                    case "routeSharedtickets":
+                                        data = routeSharedtickets(params);
+                                        break;
+                                    case "routeDBImage":
+                                        return routeDBImage(params);
 
+                                }
+                                ret.setData(data);
+                                return ret.getString();
+                            }
                         }
-                        ret.setData(data);
-                        return ret.getString();
-                    }
-                }
                 );
     }
 
@@ -271,7 +271,7 @@ public class ApiServer {
             ProductInfoExt productInfo = DSL.salesLogic.getProductInfo(l.getProductID());
             productInfo.setName(
                     productInfo.getName()
-                    + (l.getUm() == 1.0 ? "" : " (" + nf.format(l.getUm()) + ")"));
+                            + (l.getUm() == 1.0 ? "" : " (" + nf.format(l.getUm()) + ")"));
             TaxInfo tax = DSL.taxesLogic.getTaxInfo(
                     productInfo.getTaxCategoryID(),
                     ticketInfo.getCustomer()
@@ -418,24 +418,25 @@ public class ApiServer {
 
             // if auth goes wrong do not encrypt the response
             // not really necessary since errorMessage is always unencrypted
-            if (authHeader != null) {
-                DecodedJWT decodedJWT = sessionStore.decodeToken(authHeader);
-                if (decodedJWT == null) {
-                    logger.warning("Invalid JWT TOKEN " + authHeader);
-                    ret.setErrorMessage("TOKEN_INVALID");
-                    halt(401, ret.getString());
-                } else {
-
-                    String userID = decodedJWT.getClaim("sub").asString();
-                    request.attribute("JWT_USER_ID", userID);
-                    logger.warning("JWT AUTH OK, USER ID: " + userID);
-                }
-
-            } else {
+            if (authHeader == null) {
                 logger.warning("Missing JWT TOKEN " + authHeader);
                 ret.setErrorMessage("TOKEN_NOT_FOUND");
                 halt(401, ret.getString());
             }
+            DecodedJWT decodedJWT = sessionStore.decodeToken(authHeader);
+            if (decodedJWT == null) {
+                logger.warning("Invalid JWT TOKEN " + authHeader);
+                ret.setErrorMessage("TOKEN_INVALID");
+                halt(401, ret.getString());
+            } else {
+
+                String userID = decodedJWT.getClaim("sub").asString();
+                request.attribute("JWT_USER_ID", userID);
+                logger.warning("JWT AUTH OK, USER ID: " + userID);
+                // TODO check if the user is blocked/inactive
+
+            }
+
         });
     }
 
@@ -512,6 +513,22 @@ public class ApiServer {
             return data;
         }
         return body.get("data").getAsJsonObject();
+    }
+
+    private String routeAuthRefreshToken(Request request, Response response) {
+        JSONPayload ret = createJSONPayload();
+        HashMap retObj = new HashMap();
+        logger.info("REFRESH TOKEN for user #" + request.attribute("JWT_USER_ID"));
+        sessionStore.clearToken(request.attribute("JWT_USER_ID"));
+        retObj.put("authToken", sessionStore.getToken(
+                request.attribute("JWT_USER_ID")
+        ));
+        retObj.put("userID", request.attribute("JWT_USER_ID"));
+        Gson b = new GsonBuilder().serializeNulls().create();
+
+        ret.setStatus("OK");
+        ret.setData(b.toJsonTree(retObj));
+        return ret.getString();
     }
 
     private String routeAuthenticate(Request request, Response response) {
@@ -619,6 +636,7 @@ public class ApiServer {
         // curl  -X POST localhost:7777/authenticate/ -H "Content-Type: application/json; charset=utf8" --data '{"id":"0", "password":"123"}'
         //NOTE when changing pass in Unicenta mind the keyb switching from numbers to letters
         post("/authenticate/", this::routeAuthenticate);
+        post("/refreshtoken/", this::routeAuthRefreshToken);
 
         get("/dbimage/:tableName/:pk/:size/", (request, response) -> {
             HashMap params = new HashMap(); //params, not used here
@@ -741,6 +759,26 @@ public class ApiServer {
 
             JsonElement resp = routeUpdateTicket(params);
             ret.setData(resp);
+
+            return ret.getString();
+        });
+
+        post("/refreshtoken", "application/json", (request, response) -> {
+
+            HashMap params = new HashMap();
+
+            JSONPayload ret = createJSONPayload();
+            ret.setStatus("OK");
+
+            logger.log(Level.INFO, request.body());
+
+            params.put("userID", request.attribute("JWT_USER_ID"));
+
+            Gson b = new GsonBuilder()
+                    .setPrettyPrinting()
+                    .serializeNulls()
+                    .create();
+            ret.setData(b.toJsonTree(params));
 
             return ret.getString();
         });

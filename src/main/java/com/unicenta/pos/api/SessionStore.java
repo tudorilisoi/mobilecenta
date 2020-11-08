@@ -1,11 +1,14 @@
 package com.unicenta.pos.api;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 public class SessionStore {
@@ -60,6 +63,10 @@ public class SessionStore {
         }
     }
 
+    public void clearToken(String userID) {
+        tokenStore.put(userID, null);
+    }
+
     public String getToken(String userID) {
         String existingToken = tokenStore.get(userID);
         if (existingToken != null) {
@@ -71,8 +78,13 @@ public class SessionStore {
     }
 
     public String generateToken(String userID) {
-        String token = JWT.create()
-                .withClaim("sub", userID)
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_YEAR, 31);
+
+        JWTCreator.Builder builder = JWT.create();
+        builder.withClaim("sub", userID);
+        builder.withExpiresAt(new Date(cal.getTimeInMillis()));
+        String token = builder
                 .sign(algorithmHS);
         return token;
     }
