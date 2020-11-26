@@ -247,8 +247,8 @@ public class ApiServer {
         // cycle through lines and replace them  in the shared ticket
         HashMap d = new HashMap();
 
-        JSONOrder order = Converter.fromJsonString(params.get("data").toString());
-        String placeID = order.getPlaceID();
+        JSONOrder orderFromRequest = Converter.fromJsonString(params.get("data").toString());
+        String placeID = orderFromRequest.getPlaceID();
         boolean isNew = false;
         TicketInfo ticketInfo = DSL.getTicketInfo(placeID);
         if (ticketInfo == null) {
@@ -258,7 +258,7 @@ public class ApiServer {
 
         String userID = (String) params.get("userID");
         AppUser user = DSL.getAppUserByID(userID);
-        logger.info("ORDER: " + Converter.toJsonString(order));
+        logger.info("ORDER: " + Converter.toJsonString(orderFromRequest));
         logger.info(String.format("JWT User: #%s name: %s", userID, user.getUserInfo().getName()));
         //TODO check locked status and user/role
 
@@ -266,20 +266,20 @@ public class ApiServer {
 
         List<TicketLineInfo> lines = new ArrayList<>();
         NumberFormat nf = DecimalFormat.getInstance(Locale.getDefault());
-        for (Line l : order.getLines()) {
+        for (Line lineFromRequest : orderFromRequest.getLines()) {
             //TODO put received um into a property
-            ProductInfoExt productInfo = DSL.salesLogic.getProductInfo(l.getProductID());
+            ProductInfoExt productInfo = DSL.salesLogic.getProductInfo(lineFromRequest.getProductID());
             productInfo.setName(
                     productInfo.getName()
-                            + (l.getUm() == 1.0 ? "" : " (" + nf.format(l.getUm()) + ")"));
+                            + (lineFromRequest.getUm() == 1.0 ? "" : " (" + nf.format(lineFromRequest.getUm()) + ")"));
             TaxInfo tax = DSL.taxesLogic.getTaxInfo(
                     productInfo.getTaxCategoryID(),
                     ticketInfo.getCustomer()
             );
             TicketLineInfo line = new TicketLineInfo(
                     productInfo,
-                    l.getMultiplier(),
-                    l.getPrice(),
+                    lineFromRequest.getMultiplier(),
+                    lineFromRequest.getPrice(),
                     tax,
                     (Properties) (productInfo.getProperties().clone())
             );
