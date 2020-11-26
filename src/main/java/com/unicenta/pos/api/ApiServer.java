@@ -308,12 +308,13 @@ public class ApiServer {
             e.printStackTrace();
         }
 
-        d.put("ticket", ticketInfo);
+        d.put("ticket", DSL.getTicketData(placeID));
 
         Gson b = new GsonBuilder()
                 .setPrettyPrinting()
                 .serializeNulls()
                 .create();
+        logger.info(b.toJson(d));
         return b.toJsonTree(d);
     }
 

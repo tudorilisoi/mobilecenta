@@ -113,6 +113,8 @@ public class DSL extends DataLogicSystem {
             line.put("price", l.getPrice());
             line.put("priceTax", l.getPriceTax());
             line.put("updated", l.getUpdated());
+//            line.put("mobilecenta.uuid", l.getProperty("mobilecenta.uuid"));
+            line.put("attributes", l.getProperties());
             lines.add(line);
         });
         ret.put("lines", lines);
