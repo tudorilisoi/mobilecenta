@@ -229,7 +229,7 @@ public class RestaurantDBUtils {
     public String getWaiterNameInTable(String tableName){
         try{
             SQL = "SELECT waiter FROM places WHERE NAME='"+ tableName + "'";   
-            stmt = (Statement) con.createStatement();  
+            stmt = (Statement) con.createStatement();
             rs = stmt.executeQuery(SQL);
 
             if (rs.next()){
@@ -258,7 +258,12 @@ public class RestaurantDBUtils {
                 return(waiter);
             }    
         }catch(SQLException e){
-        }   
+        }finally{
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+            }
+        }
 
         return "";
     }
