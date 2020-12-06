@@ -12,10 +12,13 @@ public class Line {
     private String id;
     private String mobilecentaUUID;
     private String productID;
-    private double multiplier;
+    private String name;
+    private double multiply;
     private double price;
+    private double priceTax;
     private double um;
     private Boolean updated;
+    private Map<String, Object> attributes;
 
     @JsonProperty("id")
     public String getId() {
@@ -58,14 +61,24 @@ public class Line {
         this.productID = value;
     }
 
-    @JsonProperty("multiplier")
-    public double getMultiplier() {
-        return multiplier;
+    @JsonProperty("name")
+    public String getname() {
+        return name;
     }
 
-    @JsonProperty("multiplier")
-    public void setMultiplier(double value) {
-        this.multiplier = value;
+    @JsonProperty("name")
+    public void setname(String value) {
+        this.name = value;
+    }
+
+    @JsonProperty("multiply")
+    public double getMultiply() {
+        return multiply;
+    }
+
+    @JsonProperty("multiply")
+    public void setMultiply(double value) {
+        this.multiply = value;
     }
 
     @JsonProperty("price")
@@ -78,6 +91,17 @@ public class Line {
         this.price = value;
     }
 
+    @JsonProperty("priceTax")
+    public double getPriceTax() {
+        return priceTax;
+    }
+
+    @JsonProperty("priceTax")
+    public void setPriceTax(double value) {
+        this.priceTax = value;
+    }
+
+
     @JsonProperty("um")
     public double getUm() {
         return um;
@@ -86,6 +110,17 @@ public class Line {
     @JsonProperty("um")
     public void setUm(double um) {
         this.um = um;
+    }
+
+    @JsonProperty("attributes")
+
+    public Map<String, Object> getattributes() {
+        return attributes;
+    }
+
+    @JsonProperty("attributes")
+    public void setattributes(Map<String, Object> attributes) {
+        this.attributes = attributes;
     }
 
 

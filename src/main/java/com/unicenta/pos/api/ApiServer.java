@@ -278,7 +278,7 @@ public class ApiServer {
             );
             TicketLineInfo line = new TicketLineInfo(
                     productInfo,
-                    lineFromRequest.getMultiplier(),
+                    lineFromRequest.getMultiply(),
                     lineFromRequest.getPrice(),
                     tax,
                     (Properties) (productInfo.getProperties().clone())
@@ -286,7 +286,9 @@ public class ApiServer {
             lines.add(line);
         }
 
-        ticketInfo.setLines(lines);
+        //TODO remove this comment, debug
+        // ticketInfo.setLines(lines);
+
         try {
 
             //print to kitchen test
@@ -314,7 +316,10 @@ public class ApiServer {
                 .setPrettyPrinting()
                 .serializeNulls()
                 .create();
+
+        logger.info("PLACE ID: " + placeID);
         logger.info(b.toJson(d));
+
         return b.toJsonTree(d);
     }
 
