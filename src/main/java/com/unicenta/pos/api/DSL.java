@@ -102,7 +102,7 @@ public class DSL extends DataLogicSystem {
             return null;
         }
         HashMap ret = new HashMap();
-        ret.put("id", i.getId());
+        ret.put("placeID", i.getId());
         ArrayList lines = new ArrayList<>();
         i.getLines().forEach(l -> {
             HashMap line = new HashMap();

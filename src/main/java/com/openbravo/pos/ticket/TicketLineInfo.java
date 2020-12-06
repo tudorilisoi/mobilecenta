@@ -29,6 +29,7 @@ import com.openbravo.pos.forms.AppLocal;
 import com.openbravo.pos.util.StringUtils;
 import java.io.*;
 import java.util.Properties;
+import java.util.UUID;
 
 /**
  *
@@ -212,6 +213,11 @@ public class TicketLineInfo implements SerializableWrite, SerializableRead, Seri
     
         m_sTicket = null;
         m_iLine = -1;
+
+        String mobilecentaUUID = this.getProperty("mobilecenta.uuid");
+        if(mobilecentaUUID==null){
+            this.setProperty("mobilecenta.uuid", UUID.randomUUID().toString());
+        }
     }
 
     void setTicket(String ticket, int line) {

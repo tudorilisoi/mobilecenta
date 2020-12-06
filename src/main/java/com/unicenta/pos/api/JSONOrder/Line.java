@@ -10,6 +10,7 @@ public class Line {
 
 
     private String id;
+    private String mobilecentaUUID;
     private String productID;
     private double multiplier;
     private double price;
@@ -24,6 +25,16 @@ public class Line {
     @JsonProperty("id")
     public void setId(String id) {
         this.id = id;
+    }
+
+    @JsonProperty("mobilecenta.uuid")
+    public String getMobilecentaUUID() {
+        return mobilecentaUUID;
+    }
+
+    @JsonProperty("mobilecenta.uuid")
+    public void setMobilecentaUUID(String id) {
+        this.mobilecentaUUID = id;
     }
 
     @JsonProperty("updated")
