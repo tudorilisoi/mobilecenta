@@ -89,11 +89,27 @@ public class DSL extends DataLogicSystem {
      */
     public TicketInfo getTicketInfo(String id) {
         try {
-            return receiptsLogic.getSharedTicket(id);
+            TicketInfo ticket = receiptsLogic.getSharedTicket(id);
+            String userID = getUserId(id);
+            AppUser user = getAppUserByID(userID);
+            ticket.setUser(user.getUserInfo());
+            return ticket;
         } catch (BasicException e) {
             e.printStackTrace(System.out);
         }
         return null;
+    }
+
+    public final String getUserId(final String id) throws BasicException {
+        Object[] userID = (Object[]) new StaticSentence(s
+                , "SELECT APPUSER FROM sharedtickets WHERE ID = ?"
+                , SerializerWriteString.INSTANCE
+                , new SerializerReadBasic(new Datas[]{Datas.STRING})).find(id);
+        if (userID == null) {
+            return null;
+        } else {
+            return (String) userID[0];
+        }
     }
 
     public HashMap getTicketData(String id) {
@@ -103,6 +119,7 @@ public class DSL extends DataLogicSystem {
         }
         HashMap ret = new HashMap();
         ret.put("placeID", id);
+        ret.put("userID", i.getUser().getId());
         ArrayList lines = new ArrayList<>();
         i.getLines().forEach(l -> {
             HashMap line = new HashMap();
