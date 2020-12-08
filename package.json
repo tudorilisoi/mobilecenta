@@ -1,0 +1,24 @@
+{
+  "name": "mobilecenta",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "npx nodemon -w src/main --ext java --exec 'npm run kill-compiler; npm run kill; npm run compile && npm run start' ",
+    "start": "./target/start.sh",
+    "kill": "ps ax |grep unicentaopos.jar |awk '{print $1}' |xargs kill -9",
+    "kill-compiler": "ps ax |grep 'mvn compile package' |awk '{print $1}' |xargs kill -9",
+    "compile": "mvn compile package && beep"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tudorilisoi/mobilecenta.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tudorilisoi/mobilecenta/issues"
+  },
+  "homepage": "https://github.com/tudorilisoi/mobilecenta#readme"
+}
