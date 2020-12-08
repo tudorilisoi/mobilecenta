@@ -29,8 +29,7 @@ import com.unicenta.pos.api.JSONOrder.Converter;
 import com.openbravo.pos.util.AltEncrypter;
 import com.openbravo.pos.util.Hashcypher;
 import com.unicenta.pos.api.JSONOrder.JSONOrder;
-import com.unicenta.pos.api.JSONOrder.Line;
-import com.unicenta.pos.api.TicketOps;
+import com.unicenta.pos.api.JSONOrder.JSONLine;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
@@ -243,43 +242,47 @@ public class ApiServer {
 
     private JsonElement routeUpdateTicket(Map params) throws BasicException, IOException {
 
+        String userID = (String) params.get("userID");
+        AppUser user = DSL.getAppUserByID(userID);
+
         //TODO!! parse req body, move this method into DSL,
         // cycle through lines and replace them  in the shared ticket
         HashMap d = new HashMap();
 
         JSONOrder orderFromRequest = Converter.fromJsonString(params.get("data").toString());
+        logger.info("ORDER: " + Converter.toJsonString(orderFromRequest));
+        logger.info(String.format("JWT User: #%s name: %s", userID, user.getUserInfo().getName()));
+        //TODO check locked status and user/role
+
         String placeID = orderFromRequest.getPlaceID();
+
         boolean isNew = false;
         TicketInfo ticketInfo = DSL.getTicketInfo(placeID);
+        logger.info("existing lines: " + ticketInfo.getLines().toString());
+
         if (ticketInfo == null) {
             isNew = true;
             ticketInfo = new TicketInfo();
         }
 
-        String userID = (String) params.get("userID");
-        AppUser user = DSL.getAppUserByID(userID);
-        logger.info("ORDER: " + Converter.toJsonString(orderFromRequest));
-        logger.info(String.format("JWT User: #%s name: %s", userID, user.getUserInfo().getName()));
-        //TODO check locked status and user/role
-
         ticketInfo.setUser(user.getUserInfo());
 
         List<TicketLineInfo> lines = new ArrayList<>();
         NumberFormat nf = DecimalFormat.getInstance(Locale.getDefault());
-        for (Line lineFromRequest : orderFromRequest.getLines()) {
+        for (JSONLine JSONLineFromRequest : orderFromRequest.getLines()) {
             //TODO put received um into a property
-            ProductInfoExt productInfo = DSL.salesLogic.getProductInfo(lineFromRequest.getProductID());
+            ProductInfoExt productInfo = DSL.salesLogic.getProductInfo(JSONLineFromRequest.getProductID());
             productInfo.setName(
                     productInfo.getName()
-                            + (lineFromRequest.getUm() == 1.0 ? "" : " (" + nf.format(lineFromRequest.getUm()) + ")"));
+                            + (JSONLineFromRequest.getUm() == 1.0 ? "" : " (" + nf.format(JSONLineFromRequest.getUm()) + ")"));
             TaxInfo tax = DSL.taxesLogic.getTaxInfo(
                     productInfo.getTaxCategoryID(),
                     ticketInfo.getCustomer()
             );
             TicketLineInfo line = new TicketLineInfo(
                     productInfo,
-                    lineFromRequest.getMultiply(),
-                    lineFromRequest.getPrice(),
+                    JSONLineFromRequest.getMultiply(),
+                    JSONLineFromRequest.getPrice(),
                     tax,
                     (Properties) (productInfo.getProperties().clone())
             );

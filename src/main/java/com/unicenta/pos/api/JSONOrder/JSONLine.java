@@ -6,7 +6,7 @@ import java.util.*;
 
 import com.fasterxml.jackson.annotation.*;
 
-public class Line {
+public class JSONLine {
 
 
     private String id;

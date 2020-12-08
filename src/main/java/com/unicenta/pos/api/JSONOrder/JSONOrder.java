@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.*;
 public class JSONOrder {
     private String placeID;
     private String userID;
-    private List<Line> lines;
+    private List<JSONLine> lines;
 
     @JsonProperty("placeID")
     public String getPlaceID() {
@@ -30,12 +30,12 @@ public class JSONOrder {
     }
 
     @JsonProperty("lines")
-    public List<Line> getLines() {
+    public List<JSONLine> getLines() {
         return lines;
     }
 
     @JsonProperty("lines")
-    public void setLines(List<Line> value) {
+    public void setLines(List<JSONLine> value) {
         this.lines = value;
     }
 }
