@@ -9,3 +9,5 @@
 
 #config file
 build
+
+hs_err_pid*.log
