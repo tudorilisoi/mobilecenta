@@ -10,6 +10,7 @@ import com.openbravo.pos.sales.DataLogicReceipts;
 import com.openbravo.pos.sales.SharedTicketInfo;
 import com.openbravo.pos.sales.TaxesLogic;
 import com.openbravo.pos.ticket.TicketInfo;
+import com.openbravo.pos.ticket.TicketLineInfo;
 import com.openbravo.pos.util.ThumbNailBuilder;
 
 import javax.imageio.ImageIO;
@@ -96,6 +97,15 @@ public class DSL extends DataLogicSystem {
             return ticket;
         } catch (BasicException e) {
             e.printStackTrace(System.out);
+        }
+        return null;
+    }
+
+    public TicketLineInfo findLineByUUID(List<TicketLineInfo> lines, String uuid) {
+        for (TicketLineInfo line : lines) {
+            if (uuid.equals(line.getProperty("mobilecenta.uuid"))) {
+                return line;
+            }
         }
         return null;
     }

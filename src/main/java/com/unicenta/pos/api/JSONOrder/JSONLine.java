@@ -30,14 +30,13 @@ public class JSONLine {
         this.id = id;
     }
 
-    @JsonProperty("mobilecenta.uuid")
     public String getMobilecentaUUID() {
-        return mobilecentaUUID;
+        return attributes.get("mobilecenta.uuid").toString();
     }
 
-    @JsonProperty("mobilecenta.uuid")
+
     public void setMobilecentaUUID(String id) {
-        this.mobilecentaUUID = id;
+        attributes.put("mobilecenta.uuid", id);
     }
 
     @JsonProperty("updated")

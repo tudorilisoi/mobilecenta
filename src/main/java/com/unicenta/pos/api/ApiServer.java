@@ -268,29 +268,41 @@ public class ApiServer {
         ticketInfo.setUser(user.getUserInfo());
 
         List<TicketLineInfo> lines = new ArrayList<>();
+        List<TicketLineInfo> existingLines = ticketInfo.getLines();
+
         NumberFormat nf = DecimalFormat.getInstance(Locale.getDefault());
-        for (JSONLine JSONLineFromRequest : orderFromRequest.getLines()) {
+        for (JSONLine linefromRq : orderFromRequest.getLines()) {
             //TODO put received um into a property
-            ProductInfoExt productInfo = DSL.salesLogic.getProductInfo(JSONLineFromRequest.getProductID());
+            ProductInfoExt productInfo = DSL.salesLogic.getProductInfo(linefromRq.getProductID());
             productInfo.setName(
                     productInfo.getName()
-                            + (JSONLineFromRequest.getUm() == 1.0 ? "" : " (" + nf.format(JSONLineFromRequest.getUm()) + ")"));
+                            + (linefromRq.getUm() == 1.0 ? "" : " (" + nf.format(linefromRq.getUm()) + ")"));
             TaxInfo tax = DSL.taxesLogic.getTaxInfo(
                     productInfo.getTaxCategoryID(),
                     ticketInfo.getCustomer()
             );
-            TicketLineInfo line = new TicketLineInfo(
-                    productInfo,
-                    JSONLineFromRequest.getMultiply(),
-                    JSONLineFromRequest.getPrice(),
-                    tax,
-                    (Properties) (productInfo.getProperties().clone())
+            logger.info("JSON line " + linefromRq.toString());
+            TicketLineInfo line = DSL.findLineByUUID(
+                    existingLines, linefromRq.getMobilecentaUUID()
             );
+            if (line == null) {
+                line = new TicketLineInfo(
+                        productInfo,
+                        linefromRq.getMultiply(),
+                        linefromRq.getPrice(),
+                        tax,
+                        (Properties) (productInfo.getProperties().clone())
+                );
+            } else {
+                logger.info("Found line " + linefromRq.getMobilecentaUUID());
+                line.setMultiply(linefromRq.getMultiply());
+            }
+
             lines.add(line);
         }
 
         //TODO remove this comment, debug
-        // ticketInfo.setLines(lines);
+         ticketInfo.setLines(lines);
 
         try {
 
