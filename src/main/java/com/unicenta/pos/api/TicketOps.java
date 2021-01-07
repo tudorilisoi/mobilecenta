@@ -16,11 +16,13 @@ import com.openbravo.pos.scripting.ScriptEngine;
 import com.openbravo.pos.scripting.ScriptException;
 import com.openbravo.pos.scripting.ScriptFactory;
 import com.openbravo.pos.ticket.TicketInfo;
+
+import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author tudor
  */
 public class TicketOps {
@@ -58,7 +60,6 @@ public class TicketOps {
     }
 
     /**
-     *
      * @param resource
      */
     public void printTicket(String resource) {
@@ -80,28 +81,39 @@ public class TicketOps {
                 ScriptEngine script = ScriptFactory.getScriptEngine(ScriptFactory.VELOCITY);
 
                 script.put("ticket", ticket);
-                script.put("place", placeID);
+                script.put("place", getPlaceName(placeID));
                 script.put("pickupid", getPickupString(ticket));
 
                 m_TTP2.printTicket(script.eval(dsl.systemLogic.getResourceAsXML(sresourcename)).toString());
 
-            } catch (ScriptException | TicketPrinterException e) {
+            } catch (BasicException | ScriptException | TicketPrinterException e) {
                 Logger.getLogger(TicketOps.class.getName()).log(Level.SEVERE, null, e);
             }
         }
     }
 
+    public String getPlaceName(String placeID) throws BasicException {
+        List<HashMap> places = dsl.listPlaces();
+        HashMap place = places.stream()
+                .filter(p -> placeID.equals(p.get("ID")))
+                .findFirst()
+                .orElse(null);
+        return place == null ? null : (String) place.get("NAME");
+    }
+
     public void printToKitchen() {
         String rScript = (dsl.getResourceAsText("script.SendOrder"));
+
         Interpreter i = new Interpreter();
         try {
+
             i.set("ticket", ticketInfo);
-            i.set("place", placeID);
+            i.set("place", getPlaceName(placeID));
             i.set("user", user);
             i.set("sales", this);
             i.set("pickupid", ticketInfo.getPickupId());
             Object result = i.eval(rScript);
-        } catch (EvalError ex) {
+        } catch (Exception ex) {
             Logger.getLogger(TicketOps.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
