@@ -167,9 +167,9 @@ public class ApiServer {
                                     case "routeProducts":
                                         data = routeProducts(params);
                                         break;
-                                    case "routeSharedtickets":
-                                        data = routeSharedtickets(params);
-                                        break;
+//                                    case "routeSharedtickets":
+//                                        data = routeSharedtickets(params);
+//                                        break;
                                     case "routeDBImage":
                                         return routeDBImage(params);
 
@@ -258,14 +258,14 @@ public class ApiServer {
 
         boolean isNew = false;
         TicketInfo ticketInfo = DSL.getTicketInfo(placeID);
-        logger.info("existing lines: " + ticketInfo.getLines().toString());
 
         if (ticketInfo == null) {
             isNew = true;
             ticketInfo = new TicketInfo();
+            ticketInfo.setUser(user.getUserInfo());
         }
 
-        ticketInfo.setUser(user.getUserInfo());
+        logger.info("existing lines: " + ticketInfo.getLines().toString());
 
         List<TicketLineInfo> lines = new ArrayList<>();
         List<TicketLineInfo> existingLines = ticketInfo.getLines();
@@ -302,7 +302,7 @@ public class ApiServer {
         }
 
         //TODO remove this comment, debug
-         ticketInfo.setLines(lines);
+        ticketInfo.setLines(lines);
 
         try {
 

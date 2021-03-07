@@ -91,11 +91,15 @@ public class DSL extends DataLogicSystem {
     public TicketInfo getTicketInfo(String id) {
         try {
             TicketInfo ticket = receiptsLogic.getSharedTicket(id);
+            if (ticket == null) {
+                return null;
+            }
             String userID = getUserId(id);
             AppUser user = getAppUserByID(userID);
             ticket.setUser(user.getUserInfo());
             return ticket;
         } catch (BasicException e) {
+//            logger.info("user ID")
             e.printStackTrace(System.out);
         }
         return null;
@@ -129,7 +133,7 @@ public class DSL extends DataLogicSystem {
         }
         HashMap ret = new HashMap();
         ret.put("placeID", id);
-        ret.put("userID", i.getUser().getId());
+        ret.put("userID", i.getUser() == null ? null : i.getUser().getId());
         ArrayList lines = new ArrayList<>();
         i.getLines().forEach(l -> {
             HashMap line = new HashMap();
