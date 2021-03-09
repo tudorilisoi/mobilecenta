@@ -265,7 +265,7 @@ public class ApiServer {
             ticketInfo.setUser(user.getUserInfo());
         }
 
-        logger.info("existing lines: " + ticketInfo.getLines().toString());
+//        logger.info("existing lines: " + ticketInfo.getLines().toString());
 
         List<TicketLineInfo> lines = new ArrayList<>();
         List<TicketLineInfo> existingLines = ticketInfo.getLines();
@@ -274,9 +274,10 @@ public class ApiServer {
         for (JSONLine linefromRq : orderFromRequest.getLines()) {
             //TODO put received um into a property
             ProductInfoExt productInfo = DSL.salesLogic.getProductInfo(linefromRq.getProductID());
-            productInfo.setName(
-                    productInfo.getName()
-                            + (linefromRq.getUm() == 1.0 ? "" : " (" + nf.format(linefromRq.getUm()) + ")"));
+            productInfo.setName(productInfo.getName()
+                    //+ (linefromRq.getUm() == 1.0 ? "" : " (" + nf.format(linefromRq.getUm()) + ")")
+            );
+
             TaxInfo tax = DSL.taxesLogic.getTaxInfo(
                     productInfo.getTaxCategoryID(),
                     ticketInfo.getCustomer()
@@ -293,6 +294,7 @@ public class ApiServer {
                         tax,
                         (Properties) (productInfo.getProperties().clone())
                 );
+
             } else {
                 logger.info("Found line " + linefromRq.getMobilecentaUUID());
                 line.setMultiply(linefromRq.getMultiply());
@@ -303,6 +305,10 @@ public class ApiServer {
 
         //TODO remove this comment, debug
         ticketInfo.setLines(lines);
+
+        //assigns ticketID and index to all lines
+        ticketInfo.refreshLines();
+
 
         try {
 
