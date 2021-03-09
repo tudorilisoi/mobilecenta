@@ -21,7 +21,7 @@ import java.sql.Timestamp;
 
 public class RestaurantDBUtils {
     private Session s;
-    private Connection con;  
+    private Connection con;
     private Statement stmt;
     private PreparedStatement pstmt;
     private String SQL;
@@ -36,11 +36,11 @@ public class RestaurantDBUtils {
      */
     public RestaurantDBUtils(AppView oApp) {
         m_App=oApp;
-        
+
         try{
             s=m_App.getSession();
-            con=s.getConnection();                      
-        } catch (SQLException e){ 
+            con=s.getConnection();
+        } catch (SQLException e){
         }
     }
 
@@ -50,26 +50,26 @@ public class RestaurantDBUtils {
      * @param ticketID
      */
     public void moveCustomer(String newTable, String ticketID){
-      String oldTable=getTableDetails(ticketID); 
+      String oldTable=getTableDetails(ticketID);
 
         if (countTicketIdInTable(ticketID)>1){
             setCustomerNameInTable(getCustomerNameInTable(oldTable),newTable);
-            setWaiterNameInTable(getWaiterNameInTable(oldTable),newTable);  
+            setWaiterNameInTable(getWaiterNameInTable(oldTable),newTable);
             setTicketIdInTable(ticketID,newTable);
             setGuestsInTable(getGuestsInTable(oldTable),newTable);
-            
-            
 
-            oldTable = getTableMovedName(ticketID);  
+
+
+            oldTable = getTableMovedName(ticketID);
             if ((oldTable != null) && (oldTable != newTable)){
                 clearCustomerNameInTable(oldTable);
-                clearWaiterNameInTable(oldTable); 
+                clearWaiterNameInTable(oldTable);
                 clearTicketIdInTable(oldTable);
                 clearTableMovedFlag(oldTable);
             } else {
                 oldTable = getTableMovedName(ticketID);
-                clearTableMovedFlag(oldTable);                    
-            }      
+                clearTableMovedFlag(oldTable);
+            }
         }
   }
 
@@ -82,8 +82,8 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET CUSTOMER=? WHERE NAME=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,custName); 
-            pstmt.setString(2,tableName);    
+            pstmt.setString(1,custName);
+            pstmt.setString(2,tableName);
             pstmt.executeUpdate();
         }catch(SQLException e){
         }
@@ -98,8 +98,8 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET CUSTOMER=? WHERE ID=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,custName); 
-            pstmt.setString(2,tableID);    
+            pstmt.setString(1,custName);
+            pstmt.setString(2,tableID);
             pstmt.executeUpdate();
         }catch(SQLException e){
         }
@@ -114,8 +114,8 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET CUSTOMER=? WHERE TICKETID=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,custName); 
-            pstmt.setString(2,ticketID);    
+            pstmt.setString(1,custName);
+            pstmt.setString(2,ticketID);
             pstmt.executeUpdate();
         }catch(SQLException e){
         }
@@ -128,17 +128,19 @@ public class RestaurantDBUtils {
      */
     public String getCustomerNameInTable(String tableName){
         try{
-            SQL = "SELECT customer FROM places WHERE NAME='"+ tableName + "'";   
-            stmt = (Statement) con.createStatement();  
+            SQL = "SELECT customer FROM places WHERE NAME='"+ tableName + "'";
+            stmt = (Statement) con.createStatement();
             rs = stmt.executeQuery(SQL);
 
             if (rs.next()){
                 String customer =rs.getString("CUSTOMER");
-                return(customer); 
-            }    
+                return(customer);
+            }
         }catch(SQLException e){
-        }   
-        
+        }finally{
+            closeStatement(stmt);
+        }
+
         return "";
   }
 
@@ -149,14 +151,16 @@ public class RestaurantDBUtils {
      */
     public String getCustomerNameInTableById(String tableId){
         try{
-            SQL = "SELECT customer FROM places WHERE ID='"+ tableId + "'";   
-            stmt = (Statement) con.createStatement();  
+            SQL = "SELECT customer FROM places WHERE ID='"+ tableId + "'";
+            stmt = (Statement) con.createStatement();
             rs = stmt.executeQuery(SQL);
             if (rs.next()){
                 String customer =rs.getString("CUSTOMER");
-                return(customer); }    
+                return(customer); }
         }catch(SQLException e){
-        }   
+        }finally{
+            closeStatement(stmt);
+        }
 
         return "";
   }
@@ -169,7 +173,7 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET CUSTOMER=null WHERE NAME=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,tableName);     
+            pstmt.setString(1,tableName);
             pstmt.executeUpdate();
         }catch(SQLException e){
         }
@@ -183,7 +187,7 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET CUSTOMER=null WHERE ID=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,tableID);     
+            pstmt.setString(1,tableID);
             pstmt.executeUpdate();
         }catch(SQLException e){
         }
@@ -198,13 +202,13 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET WAITER=? WHERE NAME=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,waiterName); 
-            pstmt.setString(2,tableName);    
+            pstmt.setString(1,waiterName);
+            pstmt.setString(2,tableName);
             pstmt.executeUpdate();
         }catch(SQLException e){
         }
     }
-  
+
     /**
      *
      * @param waiterName
@@ -214,8 +218,8 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET WAITER=? WHERE ID=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,waiterName); 
-            pstmt.setString(2,tableID);    
+            pstmt.setString(1,waiterName);
+            pstmt.setString(2,tableID);
             pstmt.executeUpdate();
         }catch(SQLException e){
         }
@@ -228,18 +232,27 @@ public class RestaurantDBUtils {
      */
     public String getWaiterNameInTable(String tableName){
         try{
-            SQL = "SELECT waiter FROM places WHERE NAME='"+ tableName + "'";   
+            SQL = "SELECT waiter FROM places WHERE NAME='"+ tableName + "'";
             stmt = (Statement) con.createStatement();
             rs = stmt.executeQuery(SQL);
 
             if (rs.next()){
                 String waiter =rs.getString("WAITER");
                 return(waiter);
-            }    
+            }
         }catch(SQLException e){
-        }   
+        }finally{
+            closeStatement(stmt);
+        }
 
        return "";
+    }
+
+    private void closeStatement(Statement stmt){
+        try {
+            stmt.close();
+        } catch (SQLException e) {
+        }
     }
 
     /**
@@ -249,20 +262,17 @@ public class RestaurantDBUtils {
      */
     public String getWaiterNameInTableById(String tableID){
         try{
-            SQL = "SELECT waiter FROM places WHERE ID='"+ tableID + "'";   
-            stmt = (Statement) con.createStatement();  
+            SQL = "SELECT waiter FROM places WHERE ID='"+ tableID + "'";
+            stmt = (Statement) con.createStatement();
             rs = stmt.executeQuery(SQL);
 
             if (rs.next()){
                 String waiter =rs.getString("WAITER");
                 return(waiter);
-            }    
+            }
         }catch(SQLException e){
         }finally{
-            try {
-                stmt.close();
-            } catch (SQLException e) {
-            }
+           closeStatement(stmt);
         }
 
         return "";
@@ -276,7 +286,7 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET WAITER=null WHERE NAME=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,tableName);     
+            pstmt.setString(1,tableName);
             pstmt.executeUpdate();
         }catch(SQLException e){
         }
@@ -290,9 +300,9 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET WAITER=null WHERE ID=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,tableID);     
+            pstmt.setString(1,tableID);
             pstmt.executeUpdate();
-            
+
         }catch(SQLException e){
         }
     }
@@ -304,19 +314,21 @@ public class RestaurantDBUtils {
      */
     public String getTicketIdInTable(String ID){
         try{
-            SQL = "SELECT TICKETID FROM places WHERE ID='"+ ID + "'";   
-            stmt = (Statement) con.createStatement();  
+            SQL = "SELECT TICKETID FROM places WHERE ID='"+ ID + "'";
+            stmt = (Statement) con.createStatement();
             rs = stmt.executeQuery(SQL);
-        
+
             if (rs.next()){
                 String customer =rs.getString("TICKETID");
                 return(customer);
-            }    
+            }
         }catch(SQLException e){
-        }   
+        }finally{
+            closeStatement(stmt);
+        }
 
         return "";
-    }  
+    }
 
     /**
      *
@@ -326,12 +338,12 @@ public class RestaurantDBUtils {
     public void setTicketIdInTable(String TicketID, String tableName){
         try{
 //            SQL = "UPDATE places SET TICKETID=?, GUESTS=SEATS WHERE NAME=?";
-            SQL = "UPDATE places SET TICKETID=? WHERE NAME=?";            
+            SQL = "UPDATE places SET TICKETID=? WHERE NAME=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,TicketID); 
-            pstmt.setString(2,tableName);    
+            pstmt.setString(1,TicketID);
+            pstmt.setString(2,tableName);
             pstmt.executeUpdate();
-            
+
         }catch(SQLException e){
         }
     }
@@ -344,13 +356,13 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET TICKETID=null WHERE NAME=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,tableName);     
+            pstmt.setString(1,tableName);
             pstmt.executeUpdate();
         }catch(SQLException e){
         }
 
 //        clearGuestsInTable(tableName);
-        
+
     }
 
     /**
@@ -361,13 +373,13 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET TICKETID=null WHERE ID=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,tableID);     
+            pstmt.setString(1,tableID);
             pstmt.executeUpdate();
-            
+
         }catch(SQLException e){
         }
     }
-    
+
     /**
      *
      * @param tableID
@@ -375,20 +387,22 @@ public class RestaurantDBUtils {
      */
     public Integer getGuestsInTable(String tableID){
         try{
-            SQL = "SELECT guests FROM places WHERE ID='"+ tableID + "'";   
-            stmt = (Statement) con.createStatement();  
+            SQL = "SELECT guests FROM places WHERE ID='"+ tableID + "'";
+            stmt = (Statement) con.createStatement();
             rs = stmt.executeQuery(SQL);
-    
+
             if (rs.next()){
                 Integer guests =rs.getInt("GUESTS");
                 return(guests);
-            }    
+            }
         }catch(SQLException e){
+        }finally{
+            closeStatement(stmt);
         }
-    
-        return 0;        
+
+        return 0;
     }
-    
+
     /**
      *
      * @param guests
@@ -398,13 +412,13 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET GUESTS=? WHERE ID=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setInt(1,guests); 
-            pstmt.setString(2,tableID);    
+            pstmt.setInt(1,guests);
+            pstmt.setString(2,tableID);
             pstmt.executeUpdate();
         }catch(SQLException e){
         }
     }
-    
+
     /**
      *
      * @param tableID
@@ -412,19 +426,19 @@ public class RestaurantDBUtils {
      */
     public Integer updateGuestsInTable(String tableID){
         try{
-            SQL = "SELECT guests FROM places WHERE ID='"+ tableID + "'";   
-            stmt = (Statement) con.createStatement();  
+            SQL = "SELECT guests FROM places WHERE ID='"+ tableID + "'";
+            stmt = (Statement) con.createStatement();
             rs = stmt.executeQuery(SQL);
-    
+
             if (rs.next()){
                 Integer guests =rs.getInt("GUESTS");
                 return(guests);
-            }    
+            }
         }catch(SQLException e){
         }
-    
-        return 0;        
-    }     
+
+        return 0;
+    }
 
     /**
      *
@@ -434,7 +448,7 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET guests=0 WHERE ID=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,tableID);     
+            pstmt.setString(1,tableID);
             pstmt.executeUpdate();
         }catch(SQLException e){
         }
@@ -447,12 +461,12 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET guests=0 WHERE NAME=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,table);     
+            pstmt.setString(1,table);
             pstmt.executeUpdate();
         }catch(SQLException e){
         }
-    }    
-   
+    }
+
     /**
      *
      * @param tableID
@@ -461,10 +475,10 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET occupied=null WHERE ID=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,tableID);     
+            pstmt.setString(1,tableID);
             pstmt.executeUpdate();
         }catch(SQLException e){
-            
+
         }
     }
     /**
@@ -475,11 +489,11 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET occupied=null WHERE NAME=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,table);     
+            pstmt.setString(1,table);
             pstmt.executeUpdate();
         }catch(SQLException e){
         }
-    }    
+    }
     /**
      *
      * @param tableID
@@ -487,20 +501,22 @@ public class RestaurantDBUtils {
      */
     public Timestamp getOccupied(String tableID){
         try{
-            SQL = "SELECT occupied FROM places WHERE ID='"+ tableID + "'";   
-            stmt = (Statement) con.createStatement();  
+            SQL = "SELECT occupied FROM places WHERE ID='"+ tableID + "'";
+            stmt = (Statement) con.createStatement();
             rs = stmt.executeQuery(SQL);
 
             if (rs.next()){
                 Timestamp occupied =rs.getTimestamp("OCCUPIED");
                 return(occupied);
-            } 
+            }
         }catch(SQLException e){
+        }finally{
+            closeStatement(stmt);
         }
-    
-        return null;        
-    }  
-    
+
+        return null;
+    }
+
     /**
      *
      * @param ticketID
@@ -509,12 +525,12 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET occupied=NOW() WHERE TICKETID=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,ticketID);                 
+            pstmt.setString(1,ticketID);
             pstmt.executeUpdate();
         }catch(SQLException e){
         }
     }
-    
+
     /**
      *
      * @param ticketID
@@ -522,17 +538,19 @@ public class RestaurantDBUtils {
     */
     public Integer countTicketIdInTable(String ticketID){
         try{
-            SQL = "SELECT COUNT(*) AS RECORDCOUNT FROM places WHERE TICKETID='"+ ticketID + "'";   
-            stmt = (Statement) con.createStatement();  
+            SQL = "SELECT COUNT(*) AS RECORDCOUNT FROM places WHERE TICKETID='"+ ticketID + "'";
+            stmt = (Statement) con.createStatement();
             rs = stmt.executeQuery(SQL);
-    
+
             if (rs.next()){
                 Integer count =rs.getInt("RECORDCOUNT");
                 return(count);
-            }    
+            }
         }catch(SQLException e){
+        }finally{
+            closeStatement(stmt);
         }
-    
+
         return 0;
     }
 
@@ -543,17 +561,19 @@ public class RestaurantDBUtils {
      */
     public String getTableDetails (String ticketID){
         try{
-            SQL = "SELECT NAME FROM places WHERE TICKETID='"+ ticketID + "'";   
-            stmt = (Statement) con.createStatement();  
+            SQL = "SELECT NAME FROM places WHERE TICKETID='"+ ticketID + "'";
+            stmt = (Statement) con.createStatement();
             rs = stmt.executeQuery(SQL);
 
             if (rs.next()){
                 String name =rs.getString("NAME");
                 return(name);
-            }    
+            }
         }catch(SQLException e){
+        }finally{
+            closeStatement(stmt);
         }
-    
+
         return "";
     }
 
@@ -565,7 +585,7 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET TABLEMOVED='true' WHERE ID=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,tableID);     
+            pstmt.setString(1,tableID);
             pstmt.executeUpdate();
         }catch(SQLException e){
         }
@@ -578,19 +598,21 @@ public class RestaurantDBUtils {
      */
     public String getTableMovedName (String ticketID){
         try{
-            SQL = "SELECT NAME FROM places WHERE TICKETID='"+ ticketID + "' AND TABLEMOVED ='true'";   
-            stmt = (Statement) con.createStatement();  
+            SQL = "SELECT NAME FROM places WHERE TICKETID='"+ ticketID + "' AND TABLEMOVED ='true'";
+            stmt = (Statement) con.createStatement();
             rs = stmt.executeQuery(SQL);
 
             if (rs.next()){
                 String name =rs.getString("NAME");
                 return(name);
-            }    
+            }
         }catch(SQLException e){
+        }finally{
+            closeStatement(stmt);
         }
-        
+
         return null;
-    }  
+    }
 
     /**
      *
@@ -599,16 +621,18 @@ public class RestaurantDBUtils {
      */
     public Boolean getTableMovedFlag (String ticketID){
         try{
-            SQL = "SELECT TABLEMOVED FROM places WHERE TICKETID='"+ ticketID + "'";   
-            stmt = (Statement) con.createStatement();  
+            SQL = "SELECT TABLEMOVED FROM places WHERE TICKETID='"+ ticketID + "'";
+            stmt = (Statement) con.createStatement();
             rs = stmt.executeQuery(SQL);
-            
+
             if (rs.next()){
                 return(rs.getBoolean("TABLEMOVED"));
-            }    
+            }
         }catch(SQLException e){
+        }finally{
+            closeStatement(stmt);
         }
-        
+
         return (false);
     }
 
@@ -620,9 +644,9 @@ public class RestaurantDBUtils {
         try{
             SQL = "UPDATE places SET TABLEMOVED='false' WHERE NAME=?";
             pstmt=con.prepareStatement(SQL);
-            pstmt.setString(1,tableID);     
+            pstmt.setString(1,tableID);
             pstmt.executeUpdate();
         }catch(SQLException e){
         }
-    }  
+    }
 }
