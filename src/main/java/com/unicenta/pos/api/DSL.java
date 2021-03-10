@@ -134,6 +134,10 @@ public class DSL extends DataLogicSystem {
         HashMap ret = new HashMap();
         ret.put("placeID", id);
         ret.put("userID", i.getUser() == null ? null : i.getUser().getId());
+
+        ret.put("total", i.getSubTotal());
+        ret.put("totalTax", i.getTotal());
+
         ArrayList lines = new ArrayList<>();
         i.getLines().forEach(l -> {
             HashMap line = new HashMap();

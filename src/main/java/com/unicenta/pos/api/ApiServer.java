@@ -323,7 +323,7 @@ public class ApiServer {
             }
 
             //NOTE use 2nd arg null to unlock
-            DSL.receiptsLogic.lockSharedTicket(placeID, "locked");
+//            DSL.receiptsLogic.lockSharedTicket(placeID, "locked");
 //            DSL.salesLogic.saveTicket(ticketInfo, app.getInventoryLocation());
 
         } catch (BasicException e) {
