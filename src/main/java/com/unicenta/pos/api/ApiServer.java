@@ -398,7 +398,7 @@ public class ApiServer {
             String decodedPayload = null;
             try {
                 decodedPayload = AES256Cryptor.decrypt(verifyHeader, AESKey);
-                logger.info("REQUEST SEQUENCE:" + decodedPayload);
+//                logger.info("REQUEST SEQUENCE:" + decodedPayload);
                 JsonObject requestInfo = new Gson().fromJson(decodedPayload, JsonObject.class);
                 String clientID = requestInfo.get("clientID").getAsString();
                 Long sequence = requestInfo.get("sequence").getAsLong();
@@ -406,7 +406,7 @@ public class ApiServer {
                 boolean success = sessionStore.verifyRequestSequence(
                         clientID, sequence
                 );
-                logger.info(String.format("SEQ VERIFY: %s", success));
+//                logger.info(String.format("SEQ VERIFY: %s", success));
                 if (!success) {
                     logger.warning("REPLAY_ATTEMPT");
                     decodedPayload = null;
@@ -534,7 +534,7 @@ public class ApiServer {
         boolean encrypted = isRequestEncrypted(request);
         if (encrypted) {
             String payload = body.get("data").getAsString();
-            logger.warning("Encrypted data: " + payload);
+//            logger.warning("Encrypted data: " + payload);
             String decodedPayload = AES256Cryptor.decrypt(payload, AESKey);
             JsonObject data = new Gson().fromJson(decodedPayload, JsonObject.class);
             return data;
