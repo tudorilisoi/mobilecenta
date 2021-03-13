@@ -7,9 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "npx nodemon -w src/main --ext java,properties --exec 'beep; beep; npm run kill-compiler; npm run kill; npm run compile && npm run start' ",
     "start": "./target/start.sh",
-    "kill": "ps ax |grep unicentaopos.jar |awk '{print $1}' |xargs kill -9",
+    "kill": "ps ax |grep unicentaopos.jar |awk '{print $1}' |xargs kill -15",
     "kill-compiler": "ps ax |grep 'mvn compile package' |awk '{print $1}' |xargs kill -9",
-    "compile": "mvn compile package -o && beep",
+    "compile": "npm run cleanup --silent; mvn compile package -o && beep",
+    "cleanup": "rm ./hs_err_* > /dev/null 2>&1",
     "compile-clean": "mvn compile package && beep"
   },
   "repository": {
