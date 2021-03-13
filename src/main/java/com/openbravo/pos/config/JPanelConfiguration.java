@@ -81,6 +81,11 @@ public class JPanelConfiguration extends JPanel implements JPanelView {
         m_panelconfig.add(panel);
         jPanelPeripheral.add(panel.getConfigComponent());
         
+        //mobilecenta config
+        panel = new JPanelConfigMobilecenta();
+        m_panelconfig.add(panel);
+        jPanelMobilecenta.add(panel.getConfigComponent());
+        
         panel = new JPanelConfigSystem();
         m_panelconfig.add(panel);
         jPanelSystem.add(panel.getConfigComponent());
@@ -93,10 +98,7 @@ public class JPanelConfiguration extends JPanel implements JPanelView {
         m_panelconfig.add(panel);
         jPanelCompany.add(panel.getConfigComponent());
 
-        //mobilecenta config
-        panel = new JPanelConfigMobilecenta();
-        m_panelconfig.add(panel);
-        jPanelMobilecenta.add(panel.getConfigComponent());
+     
     }
         
     private void restoreProperties() {
@@ -214,11 +216,11 @@ public class JPanelConfiguration extends JPanel implements JPanelView {
         jPanelLocale = new javax.swing.JPanel();
         jPanelPayment = new javax.swing.JPanel();
         jPanelPeripheral = new javax.swing.JPanel();
+        jPanelMobilecenta = new javax.swing.JPanel();
         jPanelSystem = new javax.swing.JPanel();
         jPanelTicketSetup = new javax.swing.JPanel();
         jPanelCompany = new javax.swing.JPanel();
         jPanelDatabase = new javax.swing.JPanel();
-        jPanelMobilecenta = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jbtnRestore = new javax.swing.JButton();
         jbtnExit = new javax.swing.JButton();
@@ -253,6 +255,12 @@ public class JPanelConfiguration extends JPanel implements JPanelView {
         jPanelPeripheral.setLayout(new javax.swing.BoxLayout(jPanelPeripheral, javax.swing.BoxLayout.LINE_AXIS));
         jTabbedPane1.addTab("Peripherals", jPanelPeripheral);
 
+        jPanelMobilecenta.setBackground(new java.awt.Color(255, 255, 255));
+        jPanelMobilecenta.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jPanelMobilecenta.setPreferredSize(new java.awt.Dimension(0, 400));
+        jPanelMobilecenta.setLayout(new javax.swing.BoxLayout(jPanelMobilecenta, javax.swing.BoxLayout.LINE_AXIS));
+        jTabbedPane1.addTab("Mobilecenta", jPanelMobilecenta);
+
         jPanelSystem.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         jPanelSystem.setPreferredSize(new java.awt.Dimension(0, 400));
         jPanelSystem.setLayout(new javax.swing.BoxLayout(jPanelSystem, javax.swing.BoxLayout.LINE_AXIS));
@@ -272,12 +280,6 @@ public class JPanelConfiguration extends JPanel implements JPanelView {
         jPanelDatabase.setLayout(new javax.swing.BoxLayout(jPanelDatabase, javax.swing.BoxLayout.LINE_AXIS));
         jTabbedPane1.addTab("Database Setup", jPanelDatabase);
 
-        jPanelMobilecenta.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
-        jPanelMobilecenta.setPreferredSize(new java.awt.Dimension(0, 400));
-        jPanelMobilecenta.setLayout(new javax.swing.BoxLayout(jPanelMobilecenta, javax.swing.BoxLayout.LINE_AXIS));
-        jTabbedPane1.addTab("Mobilecenta", jPanelMobilecenta);
-
-        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jbtnRestore.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         jbtnRestore.setText(AppLocal.getIntString("button.factory")); // NOI18N
         jbtnRestore.setMaximumSize(new java.awt.Dimension(103, 33));
