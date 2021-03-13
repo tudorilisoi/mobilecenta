@@ -33,7 +33,6 @@ public class VoucherPaymentInfo extends PaymentInfo implements SerializableRead 
     private String m_sVoucher;
    
     public VoucherPaymentInfo(double dTicket, String sName, String sVoucher) {
-//        m_dTicket = 0.0;
         m_dTicket = dTicket;
         m_sName = sName;
         m_sVoucher = sVoucher;
@@ -48,7 +47,7 @@ public class VoucherPaymentInfo extends PaymentInfo implements SerializableRead 
     @Override
     public void readValues(DataRead dr) throws BasicException {
         m_sName = dr.getString(1);
-        m_dTicket = dr.getDouble(2).doubleValue();
+        m_dTicket = dr.getDouble(2);
         m_sVoucher = dr.getString(3);
     }
     

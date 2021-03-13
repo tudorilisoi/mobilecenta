@@ -20,18 +20,19 @@
 package com.openbravo.data.loader;
 
 import com.openbravo.basic.BasicException;
-import java.sql.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
+
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  *
  * @author  adrianromero
  */
+@Slf4j
 public class StaticSentence extends JDBCSentence {
 
-    private static final Logger logger = Logger.getLogger("com.openbravo.data.loader.StaticSentence");
-    
+
     private ISQLBuilderStatic m_sentence;
 
     /**
@@ -46,32 +47,31 @@ public class StaticSentence extends JDBCSentence {
 
     // Estado
     private Statement m_Stmt;
-    
+
     /** Creates a new instance of StaticSentence
      * @param s
      * @param sentence
      * @param serread
      * @param serwrite */
-    public StaticSentence(Session s, ISQLBuilderStatic sentence, SerializerWrite serwrite, SerializerRead serread) {
-        super(s);
+    public StaticSentence(Session s, ISQLBuilderStatic sentence, SerializerWrite serwrite, SerializerRead serread) { super(s);
         m_sentence = sentence;
         m_SerWrite = serwrite;
         m_SerRead = serread;
         m_Stmt = null;
-    }    
+    }
     /** Creates a new instance of StaticSentence
      * @param s
      * @param sentence */
     public StaticSentence(Session s, ISQLBuilderStatic sentence) {
         this(s, sentence, null, null);
-    }     
+    }
     /** Creates a new instance of StaticSentence
      * @param s
      * @param sentence
      * @param serwrite */
     public StaticSentence(Session s, ISQLBuilderStatic sentence, SerializerWrite serwrite) {
         this(s, sentence, serwrite, null);
-    }     
+    }
     /** Creates a new instance of StaticSentence
      * @param s
      * @param sentence
@@ -93,7 +93,7 @@ public class StaticSentence extends JDBCSentence {
     public StaticSentence(Session s, String sentence) {
         this(s, new NormalBuilder(sentence), null, null);
     }
-    
+
     /**
      *
      * @param params
@@ -104,19 +104,19 @@ public class StaticSentence extends JDBCSentence {
     public DataResultSet openExec(Object params) throws BasicException {
         // true -> un resultset
         // false -> un updatecount (si -1 entonces se acabo)
-        
+
         closeExec();
-            
+
         try {
             m_Stmt = m_s.getConnection().createStatement();
 
             String sentence = m_sentence.getSQL(m_SerWrite, params);
-            
-//           logger.log(Level.INFO, "Executing static SQL: {0}", sentence);
+
+           log.debug("Executing static SQL: {}", sentence);
 
             if (m_Stmt.execute(sentence)) {
                 return new JDBCDataResultSet(m_Stmt.getResultSet(), m_SerRead);
-            } else { 
+            } else {
                 int iUC = m_Stmt.getUpdateCount();
                 if (iUC < 0) {
                     return null;
@@ -128,14 +128,14 @@ public class StaticSentence extends JDBCSentence {
             throw new BasicException(eSQL);
         }
     }
-    
+
     /**
      *
      * @throws BasicException
      */
     @Override
     public void closeExec() throws BasicException {
-        
+
         if (m_Stmt != null) {
             try {
                 m_Stmt.close();
@@ -146,7 +146,7 @@ public class StaticSentence extends JDBCSentence {
             }
         }
     }
-    
+
     /**
      *
      * @return

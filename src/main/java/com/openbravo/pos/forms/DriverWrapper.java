@@ -19,6 +19,8 @@
 
 package com.openbravo.pos.forms;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.sql.*;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -27,6 +29,7 @@ import java.util.logging.Logger;
  *
  * @author adrianromero
  */
+@Slf4j
 public class DriverWrapper implements Driver {
     
     private Driver driver;

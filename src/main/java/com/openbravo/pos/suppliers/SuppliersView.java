@@ -20,19 +20,19 @@
 package com.openbravo.pos.suppliers;
 
 import com.openbravo.basic.BasicException;
-import com.openbravo.data.loader.SentenceList;
 import com.openbravo.data.user.DirtyManager;
 import com.openbravo.data.user.EditorRecord;
 import com.openbravo.format.Formats;
 import com.openbravo.pos.forms.AppLocal;
 import com.openbravo.pos.forms.AppView;
 import com.openbravo.pos.forms.BeanFactoryException;
-import com.openbravo.pos.forms.DataLogicSales;
 import com.openbravo.pos.inventory.MovementReason;
-import java.awt.Component;
-import java.awt.Desktop;
-import java.awt.Font;
-import java.awt.Toolkit;
+import lombok.extern.slf4j.Slf4j;
+
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.JTableHeader;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
@@ -44,16 +44,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JOptionPane;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.JTableHeader;
 
 /**
  *
  * @author  Jack Gerrard
  */
+@Slf4j
 public final class SuppliersView extends javax.swing.JPanel implements EditorRecord {
 
     private static final long serialVersionUID = 1L;
@@ -105,7 +101,7 @@ public final class SuppliersView extends javax.swing.JPanel implements EditorRec
 
             init();
         } catch (BeanFactoryException ex) {
-            Logger.getLogger(SuppliersView.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex.getMessage());
         }
     }
 
@@ -470,7 +466,7 @@ public void resetTranxTable() {
 
 
         } catch (BasicException ex) {
-            Logger.getLogger(SuppliersView.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex.getMessage());
         }
 
         List<SupplierTransaction> supplierList = new ArrayList<>();
@@ -1234,12 +1230,12 @@ String rsn = AppLocal.getIntString("label.suptblHeaderCol5");
                     mailto = new URI("mailto:"
                     + txtEmail.getText());
                 } catch (URISyntaxException ex) {
-                    Logger.getLogger(SuppliersView.class.getName()).log(Level.SEVERE, null, ex);
+                    log.error(ex.getMessage());
                 }
                 try {
                     desktop.mail(mailto);
                 } catch (IOException ex) {
-                    Logger.getLogger(SuppliersView.class.getName()).log(Level.SEVERE, null, ex);
+                    log.error(ex.getMessage());
                 }
             } else {
                 JOptionPane.showMessageDialog(this, 

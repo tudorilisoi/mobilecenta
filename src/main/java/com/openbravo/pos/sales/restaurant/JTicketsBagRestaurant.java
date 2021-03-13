@@ -23,8 +23,8 @@
 
 package com.openbravo.pos.sales.restaurant;
 
-import bsh.Interpreter;
 import bsh.EvalError;
+import bsh.Interpreter;
 import com.alee.extended.time.ClockType;
 import com.alee.extended.time.WebClock;
 import com.alee.managers.notification.NotificationIcon;
@@ -37,31 +37,27 @@ import com.openbravo.data.gui.JMessageDialog;
 import com.openbravo.data.gui.ListKeyed;
 import com.openbravo.data.gui.MessageInf;
 import com.openbravo.data.loader.SentenceList;
-import com.openbravo.pos.forms.AppLocal;
-import com.openbravo.pos.forms.AppView;
-import com.openbravo.pos.forms.DataLogicSales;
-import com.openbravo.pos.forms.DataLogicSystem;
-import com.openbravo.pos.forms.JRootApp;
+import com.openbravo.pos.forms.*;
 import com.openbravo.pos.printer.DeviceTicket;
 import com.openbravo.pos.printer.TicketParser;
 import com.openbravo.pos.printer.TicketPrinterException;
 import com.openbravo.pos.sales.DataLogicReceipts;
-import com.openbravo.pos.sales.JPanelTicket;
 import com.openbravo.pos.sales.TaxesLogic;
 import com.openbravo.pos.scripting.ScriptEngine;
 import com.openbravo.pos.scripting.ScriptException;
 import com.openbravo.pos.scripting.ScriptFactory;
 import com.openbravo.pos.ticket.TicketInfo;
 import com.openbravo.pos.ticket.TicketLineInfo;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
+
 import javax.swing.*;
+import java.util.List;
 
 /**
  *
  * @author JG uniCenta
  */
+@Slf4j
 public class JTicketsBagRestaurant extends javax.swing.JPanel {
     
     private final AppView m_App;
@@ -414,7 +410,7 @@ public class JTicketsBagRestaurant extends javax.swing.JPanel {
             i.set("pickupid", ticket.getPickupId());
             Object result = i.eval(rScript);
         } catch (EvalError ex) {
-            Logger.getLogger(JPanelTicket.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex.getMessage());
         }
         // Autologoff after sales
         String autoLogoff = (m_App.getProperties().getProperty("till.autoLogoff"));

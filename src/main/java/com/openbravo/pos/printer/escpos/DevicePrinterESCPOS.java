@@ -218,7 +218,9 @@ public class DevicePrinterESCPOS implements DevicePrinter  {
     public void openDrawer() {
 
         m_CommOutputPrinter.write(ESCPOS.SELECT_PRINTER); 
-        m_CommOutputPrinter.write(m_codes.getOpenDrawer());
+System.out.print(m_codes.getOpenDrawer());        
+
+m_CommOutputPrinter.write(m_codes.getOpenDrawer());
         m_CommOutputPrinter.flush();
     }
 }

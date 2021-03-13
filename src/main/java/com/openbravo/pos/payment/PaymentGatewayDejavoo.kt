@@ -21,17 +21,15 @@ class PaymentGatewayDejavoo :PaymentGateway {
             if (timer > timeout) break
         }
 
-        if (DejavooProcessor.response == null) {
-            payinfo?.paymentError("Transaction Error! Please try again", "No Response")
-        }
-        else if (DejavooProcessor.response.success == "0"){
+        if (DejavooProcessor.response.success == "0"){
             payinfo?.cardName = DejavooProcessor.response.cardType
             payinfo?.setVerification(DejavooProcessor.response.verification)
             payinfo?.chipAndPin = true
             payinfo?.paymentOK(DejavooProcessor.response.authCode, DejavooProcessor.response.transactionId, DejavooProcessor.response.message)
+            payinfo?.lastFourDigits = DejavooProcessor.response.cardNumber
         }
         else if (DejavooProcessor.response.success == "1"){
-            payinfo?.paymentError("Transaction Error! Please try again", DejavooProcessor.response.message)
+            payinfo?.paymentError("Error! Please try again","Device message: "+DejavooProcessor.response.message)
         }
 
     }

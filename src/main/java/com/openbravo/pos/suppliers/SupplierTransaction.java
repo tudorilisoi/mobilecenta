@@ -22,12 +22,11 @@ package com.openbravo.pos.suppliers;
 import com.openbravo.basic.BasicException;
 import com.openbravo.data.loader.DataRead;
 import com.openbravo.data.loader.SerializerRead;
-import com.openbravo.pos.forms.DataLogicSales;
+import lombok.extern.slf4j.Slf4j;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -35,6 +34,7 @@ import java.util.logging.Logger;
  * Used in Supplier's transactions tab to display all this Supplier's
  * ticketline values
  */
+@Slf4j
 public class SupplierTransaction {
 
     Date transactionDate;
@@ -162,7 +162,7 @@ public class SupplierTransaction {
                 try {
                     date = formatter.parse(dateValue);
                 } catch (ParseException ex) {
-                    Logger.getLogger(DataLogicSales.class.getName()).log(Level.SEVERE, null, ex);
+                    log.error(ex.getMessage());
                 }
                 return new SupplierTransaction(date, productName, unit, price, reason, supplierId);                
             }

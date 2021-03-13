@@ -47,6 +47,18 @@ DELETE FROM resources WHERE id = '0';
 DELETE FROM resources WHERE id = '00';
 INSERT INTO resources(id, name, restype, content) VALUES('00', 'Menu.Root', 0, $FILE{/com/openbravo/pos/templates/Menu.Root.txt});
 
+UPDATE resources SET content = $FILE{/com/openbravo/pos/templates/script.Linediscount.txt} WHERE name = 'script.Linediscount';
+COMMIT;
+
+UPDATE resources SET content = $FILE{/com/openbravo/pos/templates/script.Totaldiscount.txt} WHERE name = 'script.Totaldiscount';
+COMMIT;
+
+UPDATE resources SET content = $FILE{/com/openbravo/pos/templates/Printer.Ticket.xml} WHERE name = 'Printer.Ticket';
+COMMIT;
+
+UPDATE resources SET content = $FILE{/com/openbravo/pos/templates/script.posapps.txt} WHERE name = 'script.posapps';
+COMMIT;
+
 -- COMMONS
 -- Roles changes for new report_name .bs, .jrxml and .properties grouping
 DELETE FROM roles WHERE id = '0';
@@ -58,12 +70,14 @@ INSERT INTO roles(id, name, permissions) VALUES('2', 'Employee role', $FILE{/com
 
 -- PLACES
 -- Table Places changes for NEW Width & Height + Guests & Occupied
-ALTER TABLE `places` ADD COLUMN `height` INT(11) NOT NULL DEFAULT 45 AFTER `tablemoved`;
-ALTER TABLE `places` ADD COLUMN `width` INT(11) NOT NULL DEFAULT 90 AFTER `height`;
-ALTER TABLE `places` ADD COLUMN `guests` INT(11) DEFAULT 0 AFTER `width`;
-ALTER TABLE `places` ADD COLUMN `occupied` datetime DEFAULT NULL AFTER `guests`;
+-- ALTER TABLE `places` ADD COLUMN `height` INT(11) NOT NULL DEFAULT 45 AFTER `tablemoved`;
+-- ALTER TABLE `places` ADD COLUMN `width` INT(11) NOT NULL DEFAULT 90 AFTER `height`;
+-- ALTER TABLE `places` ADD COLUMN `guests` INT(11) DEFAULT 0 AFTER `width`;
+-- ALTER TABLE `places` ADD COLUMN `occupied` datetime DEFAULT NULL AFTER `guests`;
 
 -- Switch ON table foreign key relationships
 set foreign_key_checks = 1;
 
 INSERT INTO applications(id, name, version) VALUES($APP_ID{}, $APP_NAME{}, $APP_VERSION{});
+
+COMMIT;

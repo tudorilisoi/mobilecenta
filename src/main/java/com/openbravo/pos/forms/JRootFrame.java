@@ -35,10 +35,13 @@ import com.openbravo.pos.scripting.ScriptException;
 import com.openbravo.pos.scripting.ScriptFactory;
 import com.openbravo.pos.util.AltEncrypter;
 import com.openbravo.pos.util.OSValidator;
+import com.openbravo.pos.util.SessionKeepAlive;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author adrianromero
  */
+@Slf4j
 public class JRootFrame extends javax.swing.JFrame implements AppMessage {
 
     private InstanceManager m_instmanager = null;
@@ -92,23 +95,8 @@ public class JRootFrame extends javax.swing.JFrame implements AppMessage {
         } else {
             new JFrmConfig(props).setVisible(true); // Show the configuration window.
         }
+        fireApplicationStartEvent();
 
-        try {
-            /*
-            Event Listener
-            */
-            AltEncrypter cypher = new AltEncrypter("cypherkey" + m_props.getProperty("db.user"));
-            ScriptEngine scriptEngine = ScriptFactory.getScriptEngine(ScriptFactory.BEANSHELL);
-            DataLogicSystem dataLogicSystem = (DataLogicSystem) m_rootapp.getBean("com.openbravo.pos.forms.DataLogicSystem");
-            String script = dataLogicSystem.getResourceAsXML("application.started");
-            scriptEngine.put("device", m_props.getHost());
-            scriptEngine.put("dbURL", m_props.getProperty("db.URL")+m_props.getProperty("db.schema"));
-            scriptEngine.put("dbUser", m_props.getProperty("db.user"));
-            scriptEngine.put("dbPassword", cypher.decrypt(m_props.getProperty("db.password")));
-            scriptEngine.eval(script);
-        } catch (BeanFactoryException | ScriptException e) {
-            System.err.println("Event fire exception: " + e);
-        }
     }
 
     /**
@@ -125,6 +113,29 @@ public class JRootFrame extends javax.swing.JFrame implements AppMessage {
                 requestFocus();
             }
         });
+    }
+
+
+    private void fireApplicationStartEvent() {
+        try {
+            AltEncrypter cypher = new AltEncrypter("cypherkey" + m_props.getProperty("db.user"));
+            ScriptEngine scriptEngine = ScriptFactory.getScriptEngine(ScriptFactory.BEANSHELL);
+            DataLogicSystem dataLogicSystem = (DataLogicSystem) m_rootapp.getBean("com.openbravo.pos.forms.DataLogicSystem");
+            String script = dataLogicSystem.getResourceAsXML("application.started");
+            scriptEngine.put("device", m_props.getHost());
+            scriptEngine.put("dbURL", m_props.getProperty("db.URL")+m_props.getProperty("db.schema"));
+            scriptEngine.put("dbUser", m_props.getProperty("db.user"));
+            scriptEngine.put("dbPassword", cypher.decrypt(m_props.getProperty("db.password")));
+            scriptEngine.eval(script);
+            startSessionKeepAlive(dataLogicSystem);
+        } catch (BeanFactoryException | ScriptException e) {
+            log.error("Event fire exception: " + e.getMessage());
+        }
+    }
+
+    private void startSessionKeepAlive(DataLogicSystem dataLogicSystem) {
+        SessionKeepAlive sessionKeepAlive = new SessionKeepAlive(dataLogicSystem);
+        sessionKeepAlive.start();
     }
 
     /**

@@ -144,5 +144,6 @@ public class DevicePrinterNull implements DevicePrinter {
      */
     @Override
     public void printLogo() {
+        
     }
 }

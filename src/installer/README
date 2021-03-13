@@ -1,7 +1,6 @@
-Project: uniCenta oPOS v4.6
+Project: uniCenta oPOS v4.6.1
 Topic:	README installer
-Author:	Jack Gerrard
-Date: 	5 August 2018
+Date: 	24 December 2019
 
 Welcome to the uniCenta oPOS family.
 
@@ -25,6 +24,9 @@ Set-up
 Have some patience when you first start out and try to follow these 
 simple steps...
 
+1. **NB** If you are running a previous version of uniCenta you will
+   need to install 4.6 first as it requires a 4.6 migration!
+
 1. Make sure you have the correct Java JRE Runtime installed for your
    Operating System. 
    If you're running Windows x64 use Java for x64, not the x86
@@ -32,7 +34,7 @@ simple steps...
 
 2. This version requires MySQL 5.6 or 5.7 installed and configured
    properly. MySQL 8 is not supported yet. A Schema must be created
-   and Users Permissions also set correctly. 
+   and Users Permissions also set correctly.
 
 3. Fire-up unicenta oPOS and head straight for the Configuration 
    panel. Settings are here for everything from Databases through to

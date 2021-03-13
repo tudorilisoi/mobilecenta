@@ -20,19 +20,16 @@
 package com.openbravo.beans;
 
 import com.openbravo.basic.BasicException;
-import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.Frame;
-import java.awt.Window;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.Icon;
-import javax.swing.SwingUtilities;
+import lombok.extern.slf4j.Slf4j;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Dec 2017
  * @author  Jack Gerarrd uniCenta
  */
+@Slf4j
 public class JNumberPop extends javax.swing.JDialog {
     
     private static LocaleResources m_resources;
@@ -204,7 +201,7 @@ public class JNumberPop extends javax.swing.JDialog {
         try {
             m_value = m_jnumber.getValueInteger();
         } catch (BasicException ex) {
-            Logger.getLogger(JNumberPop.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex.getMessage());
         }
         setVisible(false);
         dispose();

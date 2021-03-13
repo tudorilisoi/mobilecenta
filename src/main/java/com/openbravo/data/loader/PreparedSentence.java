@@ -20,17 +20,20 @@
 package com.openbravo.data.loader;
 
 import com.openbravo.basic.BasicException;
-import java.sql.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
 
 /**
  *
  * @author  adrianromero
  */
+@Slf4j
 public class PreparedSentence extends JDBCSentence {
 
-    private static final Logger logger = Logger.getLogger("com.openbravo.data.loader.PreparedSentence");
 
     private String m_sentence;
 
@@ -174,8 +177,7 @@ public class PreparedSentence extends JDBCSentence {
         closeExec();
 
         try {
-
-//            logger.log(Level.INFO, "Executing prepared SQL: {0}", m_sentence);
+            log.debug("Executing prepared SQL: {}", m_sentence);
 
             m_Stmt = m_s.getConnection().prepareStatement(m_sentence);
  

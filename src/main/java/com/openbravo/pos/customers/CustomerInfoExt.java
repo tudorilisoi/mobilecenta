@@ -40,7 +40,7 @@ public class CustomerInfoExt extends CustomerInfo {
     protected String pcode;
     protected String city;
     protected String region;
-    protected String country;    
+    protected String country;
     protected String firstname;
     protected String lastname;
     protected String cemail;
@@ -55,7 +55,7 @@ public class CustomerInfoExt extends CustomerInfo {
     protected boolean isvip;
     protected Double discount;
     protected String prepay;
-    protected String memodate;    
+    protected String memodate;
 
     /** Creates a new instance of UserInfoBasic
      * @param id */
@@ -69,22 +69,22 @@ public class CustomerInfoExt extends CustomerInfo {
      */
     public String getTaxCustCategoryID() {
 //        return taxcustomerid;
-        return taxcustcategoryid;        
+        return taxcustcategoryid;
     }
     public void setTaxCustCategoryID(String taxcustcategoryid) {
         this.taxcustcategoryid = taxcustcategoryid;
     }
-    
+
     public String getTaxCustomerID() {
         return taxcustomerid;
     }
     public void setTaxCustomerID(String taxcustomerid) {
         this.taxcustomerid = taxcustomerid;
     }
-    public String printTaxCustomerID() {       
+    public String printTaxCustomerID() {
         return Formats.STRING.formatValue(taxcustomerid);
     }
-    
+
     @Override
     public String getTaxid() {
         return taxid;
@@ -93,11 +93,11 @@ public class CustomerInfoExt extends CustomerInfo {
     public void setTaxid(String taxid) {
         this.taxid = taxid;
     }
-    public String printTaxid() {       
+    public String printTaxid() {
         return Formats.STRING.formatValue(taxid);
-    }    
-    
-      
+    }
+
+
     /**
      *
      * @return notes string
@@ -108,7 +108,7 @@ public class CustomerInfoExt extends CustomerInfo {
     public void setNotes(String notes) {
         this.notes = notes;
     }
-    
+
 
     /**
      *
@@ -120,7 +120,7 @@ public class CustomerInfoExt extends CustomerInfo {
     public void setVisible(boolean visible) {
         this.visible = visible;
     }
-    
+
 
     /**
      *
@@ -143,11 +143,11 @@ public class CustomerInfoExt extends CustomerInfo {
     public void setMaxdebt(Double maxdebt) {
         this.maxdebt = maxdebt;
     }
-    public String printMaxDebt() {       
+    public String printMaxDebt() {
         return Formats.CURRENCY.formatValue(RoundUtils.getValue(getMaxdebt()));
     }
 
-    
+
     /**
      *
      * @return customer's last ticket transaction date
@@ -158,7 +158,7 @@ public class CustomerInfoExt extends CustomerInfo {
     public void setCurdate(Date curdate) {
         this.curdate = curdate;
     }
-    public String printCurDate() {       
+    public String printCurDate() {
         return Formats.DATE.formatValue(getCurdate());
     }
 
@@ -172,14 +172,19 @@ public class CustomerInfoExt extends CustomerInfo {
     public void setAccdebt(Double accdebt) {
         this.accdebt = accdebt;
     }
-    public String printCurDebt() {       
+    public String printCurDebt() {
         return Formats.CURRENCY.formatValue(RoundUtils.getValue(getAccdebt()));
     }
-    
-    public String printCurBal() {       
-        return Formats.CURRENCY.formatValue(RoundUtils.getValue(getMaxdebt() - getAccdebt()));
-    }    
-    
+
+    public String printCurBal() {
+        String balance = null;
+
+        if (getMaxdebt() != null && getAccdebt() != null) {
+            balance = Formats.CURRENCY.formatValue(RoundUtils.getValue(getMaxdebt() - getAccdebt()));
+        }
+        return balance;
+    }
+
     /**
      *
      * @return prepay string
@@ -190,29 +195,29 @@ public class CustomerInfoExt extends CustomerInfo {
     public void setPrePay(String prepay) {
         this.prepay = prepay;
     }
-    
-    
+
+
     /**
      *
      * @param amount
      * @param d
      */
     public void updateCurDebt(Double amount, Date d) {
-        
+
         accdebt = accdebt == null ? amount : accdebt + amount;
         curdate =  (new Date());
 
         if (RoundUtils.compare(accdebt, 0.0) > 0) {
-            if (curdate == null) {                
+            if (curdate == null) {
                 // new date
                 curdate = d;
             }
-        } else if (RoundUtils.compare(accdebt, 0.0) == 0) {       
+        } else if (RoundUtils.compare(accdebt, 0.0) == 0) {
             accdebt = null;
             curdate = null;
         } else { // < 0
 //            curdate = null;
-        }      
+        }
     }
 
     /**
@@ -277,9 +282,9 @@ public class CustomerInfoExt extends CustomerInfo {
     public void setPhone1(String phone1) {
         this.phone1 = phone1;
     }
-    public String printPhone1() {       
+    public String printPhone1() {
         return Formats.STRING.formatValue(phone1);
-    } 
+    }
 
     /**
      *
@@ -323,9 +328,9 @@ public class CustomerInfoExt extends CustomerInfo {
     public void setAddress(String address) {
         this.address = address;
     }
-    public String printAddress() {       
+    public String printAddress() {
         return Formats.STRING.formatValue(address);
-    } 
+    }
 
     /**
      *
@@ -337,9 +342,9 @@ public class CustomerInfoExt extends CustomerInfo {
     public void setAddress2(String address2) {
         this.address2 = address2;
     }
-    public String printAddress2() {       
+    public String printAddress2() {
         return Formats.STRING.formatValue(address2);
-    } 
+    }
 
     /**
      *
@@ -353,9 +358,9 @@ public class CustomerInfoExt extends CustomerInfo {
     public void setPcode(String pcode) {
         this.pcode = pcode;
     }
-    public String printPostal() {       
+    public String printPostal() {
         return Formats.STRING.formatValue(pcode);
-    }     
+    }
 
     /**
      *
@@ -418,19 +423,19 @@ public class CustomerInfoExt extends CustomerInfo {
     public void setImage(BufferedImage img) {
         this.m_Image = img;
     }
-    
+
     /**
      *
      * @return Is VIP Y/N? boolean
-    */
+     */
     public boolean isVIP() {
         return isvip;
     }
     public void setisVIP(boolean isvip) {
         this.isvip = isvip;
     }
-    
-    
+
+
     /**
      *
      * @return customer's discount allowed
@@ -441,10 +446,10 @@ public class CustomerInfoExt extends CustomerInfo {
     public void setDiscount(Double discount) {
         this.discount = discount;
     }
-    public String printDiscount() {       
+    public String printDiscount() {
         return Formats.CURRENCY.formatValue(RoundUtils.getValue(getDiscount()));
-    }  
-    
+    }
+
     /**
      *
      * @return memo date string
@@ -455,8 +460,8 @@ public class CustomerInfoExt extends CustomerInfo {
     public void setMemoDate(String memodate) {
         this.memodate = memodate;
     }
-    public String printMemoDate() {       
+    public String printMemoDate() {
         return Formats.STRING.formatValue(memodate);
-    }        
+    }
 
 }

@@ -33,20 +33,94 @@ public abstract class Codes {
     public Codes() {
     }
 
+    /**
+     *
+     * @return
+     */
     public abstract byte[] getInitSequence();
+    
+    /**
+     *
+     * @return
+     */
     public abstract byte[] getSize0();
+
+    /**
+     *
+     * @return
+     */
     public abstract byte[] getSize1();
+
+    /**
+     *
+     * @return
+     */
     public abstract byte[] getSize2();
+
+    /**
+     *
+     * @return
+     */
     public abstract byte[] getSize3();
+
+    /**
+     *
+     * @return
+     */
     public abstract byte[] getBoldSet();
+
+    /**
+     *
+     * @return
+     */
     public abstract byte[] getBoldReset();
+
+    /**
+     *
+     * @return
+     */
     public abstract byte[] getUnderlineSet();
+
+    /**
+     *
+     * @return
+     */
     public abstract byte[] getUnderlineReset();
+    
+    /**
+     *
+     * @return
+     */
     public abstract byte[] getOpenDrawer();    
+
+    /**
+     *
+     * @return
+     */
     public abstract byte[] getCutReceipt();   
+
+    /**
+     *
+     * @return
+     */
     public abstract byte[] getNewLine();    
+
+    /**
+     *
+     * @return
+     */
     public abstract byte[] getImageHeader();
+
+    /**
+     *
+     * @return
+     */
     public abstract int getImageWidth();
+
+    /**
+     *
+     * @return
+     */
     public abstract byte[] getImageLogo();
 
     /**

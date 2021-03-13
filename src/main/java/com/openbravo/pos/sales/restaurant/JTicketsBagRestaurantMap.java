@@ -19,52 +19,38 @@
 
 package com.openbravo.pos.sales.restaurant;
 
-import javax.swing.Timer;
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import com.openbravo.basic.BasicException;
-import com.openbravo.beans.JGuestsPop;
 import com.openbravo.data.gui.MessageInf;
 import com.openbravo.data.gui.NullIcon;
 import com.openbravo.data.loader.SentenceList;
 import com.openbravo.data.loader.SerializerReadClass;
 import com.openbravo.data.loader.StaticSentence;
 import com.openbravo.pos.customers.CustomerInfo;
-import com.openbravo.pos.forms.AppConfig;
-import com.openbravo.pos.forms.AppLocal;
-import com.openbravo.pos.forms.AppView;
-import com.openbravo.pos.forms.DataLogicSales;
-import com.openbravo.pos.forms.DataLogicSystem;
+import com.openbravo.pos.forms.*;
 import com.openbravo.pos.sales.DataLogicReceipts;
 import com.openbravo.pos.sales.JTicketsBag;
-import com.openbravo.pos.sales.restaurant.JTicketsBagRestaurant;
 import com.openbravo.pos.sales.SharedTicketInfo;
 import com.openbravo.pos.sales.TicketsEditor;
 import com.openbravo.pos.ticket.TicketInfo;
+import lombok.extern.slf4j.Slf4j;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
  * @author JG uniCenta
  */
+@Slf4j
 public class JTicketsBagRestaurantMap extends JTicketsBag {
 
     private static class ServerCurrent {
@@ -438,7 +424,7 @@ public class JTicketsBagRestaurantMap extends JTicketsBag {
                         , JOptionPane.INFORMATION_MESSAGE);                        
                 }
             } catch (BasicException ex) {
-                Logger.getLogger(JTicketsBagRestaurantMap.class.getName()).log(Level.SEVERE, null,ex);
+                log.error(ex.getMessage());
             }
         }
         
@@ -711,8 +697,8 @@ Integer count = restDB.getGuestsInTable(place.getId());
         try {
             dlReceipts.lockSharedTicket(m_PlaceCurrent.getId(),"locked");
         } catch (BasicException ex) {
-            Logger.getLogger(JTicketsBagRestaurantMap.class.getName()).log(Level.SEVERE, null, ex);
-        }        
+            log.error(ex.getMessage());
+        }
     } 
 
     private void showView(String view) {
@@ -787,7 +773,7 @@ Integer count = restDB.getGuestsInTable(place.getId());
                                     }
                                 }
                             } catch (BasicException ex) {
-                                Logger.getLogger(JTicketsBagRestaurantMap.class.getName()).log(Level.SEVERE, null, ex);
+                                log.error(ex.getMessage());
                             }
 //                            printState();                // show table map. Why here?
                         }    
@@ -1078,7 +1064,7 @@ Integer count = restDB.getGuestsInTable(place.getId());
             try {
                 dlSystem.updatePlaces(pl.getX(), pl.getY(), pl.getId());
             } catch (BasicException ex) {
-                Logger.getLogger(JTicketsBagRestaurantMap.class.getName()).log(Level.SEVERE, null, ex);
+                log.error(ex.getMessage());
             }
         });
     }//GEN-LAST:event_m_jbtnSaveActionPerformed

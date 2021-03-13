@@ -25,7 +25,12 @@
             <artifactId>slf4j-simple</artifactId>
             <version>1.7.21</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.6</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>core</artifactId>
@@ -169,6 +174,16 @@
             <groupId>org.jpos</groupId>
             <artifactId>jpos</artifactId>
             <version>2.0.10</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-nop</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.swinglabs.swingx</groupId>
@@ -243,7 +258,7 @@
         <dependency>
             <groupId>io.posapps</groupId>
             <artifactId>posapps-client</artifactId>
-            <version>1.4.6</version>
+            <version>1.4.8</version>
             <classifier>exe</classifier>
         </dependency>
         <!-- Batik Dependencies now wrapped included in apache xmlgraphics fop   -->
@@ -279,6 +294,21 @@
             <groupId>de.sciss</groupId>
             <artifactId>weblaf</artifactId>
             <version>1.2.9</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-nop</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
+                </exclusion>
+
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -486,7 +516,7 @@
                 </executions>
                 <configuration>
                     <arguments>
-                    <argument>-Dhttps.protocols=TLSv1.2</argument>
+                        <argument>-Dhttps.protocols=TLSv1.2</argument>
                     </arguments>
                     <mainClass>com.openbravo.pos.forms.StartPOS</mainClass>
                     <executable>${bitrock.exec}</executable>

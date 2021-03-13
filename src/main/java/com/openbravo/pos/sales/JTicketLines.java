@@ -25,19 +25,13 @@ import com.openbravo.pos.scripting.ScriptEngine;
 import com.openbravo.pos.scripting.ScriptException;
 import com.openbravo.pos.scripting.ScriptFactory;
 import com.openbravo.pos.ticket.TicketLineInfo;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Rectangle;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
+import lombok.extern.slf4j.Slf4j;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -46,18 +40,17 @@ import javax.swing.table.TableColumnModel;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+import java.awt.*;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
 
 /**
  *
  * @author JG uniCenta
  */
+@Slf4j
 public class JTicketLines extends javax.swing.JPanel {
-
-    private static final Logger logger = Logger.getLogger("com.openbravo.pos.sales.JTicketLines");
 
     private static SAXParser m_sp = null;
     
@@ -83,11 +76,11 @@ public class JTicketLines extends javax.swing.JPanel {
                 acolumns = columnshandler.getColumns();
 
             } catch (ParserConfigurationException ePC) {
-                logger.log(Level.WARNING, LocalRes.getIntString("exception.parserconfig"), ePC);
+                log.error(LocalRes.getIntString("exception.parserconfig"), ePC.getMessage());
             } catch (SAXException eSAX) {
-                logger.log(Level.WARNING, LocalRes.getIntString("exception.xmlfile"), eSAX);
+                log.error(LocalRes.getIntString("exception.xmlfile"), eSAX.getMessage());
             } catch (IOException eIO) {
-                logger.log(Level.WARNING, LocalRes.getIntString("exception.iofile"), eIO);
+                log.error(LocalRes.getIntString("exception.iofile"), eIO);
             }
         }
                

@@ -20,15 +20,17 @@
 package com.openbravo.pos.scale;
 
 import gnu.io.*;
-import java.io.*;
-import java.util.TooManyListenersException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;import java.util.TooManyListenersException;
 
 /**
  *
  * @author Nicholas Fritz - changes by JG
  */
+@Slf4j
 public class ScaleMTIND221 implements Scale, SerialPortEventListener {
     
     private CommPortIdentifier m_PortIdPrinter;
@@ -71,7 +73,7 @@ public class ScaleMTIND221 implements Scale, SerialPortEventListener {
                 try {
                     wait(1000);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(ScaleMTIND221.class.getName()).log(Level.SEVERE, null, ex);
+                    log.error(ex.getMessage());
                 }
                 if (m_iStatusScale != SCALE_READY) {
                     // bascula tonta.
@@ -84,14 +86,14 @@ public class ScaleMTIND221 implements Scale, SerialPortEventListener {
             try {
                 write(new byte[] {0x50}); // P
             } catch (TooManyListenersException ex) {
-                Logger.getLogger(ScaleMTIND221.class.getName()).log(Level.SEVERE, null, ex);
+                log.error(ex.getMessage());
             }
             flush();             
             
             try {
                 wait(1000);
             } catch (InterruptedException ex) {
-                Logger.getLogger(ScaleMTIND221.class.getName()).log(Level.SEVERE, null, ex);
+                log.error(ex.getMessage());
             }
             
             if (m_iStatusScale == SCALE_READY) {

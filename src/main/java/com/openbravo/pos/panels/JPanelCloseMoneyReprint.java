@@ -22,10 +22,7 @@ package com.openbravo.pos.panels;
 import com.openbravo.basic.BasicException;
 import com.openbravo.data.gui.MessageInf;
 import com.openbravo.data.gui.TableRendererBasic;
-import com.openbravo.data.loader.Datas;
-import com.openbravo.data.loader.SerializerWriteBasic;
 import com.openbravo.data.loader.Session;
-import com.openbravo.data.loader.StaticSentence;
 import com.openbravo.format.Formats;
 import com.openbravo.pos.forms.*;
 import com.openbravo.pos.printer.TicketParser;
@@ -33,7 +30,12 @@ import com.openbravo.pos.printer.TicketPrinterException;
 import com.openbravo.pos.scripting.ScriptEngine;
 import com.openbravo.pos.scripting.ScriptException;
 import com.openbravo.pos.scripting.ScriptFactory;
-import java.awt.Dimension;
+import lombok.extern.slf4j.Slf4j;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
+import java.awt.*;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -41,18 +43,13 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumnModel;
 
 /**
  * 
  * @author JG uniCenta
  */
+@Slf4j
 public class JPanelCloseMoneyReprint extends JPanel implements JPanelView, BeanFactoryApp {
-    
     private AppView m_App;
     private DataLogicSystem m_dlSystem;
     
@@ -652,7 +649,7 @@ public class JPanelCloseMoneyReprint extends JPanel implements JPanelView, BeanF
             }
             repaint();
         } catch (BasicException ex) {
-            Logger.getLogger(JPanelCloseMoneyReprint.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex.getMessage());
         }
         
     }//GEN-LAST:event_webBtnFindSequenceActionPerformed

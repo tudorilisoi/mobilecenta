@@ -20,24 +20,23 @@
 package com.openbravo.pos.config;
 
 import com.openbravo.data.user.DirtyManager;
-import java.awt.Component;
-import javax.swing.SpinnerNumberModel;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.openbravo.pos.forms.AppConfig;
+import com.openbravo.pos.forms.AppLocal;
+import com.openbravo.pos.util.AltEncrypter;
+import lombok.extern.slf4j.Slf4j;
 
+import javax.swing.*;
+import java.awt.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import com.openbravo.pos.forms.AppConfig;
-import com.openbravo.pos.forms.AppLocal;
-import com.openbravo.pos.util.AltEncrypter;
-import javax.swing.JOptionPane;
 
 /**
  *
  * @author JG uniCenta
  */
+@Slf4j
 public class JPanelTicketSetup extends javax.swing.JPanel implements PanelConfig {
     
     private final DirtyManager dirty = new DirtyManager();
@@ -365,8 +364,7 @@ public class JPanelTicketSetup extends javax.swing.JPanel implements PanelConfig
                         System.out.println(e.getMessage());
                     }
                 }
-            } catch (SQLException ex) {
-                Logger.getLogger(JPanelTicketSetup.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SQLException ex) { log.error(ex.getMessage());
             }
         }        
     }//GEN-LAST:event_jbtnResetActionPerformed

@@ -28,7 +28,6 @@ import com.openbravo.data.loader.SerializerRead;
 public class VoucherInfo implements IKeyed {
     private String id;
     private String voucherNumber;
-    private String customerId;
     private String customerName;
     private double amount;
     private String status;
@@ -36,16 +35,15 @@ public class VoucherInfo implements IKeyed {
     public VoucherInfo() {
     }
 
-    public VoucherInfo(String id, 
+    public VoucherInfo(
+        String id, 
         String voucherNumber, 
-        String customerId, 
         String customerName,
         double amount, 
         String status) 
     {
         this.id = id;
         this.voucherNumber = voucherNumber;
-        this.customerId = customerId;
         this.customerName = customerName;
         this.amount = amount;
         this.status = status;
@@ -84,21 +82,7 @@ public class VoucherInfo implements IKeyed {
     public void setVoucherNumber(String voucherNumber) {
         this.voucherNumber = voucherNumber;
     }
-
-    /**
-     * @return the customerId
-     */
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    /**
-     * @param customerId the customerId to set
-     */
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
-
+    
     /**
      * @return the customerName
      */
@@ -152,12 +136,12 @@ public class VoucherInfo implements IKeyed {
         {
             @Override
         public Object readValues(DataRead dr) throws BasicException {
-            return new VoucherInfo(dr.getString(1), 
+            return new VoucherInfo(
+                    dr.getString(1), 
                     dr.getString(2), 
                     dr.getString(3),
-                    dr.getString(4),
-                    dr.getDouble(5),
-                    dr.getString(6));
+                    dr.getDouble(4),
+                    dr.getString(5));            
         }};
     }    
 }

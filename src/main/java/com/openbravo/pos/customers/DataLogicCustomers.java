@@ -345,7 +345,7 @@ public class DataLogicCustomers extends BeanFactoryDataSingle {
     }
       
       
-        public final VoucherInfo getVoucherInfo(String id) throws BasicException {
+/*        public final VoucherInfo getVoucherInfo(String id) throws BasicException {
             return (VoucherInfo) new PreparedSentence(s
                 , "SELECT vouchers.ID, VOUCHER_NUMBER, CUSTOMER, " +
                         "customers.NAME, AMOUNT, STATUS " +
@@ -356,7 +356,16 @@ public class DataLogicCustomers extends BeanFactoryDataSingle {
 		, SerializerWriteString.INSTANCE
 		, VoucherInfo.getSerializerRead()).find(id);
     }
-          
+*/
+
+        public final VoucherInfo getVoucherInfo(String id) throws BasicException {
+            return (VoucherInfo) new PreparedSentence(s
+                , "SELECT vouchers.ID, VOUCHER_NUMBER, CUSTOMER,  AMOUNT, STATUS " +
+                  "FROM vouchers " +
+                  "WHERE STATUS='A' AND vouchers.ID=?" 
+		, SerializerWriteString.INSTANCE
+		, VoucherInfo.getSerializerRead()).find(id);
+    }
           
         public final VoucherInfo getVoucherInfoAll(String id) throws BasicException {
             return (VoucherInfo) new PreparedSentence(s

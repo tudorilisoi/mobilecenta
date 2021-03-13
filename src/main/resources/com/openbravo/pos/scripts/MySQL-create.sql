@@ -300,8 +300,8 @@ CREATE TABLE `places` (
 	`tablemoved` smallint(6) NOT NULL default '0',
 	`width` int(11) NOT NULL,
 	`height` int(11) NOT NULL,
-        `guests` int(11) DEFAULT 0,
-        `occupied` datetime DEFAULT NULL,
+    `guests` int(11) DEFAULT 0,
+    `occupied` datetime DEFAULT NULL,
 	UNIQUE INDEX `places_name_inx` ( `name` ),
 	PRIMARY KEY  ( `id` )
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT = Compact;

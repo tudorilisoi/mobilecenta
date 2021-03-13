@@ -20,40 +20,34 @@
 package com.openbravo.pos.sales.shared;
 
 
-import com.openbravo.pos.sales.ReprintTicketInfo;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import com.openbravo.pos.printer.TicketPrinterException;
-import javax.swing.JOptionPane;
-import com.openbravo.pos.sales.TaxesException;
-import com.openbravo.pos.sales.TaxesLogic;
-
 import com.openbravo.basic.BasicException;
 import com.openbravo.data.gui.ListKeyed;
 import com.openbravo.data.gui.MessageInf;
-import com.openbravo.pos.forms.AppLocal;
-import com.openbravo.pos.forms.AppProperties;
-import com.openbravo.pos.forms.AppView;
-import com.openbravo.pos.forms.DataLogicSales;
-import com.openbravo.pos.forms.DataLogicSystem;
+import com.openbravo.pos.forms.*;
 import com.openbravo.pos.printer.DeviceTicket;
 import com.openbravo.pos.printer.TicketParser;
+import com.openbravo.pos.printer.TicketPrinterException;
+import com.openbravo.pos.sales.ReprintTicketInfo;
+import com.openbravo.pos.sales.TaxesException;
+import com.openbravo.pos.sales.TaxesLogic;
 import com.openbravo.pos.scripting.ScriptEngine;
 import com.openbravo.pos.scripting.ScriptException;
 import com.openbravo.pos.scripting.ScriptFactory;
 import com.openbravo.pos.ticket.TicketInfo;
 import com.openbravo.pos.ticket.TicketTaxInfo;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 
 /**
  *
  * @author JG uniCenta
  */
+@Slf4j
 public class JTicketsReprintList extends javax.swing.JDialog {
     
     private String m_sDialogTicket;
@@ -216,7 +210,8 @@ ReprintTicketInfo m_Ticket = null;
 //            }
 //        }                        
                 } catch (BasicException ex) {
-                    Logger.getLogger(JTicketsReprintList.class.getName()).log(Level.SEVERE, null, ex);
+                    log.error(ex.getMessage());
+
                 }
                         
                         

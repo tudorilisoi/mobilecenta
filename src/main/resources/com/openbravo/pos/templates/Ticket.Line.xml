@@ -41,7 +41,7 @@
 
 <!-- This sales transaction screen is great for Hospitality!
 <line>
-    <column name="label.item2" width="335" align="left" value="&lt;html&gt;
+    <column name="label.item2" width="235" align="left" value="&lt;html&gt;
     #if ($ticketline.isProductCom()) 
         &lt;i&gt;*&amp;nbsp;&amp;nbsp;${ticketline.printName()}&lt;/i&gt; 
     #else 
@@ -50,7 +50,7 @@
     &lt;br&gt;${ticketline.getProductAttSetInstDesc()}"/>
     
     <column name="label.units2" width="50" align="right" value="x${ticketline.printMultiply()}"/>
-    <column name="label.value2" width="50" align="right" value="${ticketline.printValue()}"/>
+    <column name="label.value2" width="100" align="right" value="${ticketline.printValue()}"/>
     <column name="label.printto" width="5" align="center" value="${ticketline.printPrinter()}"/>    
 </line>
  -->

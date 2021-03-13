@@ -20,6 +20,7 @@
 package com.openbravo.pos.customers;
 
 import com.openbravo.basic.BasicException;
+import com.openbravo.beans.JCalendarDialog;
 import com.openbravo.data.gui.ComboBoxValModel;
 import com.openbravo.data.loader.SentenceList;
 import com.openbravo.data.user.DirtyManager;
@@ -30,8 +31,14 @@ import com.openbravo.pos.forms.AppView;
 import com.openbravo.pos.forms.BeanFactoryException;
 import com.openbravo.pos.forms.DataLogicSales;
 import com.openbravo.pos.util.StringUtils;
-import java.awt.Component;
-import java.awt.Desktop;
+import lombok.extern.slf4j.Slf4j;
+
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.JTableHeader;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URI;
@@ -42,21 +49,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JOptionPane;
-import javax.swing.table.AbstractTableModel;
-import com.openbravo.beans.JCalendarDialog;
-import java.awt.Font;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import javax.swing.table.JTableHeader;
 
 /**
  *
  * @author  Jack Gerrard
  */
+@Slf4j
 public final class CustomersView extends javax.swing.JPanel implements EditorRecord {
 
     private static final long serialVersionUID = 1L;
@@ -120,7 +118,7 @@ public final class CustomersView extends javax.swing.JPanel implements EditorRec
 
             init();
         } catch (BeanFactoryException ex) {
-            Logger.getLogger(CustomersView.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex.getMessage());
         }
     }
 
@@ -556,7 +554,7 @@ public void resetTranxTable() {
 
 
         } catch (BasicException ex) {
-            Logger.getLogger(CustomersView.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex.getMessage());
         }
 
         List<CustomerTransaction> customerList = new ArrayList<>();
@@ -1494,12 +1492,12 @@ public void resetTranxTable() {
                     mailto = new URI("mailto:"
                     + txtEmail.getText());
                 } catch (URISyntaxException ex) {
-                    Logger.getLogger(CustomersView.class.getName()).log(Level.SEVERE, null, ex);
+                    log.error(ex.getMessage());
                 }
                 try {
                     desktop.mail(mailto);
                 } catch (IOException ex) {
-                    Logger.getLogger(CustomersView.class.getName()).log(Level.SEVERE, null, ex);
+                    log.error(ex.getMessage());
                 }
             } else {
                 JOptionPane.showMessageDialog(this, 

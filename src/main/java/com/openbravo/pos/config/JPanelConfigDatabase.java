@@ -28,26 +28,21 @@ import com.openbravo.pos.forms.AppLocal;
 import com.openbravo.pos.forms.DriverWrapper;
 import com.openbravo.pos.util.AltEncrypter;
 import com.openbravo.pos.util.DirectoryEvent;
-import java.awt.Color;
-import java.awt.Component;
+import lombok.extern.slf4j.Slf4j;
+
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JOptionPane;
+import java.sql.*;
 
 /**
  * @author Jack Gerrard
  * @author adrianromero
  */
+@Slf4j
 public class JPanelConfigDatabase extends javax.swing.JPanel implements PanelConfig {
     
     private final DirtyManager dirty = new DirtyManager();
@@ -227,7 +222,7 @@ public class JPanelConfigDatabase extends javax.swing.JPanel implements PanelCon
             
         } catch (MalformedURLException | ClassNotFoundException | SQLException 
                 | InstantiationException | IllegalAccessException ex) {
-            Logger.getLogger(JPanelConfigDatabase.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex.getMessage());
         }        
     }
     public void fillSchema1() {
@@ -263,8 +258,8 @@ public class JPanelConfigDatabase extends javax.swing.JPanel implements PanelCon
 
         } catch (MalformedURLException | ClassNotFoundException | SQLException 
                 | InstantiationException | IllegalAccessException ex) {
-            Logger.getLogger(JPanelConfigDatabase.class.getName()).log(Level.SEVERE, null, ex);
-        }        
+            log.error(ex.getMessage());
+        }
     }    
     
     
@@ -1181,7 +1176,7 @@ public class JPanelConfigDatabase extends javax.swing.JPanel implements PanelCon
             }
 
         } catch (MalformedURLException ex) {
-            Logger.getLogger(JPanelConfigDatabase.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex.getMessage());
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             JMessageDialog.showMessage(this, 
                     new MessageInf(MessageInf.SGN_WARNING, 

@@ -29,25 +29,25 @@ import com.openbravo.pos.sales.SharedTicketInfo;
 import com.openbravo.pos.sales.TicketsEditor;
 import com.openbravo.pos.ticket.TicketInfo;
 import com.openbravo.pos.util.ThumbNailBuilder;
-import java.awt.Component;
+import lombok.extern.slf4j.Slf4j;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.event.EventListenerList;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.event.EventListenerList;
 
 /**
  *
  * @author JG uniCenta - outline/prep for uniCenta mobile + eCommerce connector
  */
+@Slf4j
 public class OrderSupplierList extends JPanel implements SupplierTicketSelector {
 
     /**
@@ -68,11 +68,6 @@ public class OrderSupplierList extends JPanel implements SupplierTicketSelector 
     private final DataLogicSuppliers dataLogicSuppliers;
     private final DataLogicReceipts dataLogicReceipts;
     private final ThumbNailBuilder tnbbutton;
-
-    /**
-     * Logging / Monitor
-     */
-    protected static final Logger LOGGER = Logger.getLogger("com.openbravo.pos.suppliers.SuppliersList");
 
     /**
      * Creates new form SuppliersList
@@ -128,17 +123,17 @@ public class OrderSupplierList extends JPanel implements SupplierTicketSelector 
                 List<SupplierInfoExt> suppliers = null;
                 List<SharedTicketInfo> ticketList = null;
                 try {
+                    log.info("Time of getSuppliersWithOutImage {}", (System.currentTimeMillis() - time));
 
-                    LOGGER.log(Level.INFO, "Time of getSuppliersWithOutImage {0}", (System.currentTimeMillis() - time));
                     time = System.currentTimeMillis();
 
                     ticketList = dataLogicReceipts.getSharedTicketList();
-                    LOGGER.log(Level.INFO, "Time of getSharedTicketList {0}", (System.currentTimeMillis() - time));
+                    log.info("Time of getSharedTicketList {}", (System.currentTimeMillis() - time));
                     time = System.currentTimeMillis();
 
 
                 } catch (BasicException ex) {
-                    Logger.getLogger(OrderSupplierList.class.getName()).log(Level.SEVERE, null, ex);
+                    log.error(ex.getMessage());
                 }
                 HashMap<SharedTicketInfo, SupplierInfoExt> orderMap = new HashMap<>();
 
@@ -168,8 +163,7 @@ public class OrderSupplierList extends JPanel implements SupplierTicketSelector 
                 SupplierComparator bvc = new SupplierComparator(orderMap);
                 TreeMap<SharedTicketInfo, SupplierInfoExt> sortedMap = new TreeMap<>(bvc);
                 sortedMap.putAll(orderMap);
-
-                LOGGER.log(Level.INFO, "Time of orderMap {0}", (System.currentTimeMillis() - time));
+                log.info("Time of orderMap {}", (System.currentTimeMillis() - time));
                 time = System.currentTimeMillis();
 
                 // set button list
@@ -187,7 +181,7 @@ public class OrderSupplierList extends JPanel implements SupplierTicketSelector 
                                 image = ImageIO.read(is);
                             }
                         } catch (IOException ex) {
-                            Logger.getLogger(OrderSupplierList.class.getName()).log(Level.SEVERE, null, ex);
+                            log.error(ex.getMessage());
                         }
                     }
                     String username;
@@ -203,7 +197,7 @@ public class OrderSupplierList extends JPanel implements SupplierTicketSelector 
                     ImageIcon icon = new ImageIcon(tnbbutton.getThumbNailText(image, text));
 //                    flowTab.addButton(icon, new SelectedSupplierAction(ticket.getId()));
                 }
-                LOGGER.log(Level.INFO, "Time of finished loadSupplierOrders {0}", (System.currentTimeMillis() - time));
+                log.info("Time of finished loadSupplierOrders {}", (System.currentTimeMillis() - time));
             }
         });
     }

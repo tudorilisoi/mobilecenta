@@ -33,6 +33,8 @@ import com.openbravo.data.loader.SerializerWriteString;
 import com.openbravo.data.loader.Session;
 import com.openbravo.pos.forms.AppLocal;
 import com.openbravo.pos.inventory.AttributeSetInfo;
+import lombok.extern.slf4j.Slf4j;
+
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Frame;
@@ -43,382 +45,382 @@ import java.util.UUID;
 import javax.swing.SwingUtilities;
 
 /**
- *
  * @author adrianromero
  */
+@Slf4j
 public class JProductAttEdit2 extends javax.swing.JDialog {
 
-    private SentenceFind attsetSent;
-    private SentenceList attvaluesSent;
-    private SentenceList attinstSent;
-    private SentenceList attinstSent2;
-    private SentenceFind attsetinstExistsSent;
+  private SentenceFind attsetSent;
+  private SentenceList attvaluesSent;
+  private SentenceList attinstSent;
+  private SentenceList attinstSent2;
+  private SentenceFind attsetinstExistsSent;
 
-    private SentenceExec attsetSave;
-    private SentenceExec attinstSave;
+  private SentenceExec attsetSave;
+  private SentenceExec attinstSave;
 
-    private List<JProductAttEditI> itemslist;
-    private String attsetid;
-    private String attInstanceId;
-    private String attInstanceDescription;
+  private List<JProductAttEditI> itemslist;
+  private String attsetid;
+  private String attInstanceId;
+  private String attInstanceDescription;
 
-    private boolean ok;
+  private boolean ok;
 
-    /** Creates new form JProductAttEdit */
-    private JProductAttEdit2(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
-    }
+  /**
+   * Creates new form JProductAttEdit
+   */
+  private JProductAttEdit2(java.awt.Frame parent, boolean modal) {
+    super(parent, modal);
+  }
 
-    /** Creates new form JProductAttEdit */
-    private JProductAttEdit2(java.awt.Dialog parent, boolean modal) {
-        super(parent, modal);
-    }
+  /**
+   * Creates new form JProductAttEdit
+   */
+  private JProductAttEdit2(java.awt.Dialog parent, boolean modal) {
+    super(parent, modal);
+  }
 
-    private void init(Session s) {
+  private void init(Session s) {
 
-        initComponents();
+    initComponents();
 
-        attsetSave = new PreparedSentence(s,
-                "INSERT INTO attributesetinstance (ID, ATTRIBUTESET_ID, DESCRIPTION) VALUES (?, ?, ?)",
-                new SerializerWriteBasic(Datas.STRING, Datas.STRING, Datas.STRING));
-        attinstSave = new PreparedSentence(s,
-                "INSERT INTO attributeinstance(ID, ATTRIBUTESETINSTANCE_ID, ATTRIBUTE_ID, VALUE) VALUES (?, ?, ?, ?)",
-                new SerializerWriteBasic(Datas.STRING, Datas.STRING, Datas.STRING, Datas.STRING));
+    attsetSave = new PreparedSentence(s,
+            "INSERT INTO attributesetinstance (ID, ATTRIBUTESET_ID, DESCRIPTION) VALUES (?, ?, ?)",
+            new SerializerWriteBasic(Datas.STRING, Datas.STRING, Datas.STRING));
+    attinstSave = new PreparedSentence(s,
+            "INSERT INTO attributeinstance(ID, ATTRIBUTESETINSTANCE_ID, ATTRIBUTE_ID, VALUE) VALUES (?, ?, ?, ?)",
+            new SerializerWriteBasic(Datas.STRING, Datas.STRING, Datas.STRING, Datas.STRING));
 
-        attsetSent = new PreparedSentence(s,
-                "SELECT ID, NAME FROM attributeset WHERE ID = ?",
-                SerializerWriteString.INSTANCE,
-                (DataRead dr) -> new AttributeSetInfo(dr.getString(1), dr.getString(2)));
-        attsetinstExistsSent = new PreparedSentence(s,
-//                "SELECT ID FROM attributesetinstance WHERE ATTRIBUTESET_ID = ? AND DESCRIPTION = ?",
-                "SELECT ID, DESCRIPTION FROM attributesetinstance WHERE ATTRIBUTESET_ID = ? AND DESCRIPTION = ?",                
-                new SerializerWriteBasic(Datas.STRING, Datas.STRING),
-                SerializerReadString.INSTANCE);
-
-        attinstSent = new PreparedSentence(s, "SELECT A.ID, A.NAME, " + s.DB.CHAR_NULL() + ", " + s.DB.CHAR_NULL() + " " +
-                "FROM attributeuse AU JOIN attribute A ON AU.ATTRIBUTE_ID = A.ID " +
-                "WHERE AU.ATTRIBUTESET_ID = ? " +
-                "ORDER BY AU.LINENO",
+    attsetSent = new PreparedSentence(s,
+            "SELECT ID, NAME FROM attributeset WHERE ID = ?",
             SerializerWriteString.INSTANCE,
-                (DataRead dr) -> new AttributeInstInfo(dr.getString(1), dr.getString(2), dr.getString(3), dr.getString(4)));
-        attinstSent2 = new PreparedSentence(s, "SELECT A.ID, A.NAME, AI.ID, AI.VALUE " +
+            (DataRead dr) -> new AttributeSetInfo(dr.getString(1), dr.getString(2)));
+    attsetinstExistsSent = new PreparedSentence(s,
+//                "SELECT ID FROM attributesetinstance WHERE ATTRIBUTESET_ID = ? AND DESCRIPTION = ?",
+            "SELECT ID, DESCRIPTION FROM attributesetinstance WHERE ATTRIBUTESET_ID = ? AND DESCRIPTION = ?",
+            new SerializerWriteBasic(Datas.STRING, Datas.STRING),
+            SerializerReadString.INSTANCE);
+
+    attinstSent = new PreparedSentence(s, "SELECT A.ID, A.NAME, " + s.DB.CHAR_NULL() + ", " + s.DB.CHAR_NULL() + " " +
+            "FROM attributeuse AU JOIN attribute A ON AU.ATTRIBUTE_ID = A.ID " +
+            "WHERE AU.ATTRIBUTESET_ID = ? " +
+            "ORDER BY AU.LINENO",
+            SerializerWriteString.INSTANCE,
+            (DataRead dr) -> new AttributeInstInfo(dr.getString(1), dr.getString(2), dr.getString(3), dr.getString(4)));
+    attinstSent2 = new PreparedSentence(s, "SELECT A.ID, A.NAME, AI.ID, AI.VALUE " +
             "FROM attributeuse AU JOIN attribute A ON AU.ATTRIBUTE_ID = A.ID LEFT OUTER JOIN attributeinstance AI ON AI.ATTRIBUTE_ID = A.ID " +
             "WHERE AU.ATTRIBUTESET_ID = ? AND AI.ATTRIBUTESETINSTANCE_ID = ?" +
             "ORDER BY AU.LINENO",
             new SerializerWriteBasic(Datas.STRING, Datas.STRING),
-                (DataRead dr) -> new AttributeInstInfo(dr.getString(1), dr.getString(2), dr.getString(3), dr.getString(4)));
-                attvaluesSent = new PreparedSentence(s, "SELECT VALUE FROM attributevalue WHERE ATTRIBUTE_ID = ? ORDER BY VALUE",
-                SerializerWriteString.INSTANCE,
-                SerializerReadString.INSTANCE);
+            (DataRead dr) -> new AttributeInstInfo(dr.getString(1), dr.getString(2), dr.getString(3), dr.getString(4)));
+    attvaluesSent = new PreparedSentence(s, "SELECT VALUE FROM attributevalue WHERE ATTRIBUTE_ID = ? ORDER BY VALUE",
+            SerializerWriteString.INSTANCE,
+            SerializerReadString.INSTANCE);
 
-        getRootPane().setDefaultButton(m_jButtonOK);
+    getRootPane().setDefaultButton(m_jButtonOK);
+  }
+
+  /**
+   * @param parent
+   * @param s
+   * @return
+   */
+  public static JProductAttEdit2 getAttributesEditor(Component parent, Session s) {
+
+    Window window = SwingUtilities.getWindowAncestor(parent);
+
+    JProductAttEdit2 myMsg;
+    if (window instanceof Frame) {
+      myMsg = new JProductAttEdit2((Frame) window, true);
+    } else {
+      myMsg = new JProductAttEdit2((Dialog) window, true);
     }
+    myMsg.init(s);
+    myMsg.applyComponentOrientation(parent.getComponentOrientation());
+    return myMsg;
+  }
 
-    /**
-     *
-     * @param parent
-     * @param s
-     * @return
-     */
-    public static JProductAttEdit2 getAttributesEditor(Component parent, Session s) {
+  /**
+   * @param attsetid
+   * @param attsetinstid
+   * @throws BasicException
+   */
+  public void editAttributes(String attsetid, String attsetinstid) throws BasicException {
 
-        Window window = SwingUtilities.getWindowAncestor(parent);
-
-        JProductAttEdit2 myMsg;
-        if (window instanceof Frame) {
-            myMsg = new JProductAttEdit2((Frame) window, true);
-        } else {
-            myMsg = new JProductAttEdit2((Dialog) window, true);
-        }
-        myMsg.init(s);
-        myMsg.applyComponentOrientation(parent.getComponentOrientation());
-        return myMsg;
-    }
-
-    /**
-     *
-     * @param attsetid
-     * @param attsetinstid
-     * @throws BasicException
-     */
-    public void editAttributes(String attsetid, String attsetinstid) throws BasicException {
-
-        if (attsetid == null) {
+    if (attsetid == null) {
 //            throw new BasicException(AppLocal.getIntString("message.attsetnotexists"));
-            throw new BasicException(AppLocal.getIntString("message.cannotfindattributes"));
-        } else {
+      throw new BasicException(AppLocal.getIntString("message.cannotfindattributes"));
+    } else {
 
-            this.attsetid = attsetid;
-            this.attInstanceId = null;
-            this.attInstanceDescription = null;
+      this.attsetid = attsetid;
+      this.attInstanceId = null;
+      this.attInstanceDescription = null;
 
-            this.ok = false;
+      this.ok = false;
 
-            // get attsetinst values
-            AttributeSetInfo asi = (AttributeSetInfo) attsetSent.find(attsetid);
+      // get attsetinst values
+      AttributeSetInfo asi = (AttributeSetInfo) attsetSent.find(attsetid);
 
-            if (asi == null) {
+      if (asi == null) {
 //                throw new BasicException(AppLocal.getIntString("message.attsetnotexists"));
-                throw new BasicException(AppLocal.getIntString("message.cannotfindattributes"));
-            }
+        throw new BasicException(AppLocal.getIntString("message.cannotfindattributes"));
+      }
 
-            setTitle(asi.getName());
+      setTitle(asi.getName());
 
-            List<AttributeInstInfo> attinstinfo = attsetinstid == null
-                    ? attinstSent.list(attsetid)
-                    : attinstSent2.list(attsetid, attsetinstid);
+      List<AttributeInstInfo> attinstinfo = attsetinstid == null
+              ? attinstSent.list(attsetid)
+              : attinstSent2.list(attsetid, attsetinstid);
 
-            itemslist = new ArrayList<>();
+      itemslist = new ArrayList<>();
 
-            for (AttributeInstInfo aii : attinstinfo) {
+      for (AttributeInstInfo aii : attinstinfo) {
 
-                JProductAttEditI item;
+        JProductAttEditI item;
 
-                List<String> values = attvaluesSent.list(aii.getAttid());
-                if (values.isEmpty()) {
-                    // Does not exist a list of values then a textfield
-                    item = new JProductAttEditItem(aii.getAttid(),  aii.getAttname(), aii.getValue(), m_jKeys);
-                } else {
-                    // Does exist a list with the values
-                    item = new JProductAttListItem(aii.getAttid(),  aii.getAttname(), aii.getValue(), values);
-                }
-
-                itemslist.add(item);
-                jPanel2.add(item.getComponent());
-            }
-
-            if (itemslist.size() > 0) {
-                itemslist.get(0).assignSelection();
-            }
+        List<String> values = attvaluesSent.list(aii.getAttid());
+        if (values.isEmpty()) {
+          // Does not exist a list of values then a textfield
+          item = new JProductAttEditItem(aii.getAttid(), aii.getAttname(), aii.getValue(), m_jKeys);
+        } else {
+          // Does exist a list with the values
+          item = new JProductAttListItem(aii.getAttid(), aii.getAttname(), aii.getValue(), values);
         }
+
+        itemslist.add(item);
+        jPanel2.add(item.getComponent());
+      }
+
+      if (itemslist.size() > 0) {
+        itemslist.get(0).assignSelection();
+      }
+    }
+  }
+
+  /**
+   * @return
+   */
+  public boolean isOK() {
+    return ok;
+  }
+
+  /**
+   * @return
+   */
+  public String getAttributeSetInst() {
+    return attInstanceId;
+  }
+
+  /**
+   * @return
+   */
+  public String getAttributeSetInstDescription() {
+    return attInstanceDescription;
+  }
+
+  private static class AttributeInstInfo {
+
+    private final String attid;
+    private final String attname;
+    private String id;
+    private String value;
+
+    public AttributeInstInfo(String attid, String attname, String id, String value) {
+      this.attid = attid;
+      this.attname = attname;
+      this.id = id;
+      this.value = value;
     }
 
     /**
-     *
-     * @return
+     * @return the attid
      */
-    public boolean isOK() {
-        return ok;
+    public String getAttid() {
+      return attid;
     }
 
     /**
-     *
-     * @return
+     * @return the attname
      */
-    public String getAttributeSetInst() {
-        return attInstanceId;
+    public String getAttname() {
+      return attname;
     }
 
     /**
-     *
-     * @return
+     * @return the id
      */
-    public String getAttributeSetInstDescription() {
-        return attInstanceDescription;
+    public String getId() {
+      return id;
     }
 
-    private static class AttributeInstInfo {
-        
-        private final String attid;
-        private final String attname;
-        private String id;
-        private String value;
-
-        public AttributeInstInfo(String attid, String attname, String id, String value) {
-            this.attid = attid;
-            this.attname = attname;
-            this.id = id;
-            this.value = value;
-        }
-
-        /**
-         * @return the attid
-         */
-        public String getAttid() {
-            return attid;
-        }
-
-        /**
-         * @return the attname
-         */
-        public String getAttname() {
-            return attname;
-        }
-
-        /**
-         * @return the id
-         */
-        public String getId() {
-            return id;
-        }
-
-        /**
-         * @param id the id to set
-         */
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        /**
-         * @return the value
-         */
-        public String getValue() {
-            return value;
-        }
-
-        /**
-         * @param value the value to set
-         */
-        public void setValue(String value) {
-            this.value = value;
-        }
+    /**
+     * @param id the id to set
+     */
+    public void setId(String id) {
+      this.id = id;
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+    /**
+     * @return the value
      */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    public String getValue() {
+      return value;
+    }
 
-        jPanel5 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
-        jPanel4 = new javax.swing.JPanel();
-        m_jKeys = new com.openbravo.editor.JEditorKeys();
-        jPanel1 = new javax.swing.JPanel();
-        m_jButtonCancel = new javax.swing.JButton();
-        m_jButtonOK = new javax.swing.JButton();
+    /**
+     * @param value the value to set
+     */
+    public void setValue(String value) {
+      this.value = value;
+    }
+  }
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(300, 250));
+  /**
+   * This method is called from within the constructor to
+   * initialize the form.
+   * WARNING: Do NOT modify this code. The content of this method is
+   * always regenerated by the Form Editor.
+   */
+  @SuppressWarnings("unchecked")
+  // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+  private void initComponents() {
 
-        jPanel5.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
-        jPanel5.setLayout(new java.awt.BorderLayout());
+    jPanel5 = new javax.swing.JPanel();
+    jPanel2 = new javax.swing.JPanel();
+    jPanel3 = new javax.swing.JPanel();
+    jPanel4 = new javax.swing.JPanel();
+    m_jKeys = new com.openbravo.editor.JEditorKeys();
+    jPanel1 = new javax.swing.JPanel();
+    m_jButtonCancel = new javax.swing.JButton();
+    m_jButtonOK = new javax.swing.JButton();
 
-        jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.PAGE_AXIS));
-        jPanel5.add(jPanel2, java.awt.BorderLayout.NORTH);
+    setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+    setPreferredSize(new java.awt.Dimension(300, 250));
 
-        getContentPane().add(jPanel5, java.awt.BorderLayout.CENTER);
+    jPanel5.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+    jPanel5.setLayout(new java.awt.BorderLayout());
 
-        jPanel3.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
-        jPanel3.setLayout(new java.awt.BorderLayout());
+    jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.PAGE_AXIS));
+    jPanel5.add(jPanel2, java.awt.BorderLayout.NORTH);
 
-        jPanel4.setLayout(new javax.swing.BoxLayout(jPanel4, javax.swing.BoxLayout.Y_AXIS));
-        jPanel4.add(m_jKeys);
+    getContentPane().add(jPanel5, java.awt.BorderLayout.CENTER);
 
-        jPanel3.add(jPanel4, java.awt.BorderLayout.NORTH);
+    jPanel3.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+    jPanel3.setLayout(new java.awt.BorderLayout());
 
-        jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+    jPanel4.setLayout(new javax.swing.BoxLayout(jPanel4, javax.swing.BoxLayout.Y_AXIS));
+    jPanel4.add(m_jKeys);
 
-        m_jButtonCancel.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
-        m_jButtonCancel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/cancel.png"))); // NOI18N
-        m_jButtonCancel.setText(AppLocal.getIntString("button.cancel")); // NOI18N
-        m_jButtonCancel.setFocusPainted(false);
-        m_jButtonCancel.setFocusable(false);
-        m_jButtonCancel.setMargin(new java.awt.Insets(8, 16, 8, 16));
-        m_jButtonCancel.setPreferredSize(new java.awt.Dimension(110, 45));
-        m_jButtonCancel.setRequestFocusEnabled(false);
-        m_jButtonCancel.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                m_jButtonCancelActionPerformed(evt);
-            }
-        });
-        jPanel1.add(m_jButtonCancel);
+    jPanel3.add(jPanel4, java.awt.BorderLayout.NORTH);
 
-        m_jButtonOK.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
-        m_jButtonOK.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/ok.png"))); // NOI18N
-        m_jButtonOK.setText(AppLocal.getIntString("button.OK")); // NOI18N
-        m_jButtonOK.setFocusPainted(false);
-        m_jButtonOK.setFocusable(false);
-        m_jButtonOK.setMargin(new java.awt.Insets(8, 16, 8, 16));
-        m_jButtonOK.setPreferredSize(new java.awt.Dimension(110, 45));
-        m_jButtonOK.setRequestFocusEnabled(false);
-        m_jButtonOK.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                m_jButtonOKActionPerformed(evt);
-            }
-        });
-        jPanel1.add(m_jButtonOK);
+    jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
 
-        jPanel3.add(jPanel1, java.awt.BorderLayout.PAGE_END);
+    m_jButtonCancel.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+    m_jButtonCancel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/cancel.png"))); // NOI18N
+    m_jButtonCancel.setText(AppLocal.getIntString("button.cancel")); // NOI18N
+    m_jButtonCancel.setFocusPainted(false);
+    m_jButtonCancel.setFocusable(false);
+    m_jButtonCancel.setMargin(new java.awt.Insets(8, 16, 8, 16));
+    m_jButtonCancel.setPreferredSize(new java.awt.Dimension(110, 45));
+    m_jButtonCancel.setRequestFocusEnabled(false);
+    m_jButtonCancel.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        m_jButtonCancelActionPerformed(evt);
+      }
+    });
+    jPanel1.add(m_jButtonCancel);
 
-        getContentPane().add(jPanel3, java.awt.BorderLayout.EAST);
+    m_jButtonOK.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+    m_jButtonOK.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/openbravo/images/ok.png"))); // NOI18N
+    m_jButtonOK.setText(AppLocal.getIntString("button.OK")); // NOI18N
+    m_jButtonOK.setFocusPainted(false);
+    m_jButtonOK.setFocusable(false);
+    m_jButtonOK.setMargin(new java.awt.Insets(8, 16, 8, 16));
+    m_jButtonOK.setPreferredSize(new java.awt.Dimension(110, 45));
+    m_jButtonOK.setRequestFocusEnabled(false);
+    m_jButtonOK.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        m_jButtonOKActionPerformed(evt);
+      }
+    });
+    jPanel1.add(m_jButtonOK);
 
-        setSize(new java.awt.Dimension(656, 388));
-        setLocationRelativeTo(null);
-    }// </editor-fold>//GEN-END:initComponents
+    jPanel3.add(jPanel1, java.awt.BorderLayout.PAGE_END);
 
-    private void m_jButtonOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jButtonOKActionPerformed
+    getContentPane().add(jPanel3, java.awt.BorderLayout.EAST);
 
-        StringBuilder description = new StringBuilder();
-        itemslist.stream().map((item) -> item.getValue())
+    setSize(new java.awt.Dimension(656, 388));
+    setLocationRelativeTo(null);
+  }// </editor-fold>//GEN-END:initComponents
+
+  private void m_jButtonOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jButtonOKActionPerformed
+
+    StringBuilder description = new StringBuilder();
+    itemslist.stream().map((item) -> item.getValue())
             .filter((value) -> (value != null && value.length() > 0))
-            .forEach((value) -> {                    
-                if (description.length() > 0) {
-                    description.append(", ");
-                }
-                description.append(value);
+            .forEach((value) -> {
+              if (description.length() > 0) {
+                description.append(", ");
+              }
+              description.append(value);
             });
 
-        String id;
+    String id;
 
-        if (description.length() == 0) {
-            id = null;
-        } else {
+    if (description.length() == 0) {
+      id = null;
+    } else {
 
-            try {
-                
-                id = (String) attsetinstExistsSent.find(attsetid, description.toString());
-           
-            } catch (BasicException ex) {
-                return;
-            }            
+      try {
 
-            if (id == null) {
+        id = (String) attsetinstExistsSent.find(attsetid, description.toString());
+
+      } catch (BasicException ex) {
+        return;
+      }
+
+      if (id == null) {
 //            if (id == null ? (String.valueOf(description)) != null : !id.equals(String.valueOf(description))) {                
-                // Now creates a new ATTRIBUTESETINSTANCE and returns the ID generated
-                // to allow for ad-hoc user input i.e.: Serial No
+        // Now creates a new ATTRIBUTESETINSTANCE and returns the ID generated
+        // to allow for ad-hoc user input i.e.: Serial No
 
-                id = UUID.randomUUID().toString();
+        id = UUID.randomUUID().toString();
 
-                try {
-                    attsetSave.exec(id, attsetid, description.toString());
+        try {
+          attsetSave.exec(id, attsetid, description.toString());
 
-                    for (JProductAttEditI item : itemslist) {
-                        attinstSave.exec(UUID.randomUUID().toString(), id, item.getAttribute(), item.getValue());
-                    }
+          for (JProductAttEditI item : itemslist) {
+            attinstSave.exec(UUID.randomUUID().toString(), id, item.getAttribute(), item.getValue());
+          }
 
-                } catch (BasicException ex) {
-                    // Logger.getLogger(JProductAttEdit2.class.getName()).log(Level.SEVERE, null, ex);
-                    return;
-                }
-            }
+        } catch (BasicException ex) {
+          log.error(ex.getMessage());
+          return;
         }
+      }
+    }
 
-        ok = true;
-        attInstanceId = id;
-        attInstanceDescription = description.toString();
+    ok = true;
+    attInstanceId = id;
+    attInstanceDescription = description.toString();
 
-        dispose();
-    }//GEN-LAST:event_m_jButtonOKActionPerformed
+    dispose();
+  }//GEN-LAST:event_m_jButtonOKActionPerformed
 
-    private void m_jButtonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jButtonCancelActionPerformed
+  private void m_jButtonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_jButtonCancelActionPerformed
 
-        dispose();
-    }//GEN-LAST:event_m_jButtonCancelActionPerformed
+    dispose();
+  }//GEN-LAST:event_m_jButtonCancelActionPerformed
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JButton m_jButtonCancel;
-    private javax.swing.JButton m_jButtonOK;
-    private com.openbravo.editor.JEditorKeys m_jKeys;
-    // End of variables declaration//GEN-END:variables
+  // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JPanel jPanel1;
+  private javax.swing.JPanel jPanel2;
+  private javax.swing.JPanel jPanel3;
+  private javax.swing.JPanel jPanel4;
+  private javax.swing.JPanel jPanel5;
+  private javax.swing.JButton m_jButtonCancel;
+  private javax.swing.JButton m_jButtonOK;
+  private com.openbravo.editor.JEditorKeys m_jKeys;
+  // End of variables declaration//GEN-END:variables
 
 }

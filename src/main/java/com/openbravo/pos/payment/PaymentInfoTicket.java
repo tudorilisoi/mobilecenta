@@ -37,6 +37,8 @@ public class PaymentInfoTicket extends PaymentInfo implements SerializableRead  
     private boolean m_isProcessed;
     private String m_returnMessage;    
     private String m_sVoucher;
+    private String sVoucher;
+    private String m_sVoucherNumber;
             
     /** Creates a new instance of PaymentInfoTicket
      * @param dTicket
@@ -53,16 +55,14 @@ public class PaymentInfoTicket extends PaymentInfo implements SerializableRead  
         m_dTicket = dTicket;
         m_transactionID = transactionID;
         m_sVoucher = sVoucher;
-        
     }
     
 // call by Voucher    
     public PaymentInfoTicket(double dTicket, String sName, String sVoucher) {
         m_sName = sName;
         m_dTicket = dTicket;
-//        m_transactionID = transactionID;
         m_sVoucher = sVoucher;
-        
+        m_sVoucherNumber = sVoucher;
     }    
     
     public PaymentInfoTicket() {
@@ -78,12 +78,10 @@ public class PaymentInfoTicket extends PaymentInfo implements SerializableRead  
         m_dTicket = dr.getDouble(2);
         m_transactionID = dr.getString(3);
         if (dr.getDouble(4) != null) {
-            m_dTendered = dr.getDouble(4);}
-            m_dCardName = dr.getString(5);
-//        m_dTip = dr.getDouble(6).doubleValue();
-//        m_isProcessed = dr.getBoolean(7).booleanValue(); 
-//        m_returnMessage = dr.getString(8);        
-     }
+            m_dTendered = dr.getDouble(4);
+        }
+        m_dCardName = dr.getString(5);
+    }
     
     @Override
     public PaymentInfo copyPayment(){
@@ -144,8 +142,13 @@ public class PaymentInfoTicket extends PaymentInfo implements SerializableRead  
     public String getVoucher() {
        return m_sVoucher;
     } 
-    
     public String printVoucher() {
         return m_sVoucher;
     }
+    public String getVoucherNumber() {
+       return m_sVoucherNumber;
+    } 
+    public String printVoucherNumber() {
+        return m_sVoucherNumber;    
+    }    
 }
