@@ -433,8 +433,31 @@ public class ApiServer {
         });
     }
 
+    private static void middlewareEnableGzipIfNeeded() {
+
+        before((spark.Request request, spark.Response response) -> {
+
+            String accept = request.headers("Accept-Encoding");
+            if (accept == null) {
+                return;
+            }
+
+            String blackList = "^\\/(dbimage)\\/(.+)?";
+            if (request.pathInfo().matches(blackList)) {
+                return;
+            }
+
+            String[] tokens = accept.split(",");
+            if (Arrays.stream(tokens).map(String::trim).anyMatch(s -> s.equalsIgnoreCase("gzip"))) {
+                logger.info("GZIP ENABLED");
+                response.header("Content-Encoding", "gzip");
+            }
+        });
+    }
+
     private void middleWareJWTAuth() {
         before((request, response) -> {
+
             String whiteList = "^\\/(dbimage|authenticate)\\/(.+)?";
             if (request.pathInfo().equals("/users")
                     || request.pathInfo().matches(whiteList)) {
@@ -662,6 +685,7 @@ public class ApiServer {
                 "GET,POST,PUT,DELETE,PATCH,OPTIONS",
                 "Content-type,X-Requested-With,Accept"
         );
+        middlewareEnableGzipIfNeeded();
         middlewareVerifyAESKey();
         middleWareJWTAuth();
 
@@ -725,7 +749,6 @@ public class ApiServer {
 
             // TODO move this to a POST handler for tickets
             // EventHub.post(EventHub.API_ORIGINATED_CHANGE);
-            response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
 
             JSONPayload ret = createJSONPayload();
@@ -739,19 +762,16 @@ public class ApiServer {
             ret.setStatus("OK");
             HashMap params = new HashMap(); //params, not used here
             ret.setData(routeUsers(params));
-            response.header("Content-Encoding", "gzip");
 
             return ret.getString();
         });
 
         get("/floors", (request, response) -> {
-            response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
             return (String) cacheFloors.get(params);
         });
 
         get("/products", (request, response) -> {
-            response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
             Object ret = cacheProducts.get(params);
             return ret;
@@ -761,7 +781,6 @@ public class ApiServer {
         get("/ticket/:placeID", (request, response) -> {
             String placeID = request.params(":placeID");
 //            TicketDSL t = TicketDSL.getInstance();
-            response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
 
             JSONPayload ret = createJSONPayload();
@@ -780,7 +799,6 @@ public class ApiServer {
         post("/ticket/:placeID", "application/json", (request, response) -> {
             String placeID = request.params(":placeID");
 //            TicketDSL t = TicketDSL.getInstance();
-            response.header("Content-Encoding", "gzip");
             HashMap params = new HashMap(); //params, not used here
 
             JSONPayload ret = createJSONPayload();
