@@ -308,6 +308,12 @@ public class ApiServer {
 
         //assigns ticketID and index to all lines
         ticketInfo.refreshLines();
+        ticketDSL.restDB.setWaiterNameInTableById(user.getUserInfo().getName(), placeID);
+        ticketDSL.restDB.setOccupied(ticketInfo.getId());
+        ticketDSL.restDB.setGuestsInTable(
+                ticketDSL.restDB.getGuestsInTable(ticketInfo.getId()), ticketInfo.getId()
+        );
+        ticketInfo.setDate(new Date());
 
 
         try {

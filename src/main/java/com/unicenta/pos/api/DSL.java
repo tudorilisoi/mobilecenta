@@ -138,6 +138,9 @@ public class DSL extends DataLogicSystem {
         ret.put("total", i.getSubTotal());
         ret.put("totalTax", i.getTotal());
 
+        //NOTE UTC millis (Unix timestamp)
+        ret.put("date", i.getDate().getTime());
+
         ArrayList lines = new ArrayList<>();
         i.getLines().forEach(l -> {
             HashMap line = new HashMap();
