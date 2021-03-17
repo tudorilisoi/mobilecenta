@@ -70,7 +70,7 @@ public class ApiServer {
     // since there is no easy way to run HTTPS on a LAN server
     // we use a shared private key
     private static String AESKey = "a disturbing secret";
-    private static boolean useEncryption = false; //set to false in dev mode for easier debugging
+    private static boolean useEncryption = true; //set to false in dev mode for easier debugging
 
     public String getConfigParam(String prop) {
         File configFile = app.getProperties().getConfigFile();
