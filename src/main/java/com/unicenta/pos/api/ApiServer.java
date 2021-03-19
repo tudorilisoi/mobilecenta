@@ -300,6 +300,9 @@ public class ApiServer {
                 line.setMultiply(linefromRq.getMultiply());
             }
 
+            line.setTicketUpdated("", (String) linefromRq.getattributes().get("ticket.updated"));
+            line.setUpdated(linefromRq.getUpdated());
+
             lines.add(line);
         }
 
