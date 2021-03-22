@@ -6,7 +6,7 @@ import java.util.*;
 
 import com.fasterxml.jackson.annotation.*;
 
-public class JSONOrder {
+public class JSONTicket {
     public static String OP_UPDATE = "UPDATE";
     public static String OP_PAY_AND_CLOSE = "PAY_AND_CLOSE";
 

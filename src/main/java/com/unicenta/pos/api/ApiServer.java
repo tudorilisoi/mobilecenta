@@ -28,7 +28,7 @@ import com.openbravo.pos.ticket.TicketLineInfo;
 import com.unicenta.pos.api.JSONOrder.Converter;
 import com.openbravo.pos.util.AltEncrypter;
 import com.openbravo.pos.util.Hashcypher;
-import com.unicenta.pos.api.JSONOrder.JSONOrder;
+import com.unicenta.pos.api.JSONOrder.JSONTicket;
 import com.unicenta.pos.api.JSONOrder.JSONLine;
 import spark.Request;
 import spark.Response;
@@ -249,12 +249,12 @@ public class ApiServer {
         // cycle through lines and replace them  in the shared ticket
         HashMap d = new HashMap();
 
-        JSONOrder orderFromRequest = Converter.fromJsonString(params.get("data").toString());
-        logger.info("ORDER: " + Converter.toJsonString(orderFromRequest));
+        JSONTicket ticketFromRequest = Converter.fromJsonString(params.get("data").toString());
+        logger.info("ORDER: " + Converter.toJsonString(ticketFromRequest));
         logger.info(String.format("JWT User: #%s name: %s", userID, user.getUserInfo().getName()));
         //TODO check locked status and user/role
 
-        String placeID = orderFromRequest.getPlaceID();
+        String placeID = ticketFromRequest.getPlaceID();
 
         boolean isNew = false;
         TicketInfo ticketInfo = DSL.getTicketInfo(placeID);
@@ -271,7 +271,7 @@ public class ApiServer {
         List<TicketLineInfo> existingLines = ticketInfo.getLines();
 
         NumberFormat nf = DecimalFormat.getInstance(Locale.getDefault());
-        for (JSONLine linefromRq : orderFromRequest.getLines()) {
+        for (JSONLine linefromRq : ticketFromRequest.getLines()) {
             //TODO put received um into a property
             ProductInfoExt productInfo = DSL.salesLogic.getProductInfo(linefromRq.getProductID());
             productInfo.setName(productInfo.getName()

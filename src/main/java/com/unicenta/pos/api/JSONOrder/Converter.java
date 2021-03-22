@@ -14,7 +14,6 @@
 
 package com.unicenta.pos.api.JSONOrder;
 
-import java.util.*;
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.*;
@@ -23,11 +22,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public class Converter {
     // Serialize/deserialize helpers
 
-    public static JSONOrder fromJsonString(String json) throws IOException {
+    public static JSONTicket fromJsonString(String json) throws IOException {
         return getObjectReader().readValue(json);
     }
 
-    public static String toJsonString(JSONOrder obj) throws JsonProcessingException {
+    public static String toJsonString(JSONTicket obj) throws JsonProcessingException {
         return getObjectWriter().writeValueAsString(obj);
     }
 
@@ -36,8 +35,8 @@ public class Converter {
 
     private static void instantiateMapper() {
         ObjectMapper mapper = new ObjectMapper();
-        reader = mapper.reader(JSONOrder.class);
-        writer = mapper.writerFor(JSONOrder.class);
+        reader = mapper.reader(JSONTicket.class);
+        writer = mapper.writerFor(JSONTicket.class);
     }
 
     private static ObjectReader getObjectReader() {
