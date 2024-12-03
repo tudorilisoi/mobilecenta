@@ -11,7 +11,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <kotlin.version>1.1.4</kotlin.version>
+        <kotlin.version>1.6.0</kotlin.version>
         <!-- Specify this via command line i.e -Dbitrock.exec=/path/to/bitrock/builder-->
         <bitrock.exec/>
         <!-- windows, osx, linux -->
